@@ -342,62 +342,46 @@ class Stylecow {
 
 
 	/**
-	 * public function show ([bool $header])
+	 * public function show ([bool $header], [int $cache])
 	 *
 	 * Print the css file
 	 */
-	public function show ($header = true) {
+	public function show ($header = true, $cache = 0) {
 		if ($header) {
 			header('Content-type: text/css');
 
-			if ($this->settings['cache'] && is_int($this->settings['cache'])) {
-				header('Expires: '.gmdate('D, d M Y H:i:s',(time() + $this->settings['cache']).' GMT'));
+			if ($cache && is_int($cache)) {
+				header('Expires: '.gmdate('D, d M Y H:i:s',(time() + $cache).' GMT'));
 			}
 		}
 
 		//Get text
-		$text = $this->get();
-
-		//Save cache
-		if ($this->settings['cache']) {
-			$Cache = new \Cache;
-			$File = new \files\File;
-
-			$Cache->setFolder('css');
-
-			$filename = $Cache->fileName($this->file, $this->settings['cache']);
-
-			if (!$File->saveText($text, $filename)) {
-				$this->Debug->error('css', __('Error saving file in cache'));
-			}
-		}
-
-		echo $text;
+		echo $this->toString();
 
 		die();
 	}
 
 
 	/**
-	 * public function get ()
+	 * public function toString ()
 	 *
 	 * Return transformed text
 	 *
 	 * return string
 	 */
-	public function get () {
-		return $this->toText($this->code);
+	public function toString () {
+		return $this->_toString($this->code);
 	}
 
 
 	/**
-	 * private function toText (array $array_code)
+	 * private function _toString (array $array_code)
 	 *
 	 * Return transformed text
 	 *
 	 * return string
 	 */
-	private function toText ($array_code, $tabs = 0) {
+	private function _toString ($array_code, $tabs = 0) {
 		$text = '';
 		$tab_selector = str_repeat("\t", $tabs);
 		$tab_property = str_repeat("\t", $tabs + 1);
@@ -421,7 +405,7 @@ class Stylecow {
 			}
 
 			if ($code['content']) {
-				$text .= $this->toText($code['content'], $tabs + 1);
+				$text .= $this->_toString($code['content'], $tabs + 1);
 			}
 
 			$text .= $tab_selector."}\n";

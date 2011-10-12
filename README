@@ -17,7 +17,7 @@ It is a php library that allows parse and manipulate css files. The main class i
 EXAMPLE
 ======================================================
 
-$styleCow = new Stylecow();
+$styleCow = new stylecow\Stylecow();
 
 //Load the file
 $styleCow->load('my-styles.css');

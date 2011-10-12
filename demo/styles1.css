@@ -1,0 +1,5 @@
+div {
+	color: black;
+	box-shadow: 1px 1px #000;
+	background: linear-gradient(top, #892, #564);
+}

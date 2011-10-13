@@ -73,6 +73,8 @@ class Grid implements iPlugins {
 					foreach ($this->Css->explodeFunctions($property['value'][0]) as $function) {
 						switch ($function[0]) {
 							case 'cols':
+							case 'right':
+							case 'left':
 							case 'in-cols':
 								$options[$function[0]] = $function[1];
 								break;
@@ -111,19 +113,33 @@ class Grid implements iPlugins {
 	 * return none
 	 */
 	private function cols ($grid, $options) {
+		$width = ($grid['width'] - ($grid['gutter'] * ($grid['columns'] - 1))) / $grid['columns'];
+
+		$options['cols'][0] = floatval($options['cols'][0]);
+		$options['cols'][1] = intval($options['cols'][1]);
+
 		if ($options['in-cols']) {
-			$grid['width'] += ($grid['columns'] / intval($options['in-cols'][0])) * intval($options['in-cols'][1]);
+			$options['cols'][1] += ($options['cols'][0] / floatval($options['in-cols'][0])) * intval($options['in-cols'][1]);
 		}
 
-		$width = ($grid['width'] - ($grid['gutter'] * ($grid['columns'] - 1))) / $grid['columns'];
-		$options['cols'][0] = intval($options['cols'][0]);
-		$options['cols'][1] = intval($options['cols'][1]);
+		if ($options['right']) {
+			$right = ((($width + $grid['gutter']) * floatval($options['right'][0])) + intval($options['right'][1]) + $grid['gutter']).'px';
+		} else {
+			$right = $grid['gutter'].'px';
+		}
+
+		if ($options['left']) {
+			$left = ((($width + $grid['gutter']) * floatval($options['left'][0])) + intval($options['left'][1])).'px';
+		} else {
+			$left = '0px';
+		}
 
 		return array(
 			'width' => floor(($width * $options['cols'][0]) + ($grid['gutter'] * ($options['cols'][0] - 1)) + $options['cols'][1]).'px',
 			'float' => 'left',
 			'display' => 'inline',
-			'margin-right' => $grid['gutter'].'px'
+			'margin-right' => $right,
+			'margin-left' => $left
 		);
 	}
 }

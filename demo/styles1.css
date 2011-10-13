@@ -1,5 +1,35 @@
-div {
-	color: black;
-	box-shadow: 1px 1px #000;
-	background: linear-gradient(top, #892, #564);
+.wrapper {
+	width: 960px;
+	background: url(http://griddle.it/960-12-30) repeat-y;
+	margin: 0 auto;
+	overflow: auto;
+}
+
+$grid {
+	width: 960px;
+	columns: 12;
+	gutter: 30px;
+}
+
+.wrapper > div {
+	box-sizing: border-box;
+	border: solid 1px #333;
+}
+.menu {
+	$grid: cols(2) left(1);
+}
+.content {
+	$grid: cols(6);
+	padding: 20px;
+}
+.content p {
+	$grid: cols(2) in-cols(6, -42px);
+	background: rgba(0, 0, 0, 0.2);
+}
+.content p:last-child {
+	margin-right: 0;
+}
+.aside {
+	$grid: cols(3);
+	margin-right: 0;
 }

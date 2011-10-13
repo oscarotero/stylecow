@@ -10,7 +10,7 @@ More information at http://www.gnu.org/licenses/agpl-3.0.html
 WHAT IS STYLECOW?
 ======================================================
 
-It is a php library that allows parse and manipulate css files. The main class is Csscow that load and parses the css file(s) creating an internal array with all selectors, properties and values. Then you can transform the array using one or more of available plugins and finally return the css code.
+It is a php library that allows parsing and manipulating css files. The main class is styleCow that loads and parses the css file(s) creating an internal array with all the selectors, properties and values. Then you can transform the array using one or moreavailable plugins and finally return the css code.
 
 
 ======================================================
@@ -19,6 +19,7 @@ EXAMPLE
 
 include('stylecow/stylecow.php');
 
+//Fist we instance the class (note that we are using namespaces)
 $styleCow = new stylecow\Stylecow();
 
 //Load the file
@@ -41,10 +42,10 @@ $styleCow->show();
 FEATURES
 ======================================================
 
-* It is written in php 5.3
-* Includes the css files in @import links
+* Written in php 5.3
+* Includes the css files using @import
 * Extensible with plugins
-* Very easy to install and use
+* Easy to install and use
 
 
 ======================================================
@@ -74,7 +75,7 @@ div.foo ::selection {
 ---------------
 
 
-transformed:
+result:
 ---------------
 div.foo {
 	border-radius: 4px;
@@ -115,7 +116,7 @@ div.foo :matches(article, section) header :matches(h1, h2) {
 }
 ---------------
 
-transformed:
+result:
 ---------------
 div.foo h1 a, div.foo h2 a, div.foo h3 a, div.foo h4 a, div.foo h5 a, div.foo h6 a {
 	color: blue;
@@ -153,7 +154,7 @@ div.foo h2 {
 }
 ---------------
 
-transformed:
+result:
 ---------------
 div.foo h1 {
 	font-family: Helvetica, Arial, sans-serif;
@@ -171,7 +172,7 @@ div.foo h2 {
 Plugin: nested_rules
 ======================================================
 
-Resolve the nested rules, to write css in a more legible way:
+Resolve the nested rules, allowing to write css in a more legible way:
 
 origin:
 ---------------
@@ -202,7 +203,7 @@ article.main {
 }
 ---------------
 
-transformed:
+result:
 ---------------
 article.main {
 	padding: 4px;
@@ -231,7 +232,7 @@ article.main header p a:hover {
 Plugin: ie_filters
 ======================================================
 
-Add internet explorer filters to emulate some css properties no supported (for example, some 2d transform functions, opacity or linear gradients)
+Add Internet Explorer filters to emulate some css properties no supported by IE (for example, some 2d transform functions, opacity or linear gradients)
 
 origin:
 ---------------
@@ -242,7 +243,7 @@ div.foo {
 }
 ---------------
 
-transformed:
+result:
 ---------------
 div.foo {
 	background: linear-gradient(#666, #999);
@@ -285,7 +286,7 @@ aside {
 }
 ---------------
 
-transformed:
+result:
 ---------------
 div.menu {
 	width: 310px;

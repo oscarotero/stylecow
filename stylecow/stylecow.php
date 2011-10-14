@@ -64,7 +64,7 @@ class Stylecow {
 		foreach ($array_code as $k_code => $code) {
 			foreach ($code['properties'] as $k_property => $property) {
 				foreach ($property['value'] as $k_value => $value) {
-					if (strpos($value, 'url') !== FALSE) {
+					if (strpos($value, 'url') !== FALSE && !strpos($value, '://')) {
 						$value = preg_replace('#url\(["\']?([^\)\'"]*)["\']?\)#', 'url(\''.$this->settings['www_path'].'\1\')', $value);
 						$value = preg_replace('#/\w+/\.\./#', '/', $value);
 

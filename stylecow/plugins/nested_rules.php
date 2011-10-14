@@ -49,8 +49,10 @@ class Nested_rules implements iPlugins {
 				$code['selector'] = array();
 
 				foreach ($selectors as $selector) {
+					$selector = ($selector[0] == '&') ? substr($selector, 1) : ' '.$selector;
+
 					foreach ($parent_selectors as $parent_selector) {
-						$code['selector'][] = $parent_selector.' '.$selector;
+						$code['selector'][] = $parent_selector.$selector;
 					}
 				}
 			}
@@ -86,8 +88,10 @@ class Nested_rules implements iPlugins {
 	private function nested ($array_code, $parent_selectors) {
 		foreach ($array_code as $k_code => $code) {
 			foreach ($code['selector'] as $k_selector => $selector) {
+				$selector = ($selector[0] == '&') ? substr($selector, 1) : ' '.$selector;
+
 				foreach ($parent_selectors as $parent_selector) {
-					$array_code[$k_code]['selector'][$k_selector] = $parent_selector.' '.$selector;
+					$array_code[$k_code]['selector'][$k_selector] = $parent_selector.$selector;
 				}
 
 				if ($code['content']) {

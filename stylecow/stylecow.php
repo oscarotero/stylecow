@@ -56,6 +56,33 @@ class Stylecow {
 
 
 	/**
+	 * private function relativeUrls (array $array_code)
+	 *
+	 * return none
+	 */
+	private function relativeUrls ($array_code) {
+		foreach ($array_code as $k_code => $code) {
+			foreach ($code['properties'] as $k_property => $property) {
+				foreach ($property['value'] as $k_value => $value) {
+					if (strpos($value, 'url') !== FALSE) {
+						$value = preg_replace('#url\(["\']?([^\)\'"]*)["\']?\)#', 'url(\''.$this->settings['www_path'].'\1\')', $value);
+						$value = preg_replace('#/\w+/\.\./#', '/', $value);
+
+						$array_code[$k_code]['properties'][$k_property]['value'][$k_value] = $value;
+					}
+				}
+			}
+
+			if ($code['content']) {
+				$array_code[$k_code]['content'] = $this->relativeUrls($code['content']);
+			}
+		}
+
+		return $array_code;
+	}
+
+
+	/**
 	 * public function transform (array/string $plugins)
 	 *
 	 * Process the css file
@@ -227,7 +254,7 @@ class Stylecow {
 						$code = array(
 							'selector' => $selector,
 							'type' => $type,
-							'is_css' => false,
+							'is_css' => true,
 							'properties' => array(),
 							'content' => array()
 						);
@@ -259,14 +286,11 @@ class Stylecow {
 								);
 							}
 
-							switch ($code['type']) {
-								case '':
-								case '@media':
-								case '@font-face':
-									$code['is_css'] = true;
+							if ($code['type'][0] == '$') {
+								$code['is_css'] = false;
 							}
 						}
-						
+
 						if ($content_string) {
 							$code['content'] = $this->parse($content_string);
 						}

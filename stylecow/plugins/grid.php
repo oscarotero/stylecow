@@ -53,7 +53,7 @@ class Grid implements iPlugins {
 				if (!$this->grids[$code['type']]) {
 					$this->grids[$code['type']] = $grid;
 				} else {
-					$this->grids[$code['type']] = array_merge($this->grid[$code['type']], $grid);
+					$this->grids[$code['type']] = array_merge($this->grids[$code['type']], $grid);
 				}
 
 				unset($array_code[$k_code]);

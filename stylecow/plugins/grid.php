@@ -123,23 +123,23 @@ class Grid implements iPlugins {
 		}
 
 		if ($options['right']) {
-			$right = ((($width + $grid['gutter']) * floatval($options['right'][0])) + intval($options['right'][1]) + $grid['gutter']).'px';
+			$right = (($width + $grid['gutter']) * floatval($options['right'][0])) + intval($options['right'][1]) + $grid['gutter'];
 		} else {
-			$right = $grid['gutter'].'px';
+			$right = $grid['gutter'];
 		}
 
 		if ($options['left']) {
-			$left = ((($width + $grid['gutter']) * floatval($options['left'][0])) + intval($options['left'][1])).'px';
+			$left = (($width + $grid['gutter']) * floatval($options['left'][0])) + intval($options['left'][1]);
 		} else {
-			$left = '0px';
+			$left = '0';
 		}
 
 		return array(
 			'width' => floor(($width * $options['cols'][0]) + ($grid['gutter'] * ($options['cols'][0] - 1)) + $options['cols'][1]).'px',
 			'float' => 'left',
 			'display' => 'inline',
-			'margin-right' => $right,
-			'margin-left' => $left
+			'margin-right' => floor($right).'px',
+			'margin-left' => floor($left).'px'
 		);
 	}
 }

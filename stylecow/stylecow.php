@@ -280,9 +280,12 @@ class Stylecow {
 							foreach (explodeTrim(';', $properties_string) as $property) {
 								list($n, $v) = explodeTrim(':', $property, 2);
 
+								$this->explodeSettings($v, $settings);
+
 								$code['properties'][] = array(
 									'name' => $n,
 									'value' => $v === '' ? array() : array($v),
+									'settings' => $settings
 								);
 							}
 
@@ -362,6 +365,23 @@ class Stylecow {
 		}
 
 		return false;
+	}
+
+
+	/**
+	 * public function explodeSettings (string $string, array &$settings)
+	 *
+	 * return array
+	 */
+	public function explodeSettings (&$string, &$settings) {
+		$settings = array();
+
+		if (strpos($string, '|$')) {
+			if (preg_match('/\|\$stylecow (.*)\$\|/i', $string, $matches)) {
+				$string = str_replace($matches[0], '', $string);
+				$settings = explodeTrim(',', strtolower($matches[1]));
+			}
+		}
 	}
 
 

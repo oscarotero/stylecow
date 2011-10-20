@@ -43,6 +43,10 @@ class Ie_filters implements iPlugins {
 	private function _transform ($array_code) {
 		foreach ($array_code as $k_code => $code) {
 			foreach ($code['properties'] as $property) {
+				if ($property['settings'] && in_array('ignore ie_filters', $property['settings'])) {
+					continue;
+				}
+
 				switch ($property['name']) {
 					case 'opacity':
 						$this->addFilter($array_code[$k_code], 'alpha(opacity='.($property['value'][0] * 100).')');

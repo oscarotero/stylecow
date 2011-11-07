@@ -100,6 +100,10 @@ class Ie_filters implements iPlugins {
 								case 'linear-gradient':
 									$this->linearGradient($array_code[$k_code], $params);
 									break;
+								
+								case 'rgba':
+									$this->rgba($array_code[$k_code], $params);
+									break;
 							}
 						}
 
@@ -212,6 +216,34 @@ class Ie_filters implements iPlugins {
 				$this->addFilter($code, 'progid:DXImageTransform.Microsoft.gradient(startColorStr=\''.$colors[0].'\', endColorStr=\''.$colors[1].'\')');
 			}
 		}
+	}
+
+
+	/**
+	 * private function rgba (&array $code, array $params)
+	 *
+	 * Return array
+	 */
+	private function rgba (&$code, $params) {
+		$r = dechex($params[0]);
+		$g = dechex($params[1]);
+		$b = dechex($params[2]);
+
+		if (strlen($r) == 1) {
+			$r = str_repeat($r, 2);
+		}
+		if (strlen($g) == 1) {
+			$g = str_repeat($g, 2);
+		}
+		if (strlen($b) == 1) {
+			$b = str_repeat($b, 2);
+		}
+
+		$a = dechex(round(255*floatval($params[3])));
+
+		$color = '#'.$a.$r.$g.$b;
+
+		$this->addFilter($code, 'progid:DXImageTransform.Microsoft.gradient(startColorStr=\''.$color.'\', endColorStr=\''.$color.'\')');
 	}
 
 

@@ -4,13 +4,11 @@
 	margin: 0 auto;
 	overflow: auto;
 }
-
 $grid {
 	width: 960px;
 	columns: 12;
 	gutter: 30px;
 }
-
 .wrapper > div {
 	box-sizing: border-box;
 	border: solid 1px #333;

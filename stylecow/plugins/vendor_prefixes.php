@@ -20,7 +20,7 @@ class Vendor_prefixes implements iPlugins {
 		'animation-duration' => array('moz', 'webkit'),
 		'animation-fill-mode' => array('moz', 'webkit'),
 		'animation-iteration-count' => array('moz', 'webkit'),
-		'animation-name' => array('moz', 'webkit'),
+		'animation-name' => array('moz', 'webkit', 'o', 'ms'),
 		'animation-play-state' => array('moz', 'webkit'),
 		'animation-timing-function' => array('moz', 'webkit'),
 		'appearance' => array('moz', 'webkit'),
@@ -123,7 +123,16 @@ class Vendor_prefixes implements iPlugins {
 	);
 
 	private $selector_prefixes = array(
-		'::selection' => array('::-moz-selection')
+		'::selection' => array('moz' => '::-moz-selection')
+	);
+
+	private $type_prefixes = array(
+		'@keyframes' => array(
+			'moz' => '@-moz-keyframes',
+			'webkit' => '@-webkit-keyframes',
+			'ms' => '@-ms-keyframes',
+			'o' => '@-o-keyframes'
+		)
 	);
 
 	private $Css;
@@ -144,22 +153,107 @@ class Vendor_prefixes implements iPlugins {
 	 * return none
 	 */
 	public function transform () {
-		$this->Css->code = $this->_transform($this->Css->code);
+		$code = $this->_transformType($this->Css->code);
+		$code = $this->_transformSelector($code);
+		$code = $this->_transformProperties($code);
+		$code = $this->_transformValues($code);
+		$this->Css->code = $code;
+	}
+
+
+
+	/**
+	 * private function _transformType (array $array_code, [string $prefix_scope])
+	 *
+	 * return none
+	 */
+	private function _transformType ($array_code, $prefix_scope = '') {
+		$new_array_code = array();
+
+		foreach ($array_code as $code) {
+			if ($code['type'] && $this->type_prefixes[$code['type']]) {
+				foreach ($this->type_prefixes[$code['type']] as $prefix => $new_type_prefix) {
+					if (($code['prefix'] && $code['prefix'] !== $prefix) || ($prefix_scope && $prefix !== $prefix_scope)) {
+						continue;
+					}
+
+					$new_code = $code;
+					$new_code['type'] = $new_type_prefix;
+					$new_code['prefix'] = $prefix;
+
+					if ($new_code['content']) {
+						$new_code['content'] = $this->_transformType($new_code['content'], $prefix);
+					}
+
+					$new_array_code[] = $new_code;
+				}
+			} else if ($code['content']) {
+				$code['content'] = $this->_transformType($code['content'], $code['prefix']);
+			}
+
+			$new_array_code[] = $code;
+		}
+
+		return $new_array_code;
 	}
 
 
 	/**
-	 * private function _transform (array $array_code)
+	 * private function _transformSelector (array $array_code, [string $prefix_scope])
 	 *
 	 * return none
 	 */
-	private function _transform ($array_code) {
+	private function _transformSelector ($array_code, $prefix_scope = '') {
 		$new_array_code = array();
 
 		foreach ($array_code as $code) {
-			if (!$code['is_css']) {
-				$new_array_code[] = $code;
-				continue;
+			if ($code['content']) {
+				$code['content'] = $this->_transformSelector($code['content'], $code['prefix']);
+			}
+
+			$new_array_code[] = $code;
+
+			if ($code['is_css']) {
+				foreach ($code['selector'] as $selector) {
+					foreach ($this->selector_prefixes as $selector_prefix => $prefixes) {
+						if (strpos($selector, $selector_prefix) !== false) {
+							foreach ($prefixes as $prefix => $new_selector_prefix) {
+								if (($code['prefix'] && $code['prefix'] !== $prefix) || ($prefix_scope && $prefix !== $prefix_scope)) {
+									continue;
+								}
+
+								$new_code = $code;
+								$new_code['selector'] = array(str_replace($selector_prefix, $new_selector_prefix, $selector));
+								$new_code['prefix'] = $prefix;
+
+								if ($new_code['content']) {
+									$new_code['content'] = $this->_transformSelector($new_code['content'], $prefix);
+								}
+
+								$new_array_code[] = $new_code;
+							}
+						}
+					}
+				}
+			}
+		}
+
+		return $new_array_code;
+	}
+
+
+
+	/**
+	 * private function _transformProperties (array $array_code, [string $prefix_scope])
+	 *
+	 * return none
+	 */
+	private function _transformProperties ($array_code, $prefix_scope = '') {
+		$new_array_code = array();
+
+		foreach ($array_code as $code) {
+			if ($code['content']) {
+				$code['content'] = $this->_transformProperties($code['content'], $code['prefix']);
 			}
 
 			$new_code = $code;
@@ -169,21 +263,54 @@ class Vendor_prefixes implements iPlugins {
 			foreach ($code['properties'] as $property) {
 				$new_code['properties'][] = $property;
 
-				//Properties
 				if ($fn = $this->property_fn_prefixes[$property['name']]) {
 					$this->$fn($new_code, $property['name'], $property['value']);
 				}
 
 				if ($this->property_prefixes[$property['name']]) {
 					foreach ($this->property_prefixes[$property['name']] as $prefix) {
+						if (($code['prefix'] && $code['prefix'] !== $prefix) || ($prefix_scope && $prefix !== $prefix_scope)) {
+							continue;
+						}
+
 						$new_code['properties'][] = array(
 							'name' => '-'.$prefix.'-'.$property['name'],
-							'value' => $property['value']
+							'value' => $property['value'],
+							'prefix' => $prefix
 						);
 					}
 				}
+			}
 
-				//Values
+			$new_array_code[] = $new_code;
+		}
+
+		return $new_array_code;
+	}
+
+
+
+
+	/**
+	 * private function _transformValues (array $array_code, [string $prefix_scope])
+	 *
+	 * return none
+	 */
+	private function _transformValues ($array_code, $prefix_scope = '') {
+		$new_array_code = array();
+
+		foreach ($array_code as $code) {
+			if ($code['content']) {
+				$code['content'] = $this->_transformValues($code['content'], $code['prefix']);
+			}
+
+			$new_code = $code;
+
+			$new_code['properties'] = array();
+
+			foreach ($code['properties'] as $property) {
+				$new_code['properties'][] = $property;
+
 				if ($fn = $this->value_fn_prefixes[$property['name']]) {
 					foreach ($this->value_fn_prefixes[$property['name']] as $property_value => $fn) {
 						if (preg_match('/(^|[^-])'.preg_quote($property_value, '/').'([^\w]|$)?/', implode($property['value']))) {
@@ -196,6 +323,10 @@ class Vendor_prefixes implements iPlugins {
 					foreach ($this->value_prefixes[$property['name']] as $property_value => $prefixes) {
 						if (preg_match('/(^|[^-])'.preg_quote($property_value, '/').'([^\w]|$)?/', implode($property['value']))) {
 							foreach ($prefixes as $prefix) {
+								if (($code['prefix'] && $code['prefix'] !== $prefix) || ($prefix_scope && $prefix !== $prefix_scope)) {
+									continue;
+								}
+
 								$new_values = array();
 
 								foreach ($property['value'] as $v) {
@@ -212,36 +343,12 @@ class Vendor_prefixes implements iPlugins {
 				}
 			}
 
-			//Content
-			if ($code['content']) {
-				$new_code['content'] = $this->_transform($code['content']);
-			}
-
 			$new_array_code[] = $new_code;
-
-			//Selectors
-			if (!$code['type']) {
-				foreach ($code['selector'] as $selector) {
-					foreach ($this->selector_prefixes as $selector_prefix => $prefixes) {
-						if (strpos($selector, $selector_prefix) !== false) {
-							foreach ($prefixes as $prefix) {
-								
-								$new_array_code[] = array(
-									'selector' => array(str_replace($selector_prefix, $prefix, $selector)),
-									'type' => $code['type'],
-									'properties' => $code['properties'],
-									'is_css' => $code['is_css'],
-									'content' => $code['content']
-								);
-							}
-						}
-					}
-				}
-			}
 		}
 
 		return $new_array_code;
 	}
+
 
 
 	/**
@@ -254,28 +361,32 @@ class Vendor_prefixes implements iPlugins {
 			case 'border-top-right-radius':
 				$code['properties'][] = array(
 					'name' => '-moz-border-radius-topright',
-					'value' => $values
+					'value' => $values,
+					'prefix' => 'moz'
 				);
 				return;
 
 			case 'border-top-left-radius':
 				$code['properties'][] = array(
 					'name' => '-moz-border-radius-topleft',
-					'value' => $values
+					'value' => $values,
+					'prefix' => 'moz'
 				);
 				return;
 
 			case 'border-bottom-right-radius':
 				$code['properties'][] = array(
 					'name' => '-moz-border-radius-bottomright',
-					'value' => $values
+					'value' => $values,
+					'prefix' => 'moz'
 				);
 				return;
 
 			case 'border-bottom-left-radius':
 				$code['properties'][] = array(
 					'name' => '-moz-border-radius-bottomleft',
-					'value' => $values
+					'value' => $values,
+					'prefix' => 'moz'
 				);
 				return;
 		}
@@ -340,7 +451,8 @@ class Vendor_prefixes implements iPlugins {
 
 		$code['properties'][] = array(
 			'name' => $name,
-			'value' => $values
+			'value' => $values,
+			'prefix' => 'webkit'
 		);
 	}
 }

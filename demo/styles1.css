@@ -9,9 +9,18 @@ $grid {
 	columns: 12;
 	gutter: 30px;
 }
+
+$variables {
+	color: blue;
+	menu: .content {
+		text-align: left;
+	}
+}
+
 .wrapper > div {
 	box-sizing: border-box;
 	border: solid 1px #333;
+	background: $color;
 }
 .menu {
 	$grid: cols(2) left(1);
@@ -40,4 +49,8 @@ $grid {
 }
 .footer p:last-child {
 	margin-right: 0;
+}
+.bounce {
+	animation: 1s ease;
+	animation-name: bounce;
 }

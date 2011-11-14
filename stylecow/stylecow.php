@@ -27,8 +27,7 @@ class Stylecow {
 		$this->code = array();
 
 		if (!is_file($file)) {
-			echo "'%s' does not exists";
-			die();
+			die("'".$file."' does not exists");
 		}
 
 		$this->file = $file;
@@ -128,12 +127,30 @@ class Stylecow {
 	 */
 	public function getPropertyKey ($properties, $name) {
 		foreach ($properties as $k => $property) {
-			if ($property['name'] == $name) {
+			if ($property['name'] === $name) {
 				return $k;
 			}
 		}
 
 		return false;
+	}
+
+
+	/**
+	 * public function getProperty (array $properties, string $name, [int $key])
+	 *
+	 * Return the property values
+	 *
+	 * return int/boolean
+	 */
+	public function getProperty ($properties, $name, $key = false) {
+		$k = $this->getPropertyKey($properties, $name);
+
+		if ($k === false) {
+			return false;
+		}
+
+		return ($key === false) ? $properties[$k] : $properties[$k][$key];
 	}
 
 
@@ -208,13 +225,13 @@ class Stylecow {
 
 
 	/**
-	 * private function parse (string $string_code)
+	 * public function parse (string $string_code)
 	 *
 	 * Convert a css string to multidimensional array
 	 *
 	 * return array
 	 */
-	private function parse ($string_code) {
+	public function parse ($string_code) {
 		$array_code = array();
 
 		while ($string_code) {
@@ -240,69 +257,73 @@ class Stylecow {
 			for ($n = 0; $n <= $length; $n++) {
 				$letter = $string_code[$n];
 
-				if ($letter == '{') {
+				if ($letter === '{') {
 					$in++;
 					continue;
 				}
 
-				if ($letter == '}') {
-					$in--;
+				if ($letter !== '}') {
+					continue;
+				}
 
-					if (!$in) {
-						$string_piece = trim(substr($string_code, 0, $n-1));
-						$string_code = trim(substr($string_code, $n+1));
-						$code = array(
-							'selector' => $selector,
-							'type' => $type,
-							'is_css' => true,
-							'properties' => array(),
-							'content' => array()
-						);
+				$in--;
 
-						$pos = strpos($string_piece, '{');
+				if ($in) {
+					continue;
+				}
 
-						if ($pos === false) {
-							$properties_string = $string_piece;
-							$content_string = '';
-						} else {
-							$pos = strrpos(substr($string_piece, 0, $pos), ';');
+				$string_piece = trim(substr($string_code, 0, $n-1));
+				$string_code = trim(substr($string_code, $n+1));
+				$code = array(
+					'selector' => $selector,
+					'type' => $type,
+					'is_css' => true,
+					'properties' => array(),
+					'content' => array()
+				);
 
-							if ($pos !== false) {
-								$properties_string = trim(substr($string_piece, 0, $pos + 1));
-								$content_string = trim(substr($string_piece, $pos + 1));
-							} else {
-								$properties_string = '';
-								$content_string = $string_piece;
-							}
-						}
+				$pos = strpos($string_piece, '{');
 
-						if ($properties_string) {
-							foreach (explodeTrim(';', $properties_string) as $property) {
-								list($n, $v) = explodeTrim(':', $property, 2);
+				if ($pos === false) {
+					$properties_string = $string_piece;
+					$content_string = '';
+				} else {
+					$pos = strrpos(substr($string_piece, 0, $pos), ';');
 
-								$this->explodeSettings($v, $settings);
-
-								$code['properties'][] = array(
-									'name' => $n,
-									'value' => $v === '' ? array() : array($v),
-									'settings' => $settings
-								);
-							}
-
-							if ($code['type'][0] == '$') {
-								$code['is_css'] = false;
-							}
-						}
-
-						if ($content_string) {
-							$code['content'] = $this->parse($content_string);
-						}
-
-						$array_code[] = $code;
-
-						break;
+					if ($pos !== false) {
+						$properties_string = trim(substr($string_piece, 0, $pos + 1));
+						$content_string = trim(substr($string_piece, $pos + 1));
+					} else {
+						$properties_string = '';
+						$content_string = $string_piece;
 					}
 				}
+
+				if ($properties_string) {
+					foreach (explodeTrim(';', $properties_string) as $property) {
+						list($n, $v) = explodeTrim(':', $property, 2);
+
+						$this->explodeSettings($v, $settings);
+
+						$code['properties'][] = array(
+							'name' => $n,
+							'value' => $v === '' ? array() : array($v),
+							'settings' => $settings
+						);
+					}
+
+					if ($code['type'][0] === '$') {
+						$code['is_css'] = false;
+					}
+				}
+
+				if ($content_string) {
+					$code['content'] = $this->parse($content_string);
+				}
+
+				$array_code[] = $code;
+
+				break;
 			}
 		}
 
@@ -354,17 +375,17 @@ class Stylecow {
 	 * return false/array
 	 */
 	public function explodeFunctions ($string) {
-		if (preg_match_all('/([\w-]+)\(([^\)]+)\)/', $string, $matches, PREG_SET_ORDER)) {
-			$return = array();
-
-			foreach ($matches as $match) {
-				$return[] = array(trim($match[1]), explodeTrim(',', $match[2]), $match[3]);
-			}
-
-			return $return;
+		if (!preg_match_all('/([\w-]+)\(([^\)]+)\)/', $string, $matches, PREG_SET_ORDER)) {
+			return false;
 		}
 
-		return false;
+		$return = array();
+
+		foreach ($matches as $match) {
+			$return[] = array(trim($match[1]), explodeTrim(',', $match[2]), $match[3]);
+		}
+
+		return $return;
 	}
 
 
@@ -376,11 +397,9 @@ class Stylecow {
 	public function explodeSettings (&$string, &$settings) {
 		$settings = array();
 
-		if (strpos($string, '|$')) {
-			if (preg_match('/\|\$stylecow (.*)\$\|/i', $string, $matches)) {
-				$string = str_replace($matches[0], '', $string);
-				$settings = explodeTrim(',', strtolower($matches[1]));
-			}
+		if (strpos($string, '|$') && preg_match('/\|\$stylecow (.*)\$\|/i', $string, $matches)) {
+			$string = str_replace($matches[0], '', $string);
+			$settings = explodeTrim(',', strtolower($matches[1]));
 		}
 	}
 

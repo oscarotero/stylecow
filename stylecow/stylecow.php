@@ -106,10 +106,10 @@ class Stylecow {
 	 * Returns this
 	 */
 	public function transform ($plugins) {
-		$plugins_dir = __DIR__.'/plugins/';
+		$plugins_dir = __DIR__.'/Plugins/';
 		$array_plugins = array();
 
-		include($plugins_dir.'Plugins_interface.php');
+		include_once($plugins_dir.'Plugins_interface.php');
 
 		foreach ((array)$plugins as $plugin) {
 			$plugin_file = $plugins_dir.$plugin.'.php';
@@ -119,8 +119,9 @@ class Stylecow {
 				die();
 			}
 
-			include($plugin_file);
-			$plugin = '\\stylecow\\'.$plugin;
+			include_once($plugin_file);
+
+			$plugin = '\\Stylecow\\'.$plugin;
 			$plugin = new $plugin($this);
 
 			array_splice($array_plugins, $plugin->position, 0, array($plugin));
@@ -284,7 +285,7 @@ class Stylecow {
 					continue;
 				}
 
-				$string_piece = trim(substr($string_code, 0, $n-1));
+				$string_piece = $n ? trim(substr($string_code, 0, $n-1)) : '';
 				$string_code = trim(substr($string_code, $n+1));
 				$code = array(
 					'selector' => $selector,

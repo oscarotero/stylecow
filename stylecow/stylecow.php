@@ -8,7 +8,7 @@
 * More information at http://www.gnu.org/licenses/agpl-3.0.html
 */
 
-namespace stylecow;
+namespace Stylecow;
 
 class Stylecow {
 	public $file;
@@ -18,9 +18,8 @@ class Stylecow {
 	/**
 	 * public function load (string $file)
 	 *
-	 * Load a css file and parse it
-	 *
-	 * return boolean
+	 * Loads a css file and parse it
+	 * Returns boolean
 	 */
 	public function load ($file) {
 		$this->file = '';
@@ -54,17 +53,36 @@ class Stylecow {
 	}
 
 
+
 	/**
-	 * private function relativeUrls (array $array_code)
+	 * public function changeBaseUrls (string $base_url)
 	 *
-	 * return none
+	 * Changed the base url of the external links.
+	 * For example: background-image: url(my-image.jpg) becomes to background-image: url(base_url/my-image.jpg)
+	 * Returns this
 	 */
-	private function relativeUrls ($array_code) {
+	 public function changeBaseUrls ($base_url) {
+	 	if ($base_url) {
+	 		$this->code = $this->relativeUrls($this->code, $base_url);
+	 	}
+
+	 	return $this;
+	 }
+
+
+
+
+	/**
+	 * private function relativeUrls (array $array_code, string $base_url)
+	 *
+	 * Returns array
+	 */
+	private function relativeUrls ($array_code, $base_url) {
 		foreach ($array_code as $k_code => $code) {
 			foreach ($code['properties'] as $k_property => $property) {
 				foreach ($property['value'] as $k_value => $value) {
 					if (strpos($value, 'url') !== FALSE && !strpos($value, '://')) {
-						$value = preg_replace('#url\(["\']?([^\)\'"]*)["\']?\)#', 'url(\''.$this->settings['www_path'].'\1\')', $value);
+						$value = preg_replace('#url\(["\']?([^\)\'"]*)["\']?\)#', 'url(\''.$base_url.'\1\')', $value);
 						$value = preg_replace('#/\w+/\.\./#', '/', $value);
 
 						$array_code[$k_code]['properties'][$k_property]['value'][$k_value] = $value;
@@ -73,7 +91,7 @@ class Stylecow {
 			}
 
 			if ($code['content']) {
-				$array_code[$k_code]['content'] = $this->relativeUrls($code['content']);
+				$array_code[$k_code]['content'] = $this->relativeUrls($code['content'], $base_url);
 			}
 		}
 
@@ -85,14 +103,13 @@ class Stylecow {
 	 * public function transform (array/string $plugins)
 	 *
 	 * Process the css file
-	 *
-	 * return boolean
+	 * Returns this
 	 */
 	public function transform ($plugins) {
 		$plugins_dir = __DIR__.'/plugins/';
 		$array_plugins = array();
 
-		include($plugins_dir.'interface.php');
+		include($plugins_dir.'Plugins_interface.php');
 
 		foreach ((array)$plugins as $plugin) {
 			$plugin_file = $plugins_dir.$plugin.'.php';
@@ -121,9 +138,8 @@ class Stylecow {
 	/**
 	 * public function getPropertyKey (array $properties, string $name)
 	 *
-	 * Return the property values
-	 *
-	 * return int/boolean
+	 * Returns a property numeric key
+	 * Returns int/false
 	 */
 	public function getPropertyKey ($properties, $name) {
 		foreach ($properties as $k => $property) {
@@ -139,9 +155,8 @@ class Stylecow {
 	/**
 	 * public function getProperty (array $properties, string $name, [int $key])
 	 *
-	 * Return the property values
-	 *
-	 * return int/boolean
+	 * Returns a property values
+	 * Returns array/false
 	 */
 	public function getProperty ($properties, $name, $key = false) {
 		$k = $this->getPropertyKey($properties, $name);
@@ -157,9 +172,8 @@ class Stylecow {
 	/**
 	 * public function addProperty (&array $properties, string $name, string $value, int $replace_mode)
 	 *
-	 * Add a css property
-	 *
-	 * return int/boolean
+	 * Adds a css property
+	 * Returns boolean
 	 */
 	public function addProperty (&$properties, $name, $value, $replace_mode = 0) {
 		switch ($replace_mode) {
@@ -170,7 +184,7 @@ class Stylecow {
 					'name' => $name,
 					'value' => array($value)
 				);
-				return;
+				return true;
 			
 			//Replace if exists
 			case 1:
@@ -187,7 +201,7 @@ class Stylecow {
 						'value' => array($value)
 					);
 				}
-				return;
+				return true;
 			
 			//Add only if doesn't exit
 			case 2:
@@ -199,7 +213,7 @@ class Stylecow {
 						'value' => array($value)
 					);
 				}
-				return;
+				return true;
 		}
 
 		return false;
@@ -209,9 +223,8 @@ class Stylecow {
 	/**
 	 * private function import (string $values)
 	 *
-	 * Load imported code
-	 *
-	 * return boolean
+	 * Loads imported code
+	 * Returns boolean
 	 */
 	private function import ($values) {
 		$file = trim(str_replace(array('\'', '"', 'url(', ')'), '', $values[1]));
@@ -227,9 +240,8 @@ class Stylecow {
 	/**
 	 * public function parse (string $string_code)
 	 *
-	 * Convert a css string to multidimensional array
-	 *
-	 * return array
+	 * Converts a css string to multidimensional array
+	 * Returns array
 	 */
 	public function parse ($string_code) {
 		$array_code = array();
@@ -245,7 +257,7 @@ class Stylecow {
 			$type = '';
 
 			if ($selector[0] == '@' || $selector[0] == '$') {
-				list($type, $selector) = explodeTrim(' ', $selector, 2);
+				list($type, $selector) = $this->explodeTrim(' ', $selector, 2);
 			}
 
 			$selector = $this->explode($selector);
@@ -300,8 +312,8 @@ class Stylecow {
 				}
 
 				if ($properties_string) {
-					foreach (explodeTrim(';', $properties_string) as $property) {
-						list($n, $v) = explodeTrim(':', $property, 2);
+					foreach ($this->explodeTrim(';', $properties_string) as $property) {
+						list($n, $v) = $this->explodeTrim(':', $property, 2);
 
 						$this->explodeSettings($v, $settings);
 
@@ -334,9 +346,8 @@ class Stylecow {
 	/**
 	 * public function explode (string $string, [string $delimiter], [string $str_in], [string $str_out])
 	 *
-	 * Convert strings in arrays
-	 *
-	 * return array
+	 * Converts strings in arrays
+	 * Returns array
 	 */
 	public function explode ($string, $delimiter = ',', $str_in = '(', $str_out = ')') {
 		$array = array();
@@ -372,7 +383,7 @@ class Stylecow {
 	/**
 	 * public function explodeFunctions (string $string)
 	 *
-	 * return false/array
+	 * Returns false/array
 	 */
 	public function explodeFunctions ($string) {
 		if (!preg_match_all('/([\w-]+)\(([^\)]+)\)/', $string, $matches, PREG_SET_ORDER)) {
@@ -382,7 +393,7 @@ class Stylecow {
 		$return = array();
 
 		foreach ($matches as $match) {
-			$return[] = array(trim($match[1]), explodeTrim(',', $match[2]), $match[3]);
+			$return[] = array(trim($match[1]), $this->explodeTrim(',', $match[2]), $match[3]);
 		}
 
 		return $return;
@@ -392,14 +403,14 @@ class Stylecow {
 	/**
 	 * public function explodeSettings (string $string, array &$settings)
 	 *
-	 * return array
+	 * Returns array
 	 */
 	public function explodeSettings (&$string, &$settings) {
 		$settings = array();
 
 		if (strpos($string, '|$') && preg_match('/\|\$stylecow (.*)\$\|/i', $string, $matches)) {
 			$string = str_replace($matches[0], '', $string);
-			$settings = explodeTrim(',', strtolower($matches[1]));
+			$settings = $this->explodeTrim(',', strtolower($matches[1]));
 		}
 	}
 
@@ -407,7 +418,7 @@ class Stylecow {
 	/**
 	 * public function show ([bool $header], [int $cache])
 	 *
-	 * Print the css file
+	 * Prints the css file
 	 */
 	public function show ($header = true, $cache = 0) {
 		if ($header) {
@@ -428,9 +439,8 @@ class Stylecow {
 	/**
 	 * public function toString ()
 	 *
-	 * Return transformed text
-	 *
-	 * return string
+	 * Returns transformed text
+	 * Returns string
 	 */
 	public function toString () {
 		return $this->_toString($this->code);
@@ -440,9 +450,8 @@ class Stylecow {
 	/**
 	 * private function _toString (array $array_code)
 	 *
-	 * Return transformed text
-	 *
-	 * return string
+	 * Returns transformed text
+	 * Returns string
 	 */
 	private function _toString ($array_code, $tabs = 0) {
 		$text = '';
@@ -476,27 +485,29 @@ class Stylecow {
 
 		return $text;
 	}
-}
 
 
-/**
- * function explodeTrim (string $delimiter, string $text, [int $limit])
- *
- * Return string
- */
-function explodeTrim ($delimiter, $text, $limit = null) {
-	$return = array();
 
-	$explode = is_null($limit) ? explode($delimiter, $text) : explode($delimiter, $text, $limit);
+	/**
+	 * public function explodeTrim (string $delimiter, string $text, [int $limit])
+	 *
+	 * Explodes a string and trim its values
+	 * Returns string
+	 */
+	public function explodeTrim ($delimiter, $text, $limit = null) {
+		$return = array();
 
-	foreach ($explode as $text_value) {
-		$text_value = trim($text_value);
+		$explode = is_null($limit) ? explode($delimiter, $text) : explode($delimiter, $text, $limit);
 
-		if ($text_value !== '') {
-			$return[] = $text_value;
+		foreach ($explode as $text_value) {
+			$text_value = trim($text_value);
+
+			if ($text_value !== '') {
+				$return[] = $text_value;
+			}
 		}
-	}
 
-	return $return;
+		return $return;
+	}
 }
 ?>

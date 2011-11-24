@@ -52,7 +52,7 @@ class Matches implements iPlugins {
 						if (preg_match('/:matches\(([^\)]*)\)/', $selector, $match)) {
 							unset($code['selector'][$k_selector]);
 
-							foreach (explodeTrim(',', $match[1]) as $sub_selector) {
+							foreach ($this->Css->explodeTrim(',', $match[1]) as $sub_selector) {
 								$code['selector'][] = str_replace($match[0], $sub_selector, $selector);
 							}
 						}

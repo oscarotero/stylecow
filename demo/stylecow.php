@@ -6,12 +6,12 @@ $styleCow = new stylecow\Stylecow;
 $styleCow->load($_GET['styles']);
 
 $styleCow->transform(array(
-	'vendor_prefixes',
-	'variables',
-	'ie_filters',
-	'grid',
-	'matches',
-	'nested_rules',
+	'Vendor_prefixes',
+	'Variables',
+	'Ie_filters',
+	'Grid',
+	'Matches',
+	'Nested_rules',
 	//'animate'
 ));
 

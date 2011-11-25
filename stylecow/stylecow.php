@@ -11,43 +11,29 @@
 namespace Stylecow;
 
 class Stylecow {
-	public $file;
 	public $code = array();
 
 
 	/**
-	 * public function load (string $file)
+	 * public function load (string $file_path, [string $file_url])
 	 *
 	 * Loads a css file and parse it
 	 * Returns boolean
 	 */
-	public function load ($file) {
-		$this->file = '';
+	public function load ($file_path, $file_url = null) {
+		if (is_null($file_url)) {
+			$file_url = $file_path;
+		}
+
 		$this->code = array();
 
-		if (!is_file($file)) {
-			die("'".$file."' does not exists");
+		if (!is_file($file_path)) {
+			die("'".$file_path."' does not exists");
 		}
 
-		$this->file = $file;
+		$code = file_get_contents($file_path);
 
-		$code = file_get_contents($this->file);
-
-		//Remove comments and spaces
-		$code = preg_replace('|/\*.*\*/|Us', '', $code);
-		$code = preg_replace('/(\s{2,}|\r|\n)/', ' ', $code);
-
-		//Resolve @import
-		while (strpos($code, '@import') !== false) {
-			$code = preg_replace_callback('/\@import([^;]*);/', array($this, 'import'), $code);
-		}
-
-		//Remove comments and spaces
-		$code = preg_replace('|/\*.*\*/|Us', '', $code);
-		$code = preg_replace('/(\s{2,}|\r|\n)/', ' ', $code);
-
-		//Parse the code
-		$this->code = $this->parse($code);
+		$this->code = $this->resolve($code, $file_path, $file_url);
 
 		return $this;
 	}
@@ -55,48 +41,88 @@ class Stylecow {
 
 
 	/**
-	 * public function changeBaseUrls (string $base_url)
+	 * public function resolve (string $code, string $base_path, string $base_url)
 	 *
-	 * Changed the base url of the external links.
-	 * For example: background-image: url(my-image.jpg) becomes to background-image: url(base_url/my-image.jpg)
-	 * Returns this
+	 * Resolves @import, fixes urls, remove comments, etc
+	 * Returns string
 	 */
-	 public function changeBaseUrls ($base_url) {
-	 	if ($base_url) {
-	 		$this->code = $this->relativeUrls($this->code, $base_url);
-	 	}
+	public function resolve ($code, $base_path, $base_url) {
+		$current_base_path = $this->current_base_path;
+		$current_base_url = $this->current_base_url;
 
-	 	return $this;
-	 }
+		$this->current_base_path = dirname($base_path);
+		$this->current_base_url = dirname($base_url);
 
+		//Remove comments
+		$code = preg_replace('|/\*.*\*/|Us', '', $code);
+
+		//Url
+		if (strpos($code, 'url(') !== false) {
+			$code = preg_replace_callback('#url\(["\']?([^\)\'"]*)["\']?\)#', array($this, 'urlCallback'), $code);
+		}
+
+		//Import
+		if (strpos($code, '@import') !== false) {
+			$code = preg_replace_callback('/\@import([^;]*);/', array($this, 'importCallback'), $code);
+		}
+
+		$this->current_base_path = $current_base_path;
+		$this->current_base_url = $current_base_url;
+
+		return $code;
+	}
 
 
 
 	/**
-	 * private function relativeUrls (array $array_code, string $base_url)
+	 * private function importCallback (string $matches)
 	 *
-	 * Returns array
+	 * Returns string
 	 */
-	private function relativeUrls ($array_code, $base_url) {
-		foreach ($array_code as $k_code => $code) {
-			foreach ($code['properties'] as $k_property => $property) {
-				foreach ($property['value'] as $k_value => $value) {
-					if (strpos($value, 'url') !== FALSE && !strpos($value, '://')) {
-						$value = preg_replace('#url\(["\']?([^\)\'"]*)["\']?\)#', 'url(\''.$base_url.'\1\')', $value);
-						$value = preg_replace('#/\w+/\.\./#', '/', $value);
+	private function importCallback ($matches) {
+		$file = trim(str_replace(array('\'', '"', 'url(', ')'), '', $matches[1]));
 
-						$array_code[$k_code]['properties'][$k_property]['value'][$k_value] = $value;
-					}
-				}
-			}
-
-			if ($code['content']) {
-				$array_code[$k_code]['content'] = $this->relativeUrls($code['content'], $base_url);
-			}
+		if (parse_url($file, PHP_URL_SCHEME)) {
+			return $matches[1];
+		}
+		
+		if ($file[0] === '/') {
+			$file_url = $file_path = $file;
+		} else {
+			$file_url = preg_replace('#/\w+/\.\./#', '/', $this->current_base_url.'/'.$file);
+			$file_path = preg_replace('#/\w+/\.\./#', '/', $this->current_base_path.'/'.$file);
 		}
 
-		return $array_code;
+		$code = file_get_contents($file_path);
+
+		$code = $this->resolve($code, $file_path, $file_url);
+
+		return $code;
 	}
+
+
+
+	/**
+	 * private function urlCallback (string $matches)
+	 *
+	 * Returns string
+	 */
+	private function urlCallback ($matches) {
+		$url = $matches[1];
+
+		if (parse_url($url, PHP_URL_SCHEME) || $url[0] === '/') {
+			return 'url(\''.$url.'\')';
+		}
+
+		$url = $this->current_base_url.'/'.$url;
+
+		while (preg_match('#/\w+/\.\./#', $url)) {
+			$url = preg_replace('#/\w+/\.\./#', '/', $url);
+		}
+
+		return 'url(\''.$url.'\')';
+	}
+
 
 
 	/**
@@ -106,12 +132,17 @@ class Stylecow {
 	 * Returns this
 	 */
 	public function transform ($plugins) {
+		if (is_string($this->code)) {
+			$this->code = $this->parse($this->code);
+		}
+
 		$plugins_dir = __DIR__.'/Plugins/';
 		$array_plugins = array();
 
 		include_once($plugins_dir.'Plugins_interface.php');
 
 		foreach ((array)$plugins as $plugin) {
+			$plugin = ucfirst($plugin);
 			$plugin_file = $plugins_dir.$plugin.'.php';
 
 			if (!is_file($plugin_file)) {
@@ -136,6 +167,7 @@ class Stylecow {
 	}
 
 
+
 	/**
 	 * public function getPropertyKey (array $properties, string $name)
 	 *
@@ -153,6 +185,7 @@ class Stylecow {
 	}
 
 
+
 	/**
 	 * public function getProperty (array $properties, string $name, [int $key])
 	 *
@@ -168,6 +201,7 @@ class Stylecow {
 
 		return ($key === false) ? $properties[$k] : $properties[$k][$key];
 	}
+
 
 
 	/**
@@ -220,22 +254,6 @@ class Stylecow {
 		return false;
 	}
 
-
-	/**
-	 * private function import (string $values)
-	 *
-	 * Loads imported code
-	 * Returns boolean
-	 */
-	private function import ($values) {
-		$file = trim(str_replace(array('\'', '"', 'url(', ')'), '', $values[1]));
-
-		if (!parse_url($file, PHP_URL_SCHEME) && $file[0] != '/') {
-			$file = pathinfo($this->file, PATHINFO_DIRNAME).'/'.$file;
-		}
-
-		return file_get_contents($file);
-	}
 
 
 	/**
@@ -344,6 +362,7 @@ class Stylecow {
 	}
 
 
+
 	/**
 	 * public function explode (string $string, [string $delimiter], [string $str_in], [string $str_out])
 	 *
@@ -381,6 +400,7 @@ class Stylecow {
 	}
 
 
+
 	/**
 	 * public function explodeFunctions (string $string)
 	 *
@@ -401,6 +421,7 @@ class Stylecow {
 	}
 
 
+
 	/**
 	 * public function explodeSettings (string $string, array &$settings)
 	 *
@@ -414,6 +435,31 @@ class Stylecow {
 			$settings = $this->explodeTrim(',', strtolower($matches[1]));
 		}
 	}
+
+
+
+	/**
+	 * public function explodeTrim (string $delimiter, string $text, [int $limit])
+	 *
+	 * Explodes a string and trim its values
+	 * Returns string
+	 */
+	public function explodeTrim ($delimiter, $text, $limit = null) {
+		$return = array();
+
+		$explode = is_null($limit) ? explode($delimiter, $text) : explode($delimiter, $text, $limit);
+
+		foreach ($explode as $text_value) {
+			$text_value = trim($text_value);
+
+			if ($text_value !== '') {
+				$return[] = $text_value;
+			}
+		}
+
+		return $return;
+	}
+
 
 
 	/**
@@ -437,6 +483,7 @@ class Stylecow {
 	}
 
 
+
 	/**
 	 * public function toString ()
 	 *
@@ -444,8 +491,13 @@ class Stylecow {
 	 * Returns string
 	 */
 	public function toString () {
+		if (is_string($this->code)) {
+			return $this->code;
+		}
+
 		return $this->_toString($this->code);
 	}
+
 
 
 	/**
@@ -485,30 +537,6 @@ class Stylecow {
 		}
 
 		return $text;
-	}
-
-
-
-	/**
-	 * public function explodeTrim (string $delimiter, string $text, [int $limit])
-	 *
-	 * Explodes a string and trim its values
-	 * Returns string
-	 */
-	public function explodeTrim ($delimiter, $text, $limit = null) {
-		$return = array();
-
-		$explode = is_null($limit) ? explode($delimiter, $text) : explode($delimiter, $text, $limit);
-
-		foreach ($explode as $text_value) {
-			$text_value = trim($text_value);
-
-			if ($text_value !== '') {
-				$return[] = $text_value;
-			}
-		}
-
-		return $return;
 	}
 }
 ?>

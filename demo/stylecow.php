@@ -1,7 +1,7 @@
 <?php
-include('../stylecow/stylecow.php');
+include('../Stylecow/Stylecow.php');
 
-$styleCow = new stylecow\Stylecow;
+$styleCow = new Stylecow\Stylecow;
 
 $styleCow->load($_GET['styles']);
 

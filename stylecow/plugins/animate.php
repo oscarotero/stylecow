@@ -1,13 +1,11 @@
 <?php
 /**
-* styleCow php library (version 0.1)
+* Animate plugin (version 0.1)
+* for styleCow PHP library
 *
 * 2011. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
 *
-* styleCow is released under the GNU Affero GPL version 3.
-* More information at http://www.gnu.org/licenses/agpl-3.0.html
-*
-* The animate plugins is based in the work of Dan Eden in http://daneden.me/animate
+* The Animate plugin is based in the work of Dan Eden in http://daneden.me/animate
 *
 * LICENSED UNDER THE  MIT LICENSE (MIT)
 * Copyright (c) 2011 Dan Eden
@@ -16,9 +14,9 @@
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-namespace stylecow;
+namespace Stylecow;
 
-class Animate implements iPlugins {
+class Animate implements Plugins_interface {
 	public $position = 1;
 
 	private $animations = array();

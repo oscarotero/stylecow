@@ -1,16 +1,14 @@
 <?php
 /**
-* styleCow php library (version 0.1)
+* Nested_rules plugin (version 0.1)
+* for styleCow PHP library
 *
 * 2011. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
-*
-* styleCow is released under the GNU Affero GPL version 3.
-* More information at http://www.gnu.org/licenses/agpl-3.0.html
 */
 
-namespace stylecow;
+namespace Stylecow;
 
-class Nested_rules implements iPlugins {
+class Nested_rules implements Plugins_interface {
 	public $position = 2;
 
 	private $Css;

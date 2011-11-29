@@ -1,6 +1,6 @@
 <?php
 /**
-* styleCow php library (version 0.1)
+* styleCow PHP library (version 0.1)
 *
 * 2011. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
 *

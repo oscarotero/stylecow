@@ -24,10 +24,10 @@ Features:
 HOW TO USE
 ======================================================
 
-include('stylecow/stylecow.php');
+include('Stylecow/Stylecow.php');
 
 //Fist we instance the class (note that we are using namespaces)
-$styleCow = new stylecow\Stylecow();
+$styleCow = new Stylecow\Stylecow;
 
 //Load the file
 $styleCow->load('my-styles.css');

@@ -1,24 +1,28 @@
+/* Styles extracted from: http://daneden.me/animate/ */
+
 @keyframes flash {
-	0%, 50%, 100% {opacity: 1;}	
+	animation: 1s ease;
+
+	0%, 50%, 100% {opacity: 1;}
 	25%, 75% {opacity: 0;}
 }
-$variables {
-	keyframes-flash: {
-		animation-name: flash;
-	}
-}
-/*
 @keyframes shake {
+	animation: 1s ease;
+
 	0%, 100% {transform: translateX(0);}
 	10%, 30%, 50%, 70%, 90% {transform: translateX(-10px);}
 	20%, 40%, 60%, 80% {transform: translateX(10px);}
 }
 @keyframes bounce {
+	animation: 1s ease;
+
 	0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
 	40% {transform: translateY(-30px);}
 	60% {transform: translateY(-15px);}
 }
 @keyframes tada {
+	animation: 1s ease;
+
 	0% {transform: scale(1);}	
 	10%, 20% {transform: scale(0.9) rotate(-3deg);}
 	30%, 50%, 70%, 90% {transform: scale(1.1) rotate(3deg);}
@@ -26,6 +30,9 @@ $variables {
 	100% {transform: scale(1) rotate(0);}
 }
 @keyframes swing {
+	animation: 1s ease;
+	transform-origin: top center;
+
 	20% { transform: rotate(15deg); }	
 	40% { transform: rotate(-10deg); }
 	60% { transform: rotate(5deg); }	
@@ -33,29 +40,32 @@ $variables {
 	100% { transform: rotate(0deg); }
 }
 
-.swing {
-	transform-origin: top center;
-}
-
-/* originally authored by Nick Pettit - https://github.com/nickpettit/glide
+/* originally authored by Nick Pettit - https://github.com/nickpettit/glide */
 @keyframes wobble {
-  0% { transform: translateX(0%); }
-  15% { transform: translateX(-25%) rotate(-5deg); }
-  30% { transform: translateX(20%) rotate(3deg); }
-  45% { transform: translateX(-15%) rotate(-3deg); }
-  60% { transform: translateX(10%) rotate(2deg); }
-  75% { transform: translateX(-5%) rotate(-1deg); }
-  100% { transform: translateX(0%); }
+	animation: 1s ease;
+
+	0% { transform: translateX(0%); }
+	15% { transform: translateX(-25%) rotate(-5deg); }
+	30% { transform: translateX(20%) rotate(3deg); }
+	45% { transform: translateX(-15%) rotate(-3deg); }
+	60% { transform: translateX(10%) rotate(2deg); }
+	75% { transform: translateX(-5%) rotate(-1deg); }
+	100% { transform: translateX(0%); }
 }
 
-/* originally authored by Nick Pettit - https://github.com/nickpettit/glide 
+/* originally authored by Nick Pettit - https://github.com/nickpettit/glide */
 @keyframes pulse {
+	animation: 1s ease;
+
     0% { transform: scale(1); }	
 	50% { transform: scale(1.1); }
     100% { transform: scale(1); }
 }
 
 @keyframes flip {
+	animation: 1s ease;
+	backface-visibility: visible !important;
+
 	0% {
 		transform: perspective(400px) rotateY(0);
 		animation-timing-function: ease-out;
@@ -78,11 +88,10 @@ $variables {
 	}
 }
 
-.flip {
-	backface-visibility: visible !important;
-}
-
 @keyframes flipInX {
+	animation: 1s ease;
+	backface-visibility: visible !important;
+
     0% {
         transform: perspective(400px) rotateX(90deg);
         opacity: 0;
@@ -102,11 +111,10 @@ $variables {
     }
 }
 
-.flipInX {
-	backface-visibility: visible !important;
-}
-
 @keyframes flipOutX {
+	animation: 1s ease;
+	backface-visibility: visible !important;
+
     0% {
         transform: perspective(400px) rotateX(0deg);
         opacity: 1;
@@ -117,10 +125,10 @@ $variables {
     }
 }
 
-.flipOutX {
-	backface-visibility: visible !important;
-}
 @keyframes flipInY {
+	animation: 1s ease;
+	backface-visibility: visible !important;
+
     0% {
         transform: perspective(400px) rotateY(90deg);
         opacity: 0;
@@ -140,10 +148,10 @@ $variables {
     }
 }
 
-.flipInY {
-	backface-visibility: visible !important;
-}
 @keyframes flipOutY {
+	animation: 1s ease;
+	backface-visibility: visible !important;
+
     0% {
         transform: perspective(400px) rotateY(0deg);
         opacity: 1;
@@ -154,16 +162,16 @@ $variables {
     }
 }
 
-.flipOutY {
-	backface-visibility: visible !important;
-}
-
 @keyframes fadeIn {
+	animation: 1s ease;
+
 	0% {opacity: 0;}	
 	100% {opacity: 1;}
 }
 
 @keyframes fadeInUp {
+	animation: 1s ease;
+
 	0% {
 		opacity: 0;
 		transform: translateY(20px);
@@ -176,6 +184,9 @@ $variables {
 }
 
 @keyframes fadeInDown {
+	animation-name: fadeInDown;
+	animation: 1s ease;
+
 	0% {
 		opacity: 0;
 		transform: translateY(-20px);
@@ -187,11 +198,9 @@ $variables {
 	}
 }
 
-.fadeInDown {
-	animation-name: fadeInDown;
-}
-
 @keyframes fadeInLeft {
+	animation: 1s ease;
+
 	0% {
 		opacity: 0;
 		transform: translateX(-20px);
@@ -204,6 +213,8 @@ $variables {
 }
 
 @keyframes fadeInRight {
+	animation: 1s ease;
+
 	0% {
 		opacity: 0;
 		transform: translateX(20px);
@@ -216,6 +227,8 @@ $variables {
 }
 
 @keyframes fadeInUpBig {
+	animation: 1s ease;
+
 	0% {
 		opacity: 0;
 		transform: translateY(2000px);
@@ -228,6 +241,8 @@ $variables {
 }
 
 @keyframes fadeInDownBig {
+	animation: 1s ease;
+
 	0% {
 		opacity: 0;
 		transform: translateY(-2000px);
@@ -239,6 +254,8 @@ $variables {
 	}
 }
 @keyframes fadeInLeftBig {
+	animation: 1s ease;
+
 	0% {
 		opacity: 0;
 		transform: translateX(-2000px);
@@ -250,6 +267,8 @@ $variables {
 	}
 }
 @keyframes fadeInRightBig {
+	animation: 1s ease;
+
 	0% {
 		opacity: 0;
 		transform: translateX(2000px);
@@ -262,11 +281,15 @@ $variables {
 }
 
 @keyframes fadeOut {
+	animation: 1s ease;
+
 	0% {opacity: 1;}
 	100% {opacity: 0;}
 }
 
 @keyframes fadeOutUp {
+	animation: 1s ease;
+
 	0% {
 		opacity: 1;
 		transform: translateY(0);
@@ -279,6 +302,8 @@ $variables {
 }
 
 @keyframes fadeOutDown {
+	animation: 1s ease;
+
 	0% {
 		opacity: 1;
 		transform: translateY(0);
@@ -290,6 +315,8 @@ $variables {
 	}
 }
 @keyframes fadeOutLeft {
+	animation: 1s ease;
+
 	0% {
 		opacity: 1;
 		transform: translateX(0);
@@ -301,6 +328,8 @@ $variables {
 	}
 }
 @keyframes fadeOutRight {
+	animation: 1s ease;
+
 	0% {
 		opacity: 1;
 		transform: translateX(0);
@@ -313,6 +342,8 @@ $variables {
 }
 
 @keyframes fadeOutUpBig {
+	animation: 1s ease;
+
 	0% {
 		opacity: 1;
 		transform: translateY(0);
@@ -325,6 +356,8 @@ $variables {
 }
 
 @keyframes fadeOutDownBig {
+	animation: 1s ease;
+
 	0% {
 		opacity: 1;
 		transform: translateY(0);
@@ -337,6 +370,8 @@ $variables {
 }
 
 @keyframes fadeOutLeftBig {
+	animation: 1s ease;
+
 	0% {
 		opacity: 1;
 		transform: translateX(0);
@@ -348,6 +383,8 @@ $variables {
 	}
 }
 @keyframes fadeOutRightBig {
+	animation: 1s ease;
+
 	0% {
 		opacity: 1;
 		transform: translateX(0);
@@ -360,6 +397,8 @@ $variables {
 }
 
 @keyframes bounceIn {
+	animation: 1s ease;
+
 	0% {
 		opacity: 0;
 		transform: scale(.3);
@@ -379,6 +418,8 @@ $variables {
 	}
 }
 @keyframes bounceInUp {
+	animation: 1s ease;
+
 	0% {
 		opacity: 0;
 		transform: translateY(2000px);
@@ -399,6 +440,8 @@ $variables {
 }
 
 @keyframes bounceInDown {
+	animation: 1s ease;
+
 	0% {
 		opacity: 0;
 		transform: translateY(-2000px);
@@ -418,6 +461,8 @@ $variables {
 	}
 }
 @keyframes bounceInLeft {
+	animation: 1s ease;
+
 	0% {
 		opacity: 0;
 		transform: translateX(-2000px);
@@ -438,6 +483,8 @@ $variables {
 }
 
 @keyframes bounceInRight {
+	animation: 1s ease;
+
 	0% {
 		opacity: 0;
 		transform: translateX(2000px);
@@ -458,6 +505,8 @@ $variables {
 }
 
 @keyframes bounceOut {
+	animation: 1s ease;
+
 	0% {
 		transform: scale(1);
 	}
@@ -478,6 +527,8 @@ $variables {
 }
 
 @keyframes bounceOutUp {
+	animation: 1s ease;
+
 	0% {
 		transform: translateY(0);
 	}
@@ -494,6 +545,8 @@ $variables {
 }
 
 @keyframes bounceOutDown {
+	animation: 1s ease;
+
 	0% {
 		transform: translateY(0);
 	}
@@ -510,6 +563,8 @@ $variables {
 }
 
 @keyframes bounceOutLeft {
+	animation: 1s ease;
+
 	0% {
 		transform: translateX(0);
 	}
@@ -526,6 +581,8 @@ $variables {
 }
 
 @keyframes bounceOutRight {
+	animation: 1s ease;
+
 	0% {
 		transform: translateX(0);
 	}
@@ -542,6 +599,8 @@ $variables {
 }
 
 @keyframes rotateIn {
+	animation: 1s ease;
+
 	0% {
 		transform-origin: center center;
 		transform: rotate(-200deg);
@@ -556,6 +615,8 @@ $variables {
 }
 
 @keyframes rotateInUpLeft {
+	animation: 1s ease;
+
 	0% {
 		transform-origin: left bottom;
 		transform: rotate(90deg);
@@ -570,6 +631,8 @@ $variables {
 }
 
 @keyframes rotateInDownLeft {
+	animation: 1s ease;
+
 	0% {
 		transform-origin: left bottom;
 		transform: rotate(-90deg);
@@ -584,6 +647,8 @@ $variables {
 }
 
 @keyframes rotateInUpRight {
+	animation: 1s ease;
+
 	0% {
 		transform-origin: right bottom;
 		transform: rotate(-90deg);
@@ -598,6 +663,8 @@ $variables {
 }
 
 @keyframes rotateInDownRight {
+	animation: 1s ease;
+
 	0% {
 		transform-origin: right bottom;
 		transform: rotate(90deg);
@@ -612,6 +679,8 @@ $variables {
 }
 
 @keyframes rotateOut {
+	animation: 1s ease;
+
 	0% {
 		transform-origin: center center;
 		transform: rotate(0);
@@ -626,6 +695,8 @@ $variables {
 }
 
 @keyframes rotateOutUpLeft {
+	animation: 1s ease;
+
 	0% {
 		transform-origin: left bottom;
 		transform: rotate(0);
@@ -640,6 +711,8 @@ $variables {
 }
 
 @keyframes rotateOutDownLeft {
+	animation: 1s ease;
+
 	0% {
 		transform-origin: left bottom;
 		transform: rotate(0);
@@ -654,6 +727,8 @@ $variables {
 }
 
 @keyframes rotateOutUpRight {
+	animation: 1s ease;
+
 	0% {
 		transform-origin: right bottom;
 		transform: rotate(0);
@@ -668,6 +743,8 @@ $variables {
 }
 
 @keyframes rotateOutDownRight {
+	animation: 1s ease;
+
 	0% {
 		transform-origin: right bottom;
 		transform: rotate(0);
@@ -682,6 +759,8 @@ $variables {
 }
 
 @keyframes hinge {
+	animation: 2s ease;
+
 	0% { transform: rotate(0); transform-origin: top left; animation-timing-function: ease-in-out; }	
 	20%, 60% { transform: rotate(80deg); transform-origin: top left; animation-timing-function: ease-in-out; }	
 	40% { transform: rotate(60deg); transform-origin: top left; animation-timing-function: ease-in-out; }	
@@ -689,14 +768,18 @@ $variables {
 	100% { transform: translateY(700px); opacity: 0; }
 }
 
-/* originally authored by Nick Pettit - https://github.com/nickpettit/glide 
+/* originally authored by Nick Pettit - https://github.com/nickpettit/glide */
 @keyframes rollIn {
+	animation: 1s ease;
+
 	0% { opacity: 0; transform: translateX(-100%) rotate(-120deg); }
 	100% { opacity: 1; transform: translateX(0px) rotate(0deg); }
 }
 
-/* originally authored by Nick Pettit - https://github.com/nickpettit/glide 
+/* originally authored by Nick Pettit - https://github.com/nickpettit/glide */
 @keyframes rollOut {
+	animation: 1s ease;
+
     0% {
 		opacity: 1;
 		transform: translateX(0px) rotate(0deg);
@@ -707,4 +790,3 @@ $variables {
 		transform: translateX(100%) rotate(120deg);
 	}
 }
-*/

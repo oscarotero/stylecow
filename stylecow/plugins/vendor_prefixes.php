@@ -11,7 +11,7 @@
 namespace stylecow;
 
 class Vendor_prefixes implements iPlugins {
-	public $position = 2;
+	public $position = 3;
 
 	private $property_prefixes = array(
 		'animation' => array('moz', 'webkit', 'o', 'ms'),

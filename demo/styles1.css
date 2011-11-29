@@ -2,7 +2,6 @@
 	width: 960px;
 	background: url(http://griddle.it/960-12-30) repeat-y;
 	margin: 0 auto;
-	overflow: auto;
 }
 $grid {
 	width: 960px;
@@ -43,14 +42,11 @@ $variables {
 .footer {
 	float: left;
 	width: 100%;
+	$animate: bounceIn;
 }
 .footer p {
 	$grid: cols(1) columns(5) in-cols(5, -2px);
 }
 .footer p:last-child {
 	margin-right: 0;
-}
-.bounce {
-	animation: 1s ease;
-	animation-name: bounce;
 }

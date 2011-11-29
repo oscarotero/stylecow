@@ -137,7 +137,8 @@ class Stylecow {
 		}
 
 		$plugins_dir = __DIR__.'/Plugins/';
-		$array_plugins = array();
+		$plugins_objects = array();
+		$plugins_positions = array();
 
 		include_once($plugins_dir.'Plugins_interface.php');
 
@@ -153,14 +154,15 @@ class Stylecow {
 			include_once($plugin_file);
 
 			$plugin = '\\Stylecow\\'.$plugin;
-			$plugin = new $plugin($this);
-
-			array_splice($array_plugins, $plugin->position, 0, array($plugin));
+			$plugins_objects[$plugin] = new $plugin($this);
+			$plugins_positions[$plugin] = $plugins_objects[$plugin]->position;
 		}
 
+		asort($plugins_positions);
+
 		//Execute plugins
-		foreach ($array_plugins as $plugin) {
-			$plugin->transform();
+		foreach ($plugins_positions as $plugin => $pos) {
+			$plugins_objects[$plugin]->transform();
 		}
 
 		return $this;
@@ -217,7 +219,7 @@ class Stylecow {
 			case 0:
 				$properties[] = array(
 					'name' => $name,
-					'value' => array($value)
+					'value' => (array)$value
 				);
 				return true;
 			
@@ -228,12 +230,12 @@ class Stylecow {
 				if ($key === false) {
 					$properties[] = array(
 						'name' => $name,
-						'value' => array($value)
+						'value' => (array)$value
 					);
 				} else {
 					$properties[$key] = array(
 						'name' => $name,
-						'value' => array($value)
+						'value' => (array)$value
 					);
 				}
 				return true;
@@ -245,7 +247,7 @@ class Stylecow {
 				if ($key === false) {
 					$properties[] = array(
 						'name' => $name,
-						'value' => array($value)
+						'value' => (array)$value
 					);
 				}
 				return true;

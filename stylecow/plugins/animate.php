@@ -31,10 +31,22 @@ class Animate implements iPlugins {
 	 */
 	public function __construct (Stylecow $Css) {
 		$this->Css = $Css;
-		$this->animations = $this->Css->parse(file_get_contents(__DIR__.'/animate.css'));
-		print_r($this->animations);
-		die();
+		$code = $this->Css->resolve(file_get_contents(__DIR__.'/animate.css'), __DIR__.'/animate.css', __DIR__.'/animate.css');
+		$code = $this->Css->parse($code);
+
+		foreach ($code as $animation) {
+			if ($animation['type'] === '@keyframes') {
+				$animation['properties'][] = array(
+						'name' => 'animation-name',
+						'value' => array($animation['selector'][0]),
+						'settings' => array()
+				);
+
+				$this->animations[$animation['selector'][0]] = $animation;
+			}
+		}
 	}
+
 
 	
 	/**
@@ -47,6 +59,7 @@ class Animate implements iPlugins {
 	}
 
 
+
 	/**
 	 * private function _transform (array $array_code)
 	 *
@@ -55,42 +68,29 @@ class Animate implements iPlugins {
 	private function _transform ($array_code) {
 		foreach ($array_code as $k_code => $code) {
 			foreach ($code['properties'] as $k_property => $property) {
-				//if (!$property['name'] !== '$animate')
-				continue;
-				if ($grid = $this->grids[$property['name']]) {
-					$options = array();
-					$new_properties = array();
-
-					foreach ($this->Css->explodeFunctions($property['value'][0]) as $function) {
-						switch ($function[0]) {
-							case 'cols':
-							case 'right':
-							case 'left':
-							case 'in-cols':
-								$options[$function[0]] = $function[1];
-								break;
-
-							case 'columns':
-							case 'width':
-							case 'gutter':
-								$grid[$function[0]] = intval($function[1][0]);
-								break;
-						}
-					}
-
-					if ($options['cols']) {
-						foreach ($this->cols($grid, $options) as $property_name => $property_value) {
-							$this->Css->addProperty($array_code[$k_code]['properties'], $property_name, $property_value, 2);
-						}
-
-					}
-
-					unset($array_code[$k_code]['properties'][$k_property]);
+				if ($property['name'] !== '$animate') {
+					continue;
 				}
-			}
 
-			if ($code['content']) {
-				$array_code[$k_code]['content'] = $this->_transform($code['content']);
+				unset($array_code[$k_code]['properties'][$k_property]);
+
+				$animation_name = $property['value'][0];
+
+				if (!$this->animations[$animation_name]) {
+					continue;
+				}
+
+				if (!$this->animations[$animation_name]['used']) {
+					$animation = $this->animations[$animation_name];
+					$animation['properties'] = array();
+					$array_code[] = $animation;
+
+					$this->animations[$animation_name]['used'] = true;
+				}
+
+				foreach ($this->animations[$animation_name]['properties'] as $prop) {
+					$this->Css->addProperty($array_code[$k_code]['properties'], $prop['name'], $prop['value']);
+				}
 			}
 		}
 

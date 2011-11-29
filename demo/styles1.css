@@ -42,7 +42,9 @@ $variables {
 .footer {
 	float: left;
 	width: 100%;
-	$animate: bounceIn;
+}
+.footer:hover {
+	$animate: flash;
 }
 .footer p {
 	$grid: cols(1) columns(5) in-cols(5, -2px);

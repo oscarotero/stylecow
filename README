@@ -10,11 +10,18 @@ More information at http://www.gnu.org/licenses/agpl-3.0.html
 WHAT IS STYLECOW?
 ======================================================
 
-It is a php library that allows parsing and manipulating css files. The main class is styleCow that loads and parses the css file(s) creating an internal array with all the selectors, properties and values. Then you can transform the array using one or moreavailable plugins and finally return the css code.
+It is a php library that allows parsing and manipulating css files. The main class is styleCow that loads and parses the css file(s) creating an internal array with all the selectors, properties and values. Then you can transform the array using one or more available plugins and finally return the css code.
+
+Features:
+
+* Written in php 5.3
+* Includes the css files using @import
+* Extensible with plugins
+* Easy to use
 
 
 ======================================================
-EXAMPLE
+HOW TO USE
 ======================================================
 
 include('stylecow/stylecow.php');
@@ -25,37 +32,21 @@ $styleCow = new stylecow\Stylecow();
 //Load the file
 $styleCow->load('my-styles.css');
 
-//Transform the css file using one or more plugins (for example vendor_prefixes or variables)
+//Transform the css file using one or more plugins (for example Vendor_prefixes or Variables)
 $styleCow->transform(array(
-	'vendor_prefixes',
-	'variables'
+	'Vendor_prefixes',
+	'Variables'
 ));
 
-//Get the result css code
-$css = $styleCow->toString();
+//Print the result css code
+echo $styleCow->toString();
 
-//Print the css code and die
+//You can use also the function show() to print the code with http headers and die
 $styleCow->show();
 
 
 ======================================================
-FEATURES
-======================================================
-
-* Written in php 5.3
-* Includes the css files using @import
-* Extensible with plugins
-* Easy to install and use
-
-
-======================================================
-AVAILABLE PLUGINS
-======================================================
-
-These are the available plugins until now:
-
-======================================================
-Plugin: vendor_prefixes
+PLUGIN: Vendor_prefixes
 ======================================================
 
 Adds the vendor prefixes to all properties in need. For example.
@@ -72,7 +63,6 @@ div.foo {
 div.foo ::selection {
 	background: red;
 }
----------------
 
 
 result:
@@ -96,11 +86,10 @@ div.foo ::selection {
 div.foo ::-moz-selection {
 	background: red;
 }
----------------
 
 
 ======================================================
-Plugin: matches
+PLUGIN: Matches
 ======================================================
 
 Resolve the :matches() css4 selector (http://www.w3.org/TR/2011/WD-selectors4-20110929/#matches)
@@ -114,7 +103,7 @@ div.foo :matches(h1, h2, h3, h4, h5, h6) a {
 div.foo :matches(article, section) header :matches(h1, h2) {
 	color: black;
 }
----------------
+
 
 result:
 ---------------
@@ -124,11 +113,10 @@ div.foo h1 a, div.foo h2 a, div.foo h3 a, div.foo h4 a, div.foo h5 a, div.foo h6
 div.foo article header h1, div.foo article header h2, div.foo section header h1, div.foo section header h2 {
 	color: black;
 }
----------------
 
 
 ======================================================
-Plugin: variables
+PLUGIN: Variables
 ======================================================
 
 You can use variables to recycle code
@@ -152,7 +140,7 @@ div.foo h2 {
 	font-family: $title-font;
 	font-size: 1em;
 }
----------------
+
 
 result:
 ---------------
@@ -165,14 +153,14 @@ div.foo h2 {
 	font-family: Helvetica, Arial, sans-serif;
 	font-size: 1em;
 }
----------------
+
 
 
 ======================================================
-Plugin: nested_rules
+PLUGIN: Nested_rules
 ======================================================
 
-Resolve the nested rules, allowing to write css in a more legible way:
+Resolves the nested rules, allowing to write css in a more legible way:
 
 origin:
 ---------------
@@ -201,7 +189,7 @@ article.main {
 		}
 	}
 }
----------------
+
 
 result:
 ---------------
@@ -225,14 +213,13 @@ article.main header p a {
 article.main header p a:hover {
 	text-decoration: underline;
 }
----------------
 
 
 ======================================================
-Plugin: ie_filters
+PLUGINS: Ie_filters
 ======================================================
 
-Add Internet Explorer filters to emulate some css properties no supported by IE (for example, some 2d transform functions, opacity or linear gradients)
+Adds Internet Explorer filters to emulate some css properties no supported by IE (for example, some 2d transform functions, opacity or linear gradients)
 
 origin:
 ---------------
@@ -241,7 +228,7 @@ div.foo {
 	transform: rotate(45deg) scaleY(-1);
 	opacity: 0.5;
 }
----------------
+
 
 result:
 ---------------
@@ -252,11 +239,11 @@ div.foo {
 	filter: progid:DXImageTransform.Microsoft.gradient(startColorStr='#666666', endColorStr='#999999'), progid:DXImageTransform.Microsoft.Matrix(sizingMethod="auto expand", M11 = 0.707106781187, M12 = -0.707106781187, M21 = 0.707106781187, M22 = 0.707106781187), flipV, alpha(opacity=50);
 	-ms-filter: progid:DXImageTransform.Microsoft.gradient(startColorStr='#666666', endColorStr='#999999'), progid:DXImageTransform.Microsoft.Matrix(sizingMethod="auto expand", M11 = 0.707106781187, M12 = -0.707106781187, M21 = 0.707106781187, M22 = 0.707106781187), flipV, alpha(opacity=50);
 }
----------------
+
 
 
 ======================================================
-Plugin: grid
+PLUGINS: Grid
 ======================================================
 
 You can configurate and use one or various grids for the layout
@@ -284,7 +271,7 @@ aside {
 	$grid: cols(4);
 	margin-right: 0;
 }
----------------
+
 
 result:
 ---------------
@@ -306,4 +293,81 @@ aside {
 	float: left;
 	display: inline;
 }
+
+
+
+======================================================
+PLUGINS: Animate
+======================================================
+
+Inserts the code for the animations availables in http://daneden.me/animate/
+
+origin:
 ---------------
+div.foo {
+	$animate: flash;
+}
+
+
+result:
+---------------
+div.foo {
+	animation: 1s ease;
+	-moz-animation: 1s ease;
+	-webkit-animation: 1s ease;
+	-o-animation: 1s ease;
+	-ms-animation: 1s ease;
+	animation-name: flash;
+	-moz-animation-name: flash;
+	-webkit-animation-name: flash;
+	-o-animation-name: flash;
+	-ms-animation-name: flash;
+}
+@-moz-keyframes flash {
+	0%, 50%, 100% {
+		opacity: 1;
+		-moz-opacity: 1;
+	}
+	25%, 75% {
+		opacity: 0;
+		-moz-opacity: 0;
+	}
+}
+@-webkit-keyframes flash {
+	0%, 50%, 100% {
+		opacity: 1;
+		-webkit-opacity: 1;
+	}
+	25%, 75% {
+		opacity: 0;
+		-webkit-opacity: 0;
+	}
+}
+@-ms-keyframes flash {
+	0%, 50%, 100% {
+		opacity: 1;
+	}
+	25%, 75% {
+		opacity: 0;
+	}
+}
+@-o-keyframes flash {
+	0%, 50%, 100% {
+		opacity: 1;
+	}
+	25%, 75% {
+		opacity: 0;
+	}
+}
+@keyframes flash {
+	0%, 50%, 100% {
+		opacity: 1;
+		-moz-opacity: 1;
+		-webkit-opacity: 1;
+	}
+	25%, 75% {
+		opacity: 0;
+		-moz-opacity: 0;
+		-webkit-opacity: 0;
+	}
+}

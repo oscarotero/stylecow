@@ -1,15 +1,17 @@
 <?php
 /**
-* Vendor_prefixes plugin (version 0.1)
-* for styleCow PHP library
+* styleCow php library (version 0.1)
 *
 * 2011. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
+*
+* styleCow is released under the GNU Affero GPL version 3.
+* More information at http://www.gnu.org/licenses/agpl-3.0.html
 */
 
-namespace Stylecow;
+namespace stylecow;
 
-class Vendor_prefixes implements Plugins_interface {
-	public $position = 3;
+class Vendor_prefixes implements iPlugins {
+	public $position = 2;
 
 	private $property_prefixes = array(
 		'animation' => array('moz', 'webkit', 'o', 'ms'),
@@ -256,26 +258,28 @@ class Vendor_prefixes implements Plugins_interface {
 
 			$new_code = $code;
 
-			$new_code['properties'] = array();
+			if ($code['properties']) {
+				$new_code['properties'] = array();
 
-			foreach ($code['properties'] as $property) {
-				$new_code['properties'][] = $property;
+				foreach ($code['properties'] as $property) {
+					$new_code['properties'][] = $property;
 
-				if ($fn = $this->property_fn_prefixes[$property['name']]) {
-					$this->$fn($new_code, $property['name'], $property['value']);
-				}
+					if ($fn = $this->property_fn_prefixes[$property['name']]) {
+						$this->$fn($new_code, $property['name'], $property['value']);
+					}
 
-				if ($this->property_prefixes[$property['name']]) {
-					foreach ($this->property_prefixes[$property['name']] as $prefix) {
-						if (($code['prefix'] && $code['prefix'] !== $prefix) || ($prefix_scope && $prefix !== $prefix_scope)) {
-							continue;
+					if ($this->property_prefixes[$property['name']]) {
+						foreach ($this->property_prefixes[$property['name']] as $prefix) {
+							if (($code['prefix'] && $code['prefix'] !== $prefix) || ($prefix_scope && $prefix !== $prefix_scope)) {
+								continue;
+							}
+
+							$new_code['properties'][] = array(
+								'name' => '-'.$prefix.'-'.$property['name'],
+								'value' => $property['value'],
+								'prefix' => $prefix
+							);
 						}
-
-						$new_code['properties'][] = array(
-							'name' => '-'.$prefix.'-'.$property['name'],
-							'value' => $property['value'],
-							'prefix' => $prefix
-						);
 					}
 				}
 			}
@@ -304,37 +308,39 @@ class Vendor_prefixes implements Plugins_interface {
 
 			$new_code = $code;
 
-			$new_code['properties'] = array();
+			if ($code['properties']) {
+				$new_code['properties'] = array();
 
-			foreach ($code['properties'] as $property) {
-				$new_code['properties'][] = $property;
+				foreach ($code['properties'] as $property) {
+					$new_code['properties'][] = $property;
 
-				if ($fn = $this->value_fn_prefixes[$property['name']]) {
-					foreach ($this->value_fn_prefixes[$property['name']] as $property_value => $fn) {
-						if (preg_match('/(^|[^-])'.preg_quote($property_value, '/').'([^\w]|$)?/', implode($property['value']))) {
-							$this->$fn($new_code, $property['name'], $property['value']);
+					if ($fn = $this->value_fn_prefixes[$property['name']]) {
+						foreach ($this->value_fn_prefixes[$property['name']] as $property_value => $fn) {
+							if (preg_match('/(^|[^-])'.preg_quote($property_value, '/').'([^\w]|$)?/', implode($property['value']))) {
+								$this->$fn($new_code, $property['name'], $property['value']);
+							}
 						}
 					}
-				}
 
-				if ($this->value_prefixes[$property['name']]) {
-					foreach ($this->value_prefixes[$property['name']] as $property_value => $prefixes) {
-						if (preg_match('/(^|[^-])'.preg_quote($property_value, '/').'([^\w]|$)?/', implode($property['value']))) {
-							foreach ($prefixes as $prefix) {
-								if (($code['prefix'] && $code['prefix'] !== $prefix) || ($prefix_scope && $prefix !== $prefix_scope)) {
-									continue;
+					if ($this->value_prefixes[$property['name']]) {
+						foreach ($this->value_prefixes[$property['name']] as $property_value => $prefixes) {
+							if (preg_match('/(^|[^-])'.preg_quote($property_value, '/').'([^\w]|$)?/', implode($property['value']))) {
+								foreach ($prefixes as $prefix) {
+									if (($code['prefix'] && $code['prefix'] !== $prefix) || ($prefix_scope && $prefix !== $prefix_scope)) {
+										continue;
+									}
+
+									$new_values = array();
+
+									foreach ($property['value'] as $v) {
+										$new_values[] = str_replace($property_value, '-'.$prefix.'-'.$property_value, $v);
+									}
+
+									$new_code['properties'][] = array(
+										'name' => $property['name'],
+										'value' => $new_values
+									);
 								}
-
-								$new_values = array();
-
-								foreach ($property['value'] as $v) {
-									$new_values[] = str_replace($property_value, '-'.$prefix.'-'.$property_value, $v);
-								}
-
-								$new_code['properties'][] = array(
-									'name' => $property['name'],
-									'value' => $new_values
-								);
 							}
 						}
 					}

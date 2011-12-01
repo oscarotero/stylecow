@@ -1,14 +1,16 @@
 <?php
 /**
-* Ie_filters plugin (version 0.1)
-* for styleCow PHP library
+* styleCow php library (version 0.1)
 *
 * 2011. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
+*
+* styleCow is released under the GNU Affero GPL version 3.
+* More information at http://www.gnu.org/licenses/agpl-3.0.html
 */
 
-namespace Stylecow;
+namespace stylecow;
 
-class Ie_filters implements Plugins_interface {
+class Ie_filters implements iPlugins {
 	public $position = 2;
 
 	private $Css;
@@ -40,6 +42,10 @@ class Ie_filters implements Plugins_interface {
 	 */
 	private function _transform ($array_code) {
 		foreach ($array_code as $k_code => $code) {
+			if (!$code['properties']) {
+				continue;
+			}
+
 			foreach ($code['properties'] as $property) {
 				if ($property['settings'] && in_array('ignore ie_filters', $property['settings'])) {
 					continue;

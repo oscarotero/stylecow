@@ -83,9 +83,9 @@ class Stylecow {
 		$file = trim(str_replace(array('\'', '"', 'url(', ')'), '', $matches[1]));
 
 		if (parse_url($file, PHP_URL_SCHEME)) {
-			return $matches[1];
+			return $matches[0];
 		}
-		
+
 		if ($file[0] === '/') {
 			$file_url = $file_path = $file;
 		} else {
@@ -269,6 +269,27 @@ class Stylecow {
 
 		while ($string_code) {
 			$pos = strpos($string_code, '{');
+			$pos2 = strpos($string_code, ';');
+
+			if ($pos2 < $pos) {
+				$selector = trim(substr($string_code, 0, $pos2));
+				$type = '';
+
+				if ($selector[0] == '@' || $selector[0] == '$') {
+					list($type, $selector) = $this->explodeTrim(' ', $selector, 2);
+				}
+
+				$array_code[] = array(
+					'selector' => array($selector),
+					'type' => $type,
+					'is_css' => ($type[0] === '$') ? false : true,
+					//'properties' => array(),
+					'content' => array()
+				);
+
+				$string_code = trim(substr($string_code, $pos2+1));
+				continue;
+			}
 
 			if ($pos === false) {
 				break;
@@ -525,17 +546,21 @@ class Stylecow {
 				$selector = implode(', ', $code['selector']);
 			}
 
-			$text .= $tab_selector.$selector." {\n";
+			if (isset($code['properties'])) {
+				$text .= $tab_selector.$selector." {\n";
+				
+				foreach ($code['properties'] as $property) {
+					$text .= $tab_property.$property['name'].': '.implode(', ', $property['value']).";\n";
+				}
 
-			foreach ($code['properties'] as $property) {
-				$text .= $tab_property.$property['name'].': '.implode(', ', $property['value']).";\n";
+				if ($code['content']) {
+					$text .= $this->_toString($code['content'], $tabs + 1);
+				}
+
+				$text .= $tab_selector."}\n";
+			} else {
+				$text .= $tab_selector.$selector.";\n";
 			}
-
-			if ($code['content']) {
-				$text .= $this->_toString($code['content'], $tabs + 1);
-			}
-
-			$text .= $tab_selector."}\n";
 		}
 
 		return $text;

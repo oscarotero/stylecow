@@ -1,14 +1,16 @@
 <?php
 /**
-* Variables plugin (version 0.1)
-* for styleCow PHP library
+* styleCow php library (version 0.1)
 *
 * 2011. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
+*
+* styleCow is released under the GNU Affero GPL version 3.
+* More information at http://www.gnu.org/licenses/agpl-3.0.html
 */
 
-namespace Stylecow;
+namespace stylecow;
 
-class Variables implements Plugins_interface {
+class Variables implements iPlugins {
 	public $position = 1;
 
 	private $variables = array();
@@ -66,21 +68,23 @@ class Variables implements Plugins_interface {
 
 			$unset = array();
 
-			foreach ($code['properties'] as $k_property => $property) {
-				if ($this->styles[$property['name']]) {
-					$code = array_merge_recursive($code, $this->styles[$property['name']]);
-					$unset[] = $k_property;
+			if ($code['properties']) {
+				foreach ($code['properties'] as $k_property => $property) {
+					if ($this->styles[$property['name']]) {
+						$code = array_merge_recursive($code, $this->styles[$property['name']]);
+						$unset[] = $k_property;
+					}
 				}
-			}
 
-			foreach ($unset as $k) {
-				unset($code['properties'][$k]);
-			}
+				foreach ($unset as $k) {
+					unset($code['properties'][$k]);
+				}
 
-			foreach ($code['properties'] as $k_property => $property) {
-				foreach ($property['value'] as $k_value => $value) {
-					if (strpos($value, '$') !== false) {
-						$code['properties'][$k_property]['value'][$k_value] = preg_replace_callback('/\$[\w-]+/', array($this, 'replace'), $value);
+				foreach ($code['properties'] as $k_property => $property) {
+					foreach ($property['value'] as $k_value => $value) {
+						if (strpos($value, '$') !== false) {
+							$code['properties'][$k_property]['value'][$k_value] = preg_replace_callback('/\$[\w-]+/', array($this, 'replace'), $value);
+						}
 					}
 				}
 			}

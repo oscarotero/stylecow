@@ -1,17 +1,15 @@
 <?php
 /**
-* styleCow php library (version 0.1)
+* Vendor_prefixes plugin (version 0.1)
+* for styleCow PHP library
 *
 * 2011. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
-*
-* styleCow is released under the GNU Affero GPL version 3.
-* More information at http://www.gnu.org/licenses/agpl-3.0.html
 */
 
-namespace stylecow;
+namespace Stylecow;
 
-class Vendor_prefixes implements iPlugins {
-	public $position = 2;
+class Vendor_prefixes implements Plugins_interface {
+	public $position = 3;
 
 	private $property_prefixes = array(
 		'animation' => array('moz', 'webkit', 'o', 'ms'),
@@ -258,7 +256,7 @@ class Vendor_prefixes implements iPlugins {
 
 			$new_code = $code;
 
-			if ($code['properties']) {
+			if (is_array($code['properties'])) {
 				$new_code['properties'] = array();
 
 				foreach ($code['properties'] as $property) {
@@ -282,9 +280,9 @@ class Vendor_prefixes implements iPlugins {
 						}
 					}
 				}
-			}
 
-			$new_array_code[] = $new_code;
+				$new_array_code[] = $new_code;
+			}
 		}
 
 		return $new_array_code;
@@ -308,7 +306,7 @@ class Vendor_prefixes implements iPlugins {
 
 			$new_code = $code;
 
-			if ($code['properties']) {
+			if (is_array($code['properties'])) {
 				$new_code['properties'] = array();
 
 				foreach ($code['properties'] as $property) {
@@ -345,9 +343,9 @@ class Vendor_prefixes implements iPlugins {
 						}
 					}
 				}
-			}
 
-			$new_array_code[] = $new_code;
+				$new_array_code[] = $new_code;
+			}
 		}
 
 		return $new_array_code;

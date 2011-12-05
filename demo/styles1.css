@@ -1,3 +1,11 @@
+/*
+
+#390
+#339900
+rgb(51, 153, 0)
+hsl(100, 100%, 30%)
+
+*/
 .wrapper {
 	width: 960px;
 	background: url(http://griddle.it/960-12-30) repeat-y;
@@ -10,16 +18,44 @@ $grid {
 }
 
 $variables {
-	color: blue;
+	color: #369;
 	menu: .content {
 		text-align: left;
 	}
 }
 
+.color {
+	display: inline-block;
+	width: 50px;
+	height: 50px;
+	background: $color;
+}
+
+.l10 { background: color($color, light:10); }
+.l20 { background: color($color, light:20); }
+.l30 { background: color($color, light:30); }
+.l40 { background: color($color, light:40); }
+.l50 { background: color($color, light:50, alpha: 0.5); }
+.l60 { background: color($color, light:60); }
+.l70 { background: color($color, light:70); }
+.l80 { background: color($color, light:80); }
+.l90 { background: color($color, light:90); }
+
+
+.s10 { background: color($color, blue:-10); }
+.s20 { background: color($color, blue:-20); }
+.s30 { background: color($color, blue:-30); }
+.s40 { background: color($color, blue:-40); }
+.s50 { background: color($color, blue:-50); }
+.s60 { background: color($color, blue:-60); }
+.s70 { background: color($color, blue:-70); }
+.s80 { background: color($color, blue:-80); }
+.s90 { background: color($color, blue:-90); }
+
+
 .wrapper > div {
 	box-sizing: border-box;
 	border: solid 1px #333;
-	background: $color;
 }
 .menu {
 	$grid: cols(2) left(1);

@@ -12,7 +12,8 @@ $styleCow->transform(array(
 	'Grid',
 	'Matches',
 	'Nested_rules',
-	'Animate'
+	'Animate',
+	'Color'
 ));
 
 $styleCow->show();

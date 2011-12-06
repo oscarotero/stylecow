@@ -166,7 +166,8 @@ class Color implements Plugins_interface {
 			return array(
 				round($l * 255),
 				round($l * 255),
-				round($l * 255)
+				round($l * 255),
+				$a
 			);
 		}
 

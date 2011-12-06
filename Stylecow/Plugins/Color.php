@@ -88,6 +88,12 @@ class Color implements Plugins_interface {
 				case 'alpha':
 					$this->editChannel($rgba, $function, $value);
 					break;
+				
+				case 'tint':
+					$rgba[0] += round(((255 - $rgba[0]) * (100 - floatval($value))) / 100);
+					$rgba[1] += round(((255 - $rgba[1]) * (100 - floatval($value))) / 100);
+					$rgba[2] += round(((255 - $rgba[2]) * (100 - floatval($value))) / 100);
+					break;
 			}
 		}
 
@@ -146,6 +152,8 @@ class Color implements Plugins_interface {
 		if ($color[0] === '#') {
 			return $this->HEX_RGBA(substr($color, 1));
 		}
+
+		return array(0, 0, 0, 1);
 	}
 
 

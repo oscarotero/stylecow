@@ -1,6 +1,6 @@
 <?php
 /**
-* styleCow PHP library (version 0.1)
+* styleCow PHP library (version 0.1b1)
 *
 * 2011. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
 *
@@ -93,11 +93,11 @@ class Stylecow {
 			$file_path = preg_replace('#/\w+/\.\./#', '/', $this->current_base_path.'/'.$file);
 		}
 
-		$code = file_get_contents($file_path);
+		if (is_file($file_path)) {
+			return $this->resolve(file_get_contents($file_path), $file_path, $file_url);
+		}
 
-		$code = $this->resolve($code, $file_path, $file_url);
-
-		return $code;
+		return $matches[0];
 	}
 
 

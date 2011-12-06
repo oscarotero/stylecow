@@ -63,36 +63,38 @@ class Grid implements Plugins_interface {
 				continue;
 			}
 
-			foreach ($code['properties'] as $k_property => $property) {
-				if ($grid = $this->grids[$property['name']]) {
-					$options = array();
-					$new_properties = array();
+			if ($code['properties']) {
+				foreach ($code['properties'] as $k_property => $property) {
+					if ($grid = $this->grids[$property['name']]) {
+						$options = array();
+						$new_properties = array();
 
-					foreach ($this->Css->explodeFunctions($property['value'][0]) as $function) {
-						switch ($function[0]) {
-							case 'cols':
-							case 'right':
-							case 'left':
-							case 'in-cols':
-								$options[$function[0]] = $function[1];
-								break;
+						foreach ($this->Css->explodeFunctions($property['value'][0]) as $function) {
+							switch ($function[0]) {
+								case 'cols':
+								case 'right':
+								case 'left':
+								case 'in-cols':
+									$options[$function[0]] = $function[1];
+									break;
 
-							case 'columns':
-							case 'width':
-							case 'gutter':
-								$grid[$function[0]] = intval($function[1][0]);
-								break;
-						}
-					}
-
-					if ($options['cols']) {
-						foreach ($this->cols($grid, $options) as $property_name => $property_value) {
-							$this->Css->addProperty($array_code[$k_code]['properties'], $property_name, $property_value, 2);
+								case 'columns':
+								case 'width':
+								case 'gutter':
+									$grid[$function[0]] = intval($function[1][0]);
+									break;
+							}
 						}
 
-					}
+						if ($options['cols']) {
+							foreach ($this->cols($grid, $options) as $property_name => $property_value) {
+								$this->Css->addProperty($array_code[$k_code]['properties'], $property_name, $property_value, 2);
+							}
 
-					unset($array_code[$k_code]['properties'][$k_property]);
+						}
+
+						unset($array_code[$k_code]['properties'][$k_property]);
+					}
 				}
 			}
 

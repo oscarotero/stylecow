@@ -6,10 +6,17 @@ rgb(51, 153, 0)
 hsl(100, 100%, 30%)
 
 */
+body {
+	font-size: 1em;
+}
 .wrapper {
+	font-size: 2em;
 	width: 960px;
 	background: url(http://griddle.it/960-12-30) repeat-y;
 	margin: 0 auto;
+}
+.wrapper div {
+	font-size: 1rem;
 }
 $grid {
 	width: 960px;

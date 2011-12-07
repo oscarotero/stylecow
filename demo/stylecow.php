@@ -13,7 +13,8 @@ $styleCow->transform(array(
 	'Matches',
 	'Nested_rules',
 	'Animate',
-	'Color'
+	'Color',
+	'Rem'
 ));
 
 $styleCow->show();

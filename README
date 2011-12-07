@@ -377,7 +377,7 @@ div.foo {
 PLUGINS: Color
 ======================================================
 
-Manipulate color dinamically. Changes the hue, saturation, light, red, green, blue and alpha values.
+Manipulate color dinamically. Changes the hue, saturation, light, red, green, blue, alpha and tint values.
 You can use absolute or relative values:
 saturation:50 /* Set the saturation value to 50 */
 saturation:+10 /* Increments 10% the current saturation */
@@ -395,4 +395,38 @@ result:
 div.foo {
 	background: rgba(64, 128, 191, 0.5);
 	color: #33667b;
+}
+
+
+======================================================
+PLUGINS: Rem
+======================================================
+
+Allows use the rem value (http://snook.ca/archives/html_and_css/font-size-with-rem) to define the text size in a safe way for old browsers.
+The default rem is 1em (16px) but you can change it in the body styles:
+
+origin:
+---------------
+body {
+	font-size: 1.2em;
+}
+.foo {
+	font-size: 2em;
+}
+.foo div {
+	font-size: 1rem;
+}
+
+
+result:
+---------------
+body {
+	font-size: 1.2em;
+}
+.foo {
+	font-size: 2em;
+}
+.foo div {
+	font-size: 19.2px;
+	font-size: 1rem;
 }

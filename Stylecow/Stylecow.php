@@ -395,28 +395,31 @@ class Stylecow {
 	public function explode ($string, $delimiter = ',', $str_in = '(', $str_out = ')') {
 		$array = array();
 
-		$length = strlen($string);
-		$in = 0;
-
-		for ($n = 0; $n <= $length; $n++) {
-			if ($string[$n] == $str_in) {
-				$in++;
-				continue;
+		while ($string) {
+			if (strpos($string, $delimiter) === false) {
+				$array[] = trim($string);
+				break;
 			}
 
-			if ($string[$n] == $str_out) {
-				$in--;
-				continue;
-			}
+			$length = strlen($string);
+			$in = 0;
 
-			if (($string[$n] == $delimiter) && !$in) {
-				$array[] = trim(substr($string, 0, $n));
-				$string = trim(substr($string, $n+1));
-			}
-		}
+			for ($n = 0; $n <= $length; $n++) {
+				if ($string[$n] == $str_in) {
+					$in++;
+					continue;
+				}
 
-		if ($string) {
-			$array[] = trim($string);
+				if ($string[$n] == $str_out) {
+					$in--;
+					continue;
+				}
+
+				if (($string[$n] == $delimiter) && !$in) {
+					$array[] = trim(substr($string, 0, $n));
+					$string = trim(substr($string, $n+1));
+				}
+			}
 		}
 
 		return $array;

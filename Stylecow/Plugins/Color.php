@@ -213,7 +213,7 @@ class Color implements Plugins_interface {
 		}
 
 		if ((2 * $vH) < 1 ) {
-			return $v2;
+			return ($v2 < 0) ? 0 : $v2;
 		}
 
 		if ((3 * $vH) < 2 ) {
@@ -274,17 +274,17 @@ class Color implements Plugins_interface {
 	 * return string
 	 */
 	private function RGBA_HEX ($rgba) {
-		$r = dechex($rgba[0]);
-		$g = dechex($rgba[1]);
-		$b = dechex($rgba[2]);
+		$r = dechex(($rgba[0] > 255) ? 255 : $rgba[0]);
+		$g = dechex(($rgba[1] > 255) ? 255 : $rgba[1]);
+		$b = dechex(($rgba[2] > 255) ? 255 : $rgba[2]);
 
-		if (strlen($r) == 1) {
+		if (strlen($r) === 1) {
 			$r = str_pad($r, 2, 0, STR_PAD_LEFT);
 		}
-		if (strlen($g) == 1) {
+		if (strlen($g) === 1) {
 			$g = str_pad($g, 2, 0, STR_PAD_LEFT);
 		}
-		if (strlen($b) == 1) {
+		if (strlen($b) === 1) {
 			$b = str_pad($b, 2, 0, STR_PAD_LEFT);
 		}
 

@@ -418,8 +418,12 @@ class Stylecow {
 				if (($string[$n] == $delimiter) && !$in) {
 					$array[] = trim(substr($string, 0, $n));
 					$string = trim(substr($string, $n+1));
+					continue 2;
 				}
 			}
+
+			$array[] = trim($string);
+			break;
 		}
 
 		return $array;

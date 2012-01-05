@@ -1,6 +1,6 @@
 <?php
 /**
-* Vendor_prefixes plugin (version 0.1)
+* Vendor_prefixes plugin (version 0.1.1)
 * for styleCow PHP library
 *
 * 2011. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
@@ -81,6 +81,7 @@ class Vendor_prefixes implements Plugins_interface {
 		'hyphens' => array('moz', 'epub'),
 		'opacity' => array('moz', 'webkit'),
 		'text-overflow' => array('o'),
+		'text-size-adjust' => array('moz', 'webkit', 'ms'),
 		'transform' => array('moz', 'webkit', 'o', 'ms'),
 		'transform-origin' => array('moz', 'webkit', 'o', 'ms'),
 		'transition' => array('moz', 'webkit', 'o'),
@@ -130,6 +131,9 @@ class Vendor_prefixes implements Plugins_interface {
 			'webkit' => '@-webkit-keyframes',
 			'ms' => '@-ms-keyframes',
 			'o' => '@-o-keyframes'
+		),
+		'@document' => array(
+			'moz' => '@-moz-document',
 		)
 	);
 

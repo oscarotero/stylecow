@@ -400,33 +400,36 @@ class Stylecow {
 		$array = array();
 
 		while ($string) {
-			if (strpos($string, $delimiter) === false) {
+			if (strpos($string,$delimiter) === false) {
 				$array[] = trim($string);
 				break;
 			}
 
-			$length = strlen($string);
-			$in = 0;
+			for ($n = 0, $in = 0, $length = strlen($string); $n <= $length; $n++) {
+				$l = $string[$n];
 
-			for ($n = 0; $n <= $length; $n++) {
-				if ($string[$n] == $str_in) {
+				if ($l === $str_in) {
 					$in++;
 					continue;
 				}
 
-				if ($string[$n] == $str_out) {
+				if ($l === $str_out && $in) {
 					$in--;
 					continue;
 				}
 
-				if (($string[$n] == $delimiter) && !$in) {
+				if (($l === $delimiter || $l === $str_out || $n === $length) && !$in) {
 					$array[] = trim(substr($string, 0, $n));
 					$string = trim(substr($string, $n+1));
+
+					if ($l === $str_out) {
+						break;
+					}
+
 					continue 2;
 				}
 			}
 
-			$array[] = trim($string);
 			break;
 		}
 
@@ -441,18 +444,27 @@ class Stylecow {
 	 * Returns false/array
 	 */
 	public function explodeFunctions ($string) {
-		if (!preg_match_all('/([\w-]+)\(([^\)]+)\)/', $string, $matches, PREG_SET_ORDER)) {
-			return false;
+		$functions = array();
+
+		$parts = $this->explode($string, ' ');
+
+		foreach ($parts as $str) {
+			if (($pos = strpos($str, '(')) === false) {
+				continue;
+			}
+
+			$name = substr($str, 0, $pos);
+			
+			if (strpos($name, ' ') !== false) {
+				$name = substr($name, strrpos($name, ' '));
+			}
+
+			$functions[] = array($name, $this->explode(substr($str, $pos + 1)));
 		}
 
-		$return = array();
-
-		foreach ($matches as $match) {
-			$return[] = array(trim($match[1]), $this->explodeTrim(',', $match[2]), $match[3]);
-		}
-
-		return $return;
+		return $functions;
 	}
+
 
 
 

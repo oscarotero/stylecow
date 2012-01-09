@@ -1,6 +1,6 @@
 <?php
 /**
-* Animate plugin (version 0.1)
+* Animate plugin (version 0.1.1)
 * for styleCow PHP library
 *
 * 2011. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
@@ -65,29 +65,32 @@ class Animate implements Plugins_interface {
 	 */
 	private function _transform ($array_code) {
 		foreach ($array_code as $k_code => $code) {
-			foreach ($code['properties'] as $k_property => $property) {
-				if ($property['name'] !== '$animate') {
-					continue;
-				}
 
-				unset($array_code[$k_code]['properties'][$k_property]);
+			if ($code['properties']) {
+				foreach ($code['properties'] as $k_property => $property) {
+					if ($property['name'] !== '$animate') {
+						continue;
+					}
 
-				$animation_name = $property['value'][0];
+					unset($array_code[$k_code]['properties'][$k_property]);
 
-				if (!$this->animations[$animation_name]) {
-					continue;
-				}
+					$animation_name = $property['value'][0];
 
-				if (!$this->animations[$animation_name]['used']) {
-					$animation = $this->animations[$animation_name];
-					$animation['properties'] = array();
-					$array_code[] = $animation;
+					if (!$this->animations[$animation_name]) {
+						continue;
+					}
 
-					$this->animations[$animation_name]['used'] = true;
-				}
+					if (!$this->animations[$animation_name]['used']) {
+						$animation = $this->animations[$animation_name];
+						$animation['properties'] = array();
+						$array_code[] = $animation;
 
-				foreach ($this->animations[$animation_name]['properties'] as $prop) {
-					$this->Css->addProperty($array_code[$k_code]['properties'], $prop['name'], $prop['value']);
+						$this->animations[$animation_name]['used'] = true;
+					}
+
+					foreach ($this->animations[$animation_name]['properties'] as $prop) {
+						$this->Css->addProperty($array_code[$k_code]['properties'], $prop['name'], $prop['value']);
+					}
 				}
 			}
 		}

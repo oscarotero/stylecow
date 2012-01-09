@@ -284,9 +284,9 @@ class Vendor_prefixes implements Plugins_interface {
 						}
 					}
 				}
-
-				$new_array_code[] = $new_code;
 			}
+
+			$new_array_code[] = $new_code;
 		}
 
 		return $new_array_code;
@@ -347,9 +347,9 @@ class Vendor_prefixes implements Plugins_interface {
 						}
 					}
 				}
-
-				$new_array_code[] = $new_code;
 			}
+
+			$new_array_code[] = $new_code;
 		}
 
 		return $new_array_code;

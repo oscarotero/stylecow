@@ -267,11 +267,15 @@ class Stylecow {
 	public function parse ($string_code) {
 		$array_code = array();
 
+		if (strpos($string_code, 'header {') === 0) {
+			$este = true;
+		}
+
 		while ($string_code) {
 			$pos = strpos($string_code, '{');
 			$pos2 = strpos($string_code, ';');
 
-			if ($pos2 < $pos) {
+			if (($pos2 !== false) && $pos2 < $pos) {
 				$selector = trim(substr($string_code, 0, $pos2));
 				$type = '';
 
@@ -283,7 +287,6 @@ class Stylecow {
 					'selector' => array($selector),
 					'type' => $type,
 					'is_css' => ($type[0] === '$') ? false : true,
-					//'properties' => array(),
 					'content' => array()
 				);
 
@@ -298,7 +301,7 @@ class Stylecow {
 			$selector = trim(substr($string_code, 0, $pos));
 			$type = '';
 
-			if ($selector[0] == '@' || $selector[0] == '$') {
+			if ($selector[0] === '@' || $selector[0] === '$') {
 				list($type, $selector) = $this->explodeTrim(' ', $selector, 2);
 			}
 
@@ -328,6 +331,7 @@ class Stylecow {
 
 				$string_piece = $n ? trim(substr($string_code, 0, $n-1)) : '';
 				$string_code = trim(substr($string_code, $n+1));
+
 				$code = array(
 					'selector' => $selector,
 					'type' => $type,

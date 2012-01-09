@@ -1,6 +1,6 @@
 <?php
 /**
-* Animate plugin (version 0.1.1)
+* Animate plugin (version 0.1.2)
 * for styleCow PHP library
 *
 * 2011. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
@@ -53,18 +53,25 @@ class Animate implements Plugins_interface {
 	 * return none
 	 */
 	public function transform () {
-		$this->Css->code = $this->_transform($this->Css->code);
+		$this->Css->code = $this->_transform($this->Css->code, $animation_code);
+
+		if ($animation_code) {
+			$this->Css->code = array_merge($this->Css->code, $animation_code);
+		}
 	}
 
 
 
 	/**
-	 * private function _transform (array $array_code)
+	 * private function _transform (array $array_code, &$animation_code)
 	 *
 	 * return none
 	 */
-	private function _transform ($array_code) {
+	private function _transform ($array_code, &$animation_code) {
 		foreach ($array_code as $k_code => $code) {
+			if ($code['content']) {
+				$array_code[$k_code]['content'] = $this->_transform($code['content'], $animation_code);
+			}
 
 			if ($code['properties']) {
 				foreach ($code['properties'] as $k_property => $property) {
@@ -83,7 +90,7 @@ class Animate implements Plugins_interface {
 					if (!$this->animations[$animation_name]['used']) {
 						$animation = $this->animations[$animation_name];
 						$animation['properties'] = array();
-						$array_code[] = $animation;
+						$animation_code[] = $animation;
 
 						$this->animations[$animation_name]['used'] = true;
 					}
@@ -96,42 +103,5 @@ class Animate implements Plugins_interface {
 		}
 
 		return $array_code;
-	}
-
-
-	/**
-	 * private function cols (array $grid, int $options)
-	 *
-	 * return none
-	 */
-	private function cols ($grid, $options) {
-		$width = ($grid['width'] - ($grid['gutter'] * ($grid['columns'] - 1))) / $grid['columns'];
-
-		$options['cols'][0] = floatval($options['cols'][0]);
-		$options['cols'][1] = intval($options['cols'][1]);
-
-		if ($options['in-cols']) {
-			$options['cols'][1] += ($options['cols'][0] / floatval($options['in-cols'][0])) * intval($options['in-cols'][1]);
-		}
-
-		if ($options['right']) {
-			$right = (($width + $grid['gutter']) * floatval($options['right'][0])) + intval($options['right'][1]) + $grid['gutter'];
-		} else {
-			$right = $grid['gutter'];
-		}
-
-		if ($options['left']) {
-			$left = (($width + $grid['gutter']) * floatval($options['left'][0])) + intval($options['left'][1]);
-		} else {
-			$left = '0';
-		}
-
-		return array(
-			'width' => floor(($width * $options['cols'][0]) + ($grid['gutter'] * ($options['cols'][0] - 1)) + $options['cols'][1]).'px',
-			'float' => 'left',
-			'display' => 'inline',
-			'margin-right' => floor($right).'px',
-			'margin-left' => floor($left).'px'
-		);
 	}
 }

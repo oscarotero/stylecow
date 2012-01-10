@@ -458,8 +458,15 @@ class Stylecow {
 			if (strpos($name, ' ') !== false) {
 				$name = substr($name, strrpos($name, ' '));
 			}
+			$params = trim(substr($str, $pos + 1));
 
-			$functions[] = array($name, $this->explode(substr($str, $pos + 1)));
+			if ($params && $params !== ')') {
+				$params = $this->explode($params);
+			} else {
+				$params = array();
+			}
+
+			$functions[] = array($name, $params);
 		}
 
 		return $functions;

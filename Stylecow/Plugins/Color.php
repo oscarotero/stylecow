@@ -249,6 +249,16 @@ class Color implements Plugins_interface {
 			$s = $delta / (2 - $max - $min);
 		}
 
+		$s = round($s * 100);
+
+		if ($s < 0) {
+			$s *= -1;
+		}
+
+		if ($s > 100) {
+			$s = 100;
+		}
+
 		if ($r === $max) {
 			$h = ($g - $b ) / $delta;
 		} else if ($g === $max) {
@@ -263,7 +273,7 @@ class Color implements Plugins_interface {
 			$h += 360;
 		}
 
-		return array($h, round($s * 100).'%', round($l * 100).'%', $a);
+		return array($h, $s.'%', round($l * 100).'%', $a);
 	}
 
 

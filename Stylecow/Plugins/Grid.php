@@ -1,6 +1,6 @@
 <?php
 /**
-* Grid plugin (version 0.1)
+* Grid plugin (version 0.1.1)
 * for styleCow PHP library
 *
 * 2011. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
@@ -75,6 +75,7 @@ class Grid implements Plugins_interface {
 								case 'right':
 								case 'left':
 								case 'in-cols':
+								case 'background':
 									$options[$function[0]] = $function[1];
 									break;
 
@@ -86,7 +87,7 @@ class Grid implements Plugins_interface {
 							}
 						}
 
-						if ($options['cols']) {
+						if ($options) {
 							foreach ($this->cols($grid, $options) as $property_name => $property_value) {
 								$this->Css->addProperty($array_code[$k_code]['properties'], $property_name, $property_value, 2);
 							}
@@ -113,33 +114,50 @@ class Grid implements Plugins_interface {
 	 * return none
 	 */
 	private function cols ($grid, $options) {
-		$width = ($grid['width'] - ($grid['gutter'] * ($grid['columns'] - 1))) / $grid['columns'];
+		$styles = array();
 
-		$options['cols'][0] = floatval($options['cols'][0]);
-		$options['cols'][1] = intval($options['cols'][1]);
+		if (array_key_exists('cols', $options)) {
+			$width = ($grid['width'] - ($grid['gutter'] * ($grid['columns'] - 1))) / $grid['columns'];
+			
+			$options['cols'][0] = floatval($options['cols'][0]);
+			$options['cols'][1] = intval($options['cols'][1]);
 
-		if ($options['in-cols']) {
-			$options['cols'][1] += ($options['cols'][0] / floatval($options['in-cols'][0])) * intval($options['in-cols'][1]);
+			if ($options['in-cols']) {
+				$options['cols'][1] += ($options['cols'][0] / floatval($options['in-cols'][0])) * intval($options['in-cols'][1]);
+			}
+
+			if ($options['right']) {
+				$right = (($width + $grid['gutter']) * floatval($options['right'][0])) + intval($options['right'][1]) + $grid['gutter'];
+			} else {
+				$right = $grid['gutter'];
+			}
+
+			if ($options['left']) {
+				$left = (($width + $grid['gutter']) * floatval($options['left'][0])) + intval($options['left'][1]);
+			} else {
+				$left = '0';
+			}
+
+			$styles += array(
+				'width' => floor(($width * $options['cols'][0]) + ($grid['gutter'] * ($options['cols'][0] - 1)) + $options['cols'][1]).'px',
+				'float' => 'left',
+				'display' => 'inline',
+				'margin-right' => floor($right).'px',
+				'margin-left' => floor($left).'px'
+			);
 		}
 
-		if ($options['right']) {
-			$right = (($width + $grid['gutter']) * floatval($options['right'][0])) + intval($options['right'][1]) + $grid['gutter'];
-		} else {
-			$right = $grid['gutter'];
+		if (array_key_exists('background', $options)) {
+			$url = 'http://griddle.it/'.$grid['width'].'-'.$grid['columns'].'-'.$grid['gutter'];
+
+			if ($options['background']) {
+				$url .= '?'.http_build_query($options['background']);
+			}
+
+			$styles['background'] = "url('$url') !important";
 		}
 
-		if ($options['left']) {
-			$left = (($width + $grid['gutter']) * floatval($options['left'][0])) + intval($options['left'][1]);
-		} else {
-			$left = '0';
-		}
-
-		return array(
-			'width' => floor(($width * $options['cols'][0]) + ($grid['gutter'] * ($options['cols'][0] - 1)) + $options['cols'][1]).'px',
-			'float' => 'left',
-			'display' => 'inline',
-			'margin-right' => floor($right).'px',
-			'margin-left' => floor($left).'px'
-		);
+		
+		return $styles;
 	}
 }

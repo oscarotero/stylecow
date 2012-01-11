@@ -1,6 +1,6 @@
 <?php
 /**
-* Nested_rules plugin (version 0.1)
+* Nested_rules plugin (version 0.1.1)
 * for styleCow PHP library
 *
 * 2011. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
@@ -42,7 +42,7 @@ class Nested_rules implements Plugins_interface {
 		$new_array_code = array();
 
 		foreach ($array_code as $k_code => $code) {
-			if ($parent_selectors && $code['properties'] && $code['is_css']) {
+			if ($parent_selectors && $code['is_css']) {
 				$selectors = $code['selector'];
 				$code['selector'] = array();
 

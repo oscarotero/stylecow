@@ -242,9 +242,15 @@ class Stylecow {
 			
 			//Add only if doesn't exit
 			case 2:
-				$key = $this->getPropertyKey($properties, $name);
+				if ($this->getPropertyKey($properties, $name) === false) {
+					if (strpos($name, '-') !== false) {
+						$short_name = current(explode('-', $name, 2));
+						
+						if ($this->getPropertyKey($properties, $short_name) !== false) {
+							return true;
+						}
+					}
 
-				if ($key === false) {
 					$properties[] = array(
 						'name' => $name,
 						'value' => (array)$value

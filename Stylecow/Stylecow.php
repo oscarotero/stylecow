@@ -583,17 +583,19 @@ class Stylecow {
 			}
 
 			if (isset($code['properties'])) {
-				$text .= $tab_selector.$selector." {\n";
+				$text_properties = '';
 				
 				foreach ($code['properties'] as $property) {
-					$text .= $tab_property.$property['name'].': '.implode(', ', $property['value']).";\n";
+					$text_properties .= $tab_property.$property['name'].': '.implode(', ', $property['value']).";\n";
 				}
 
 				if ($code['content']) {
-					$text .= $this->_toString($code['content'], $tabs + 1);
+					$text_properties .= $this->_toString($code['content'], $tabs + 1);
 				}
 
-				$text .= $tab_selector."}\n";
+				if ($text_properties) {
+					$text .= $tab_selector.$selector." {\n".$text_properties.$tab_selector."}\n";
+				}
 			} else {
 				$text .= $tab_selector.$selector.";\n";
 			}

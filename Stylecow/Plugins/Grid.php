@@ -117,9 +117,9 @@ class Grid implements Plugins_interface {
 	private function getStyles ($grid, $options) {
 		$styles = array();
 
-		list($width, $left, $right) = $this->calculate($grid, $options);
-
 		if (array_key_exists('cols', $options)) {
+			list($width, $left, $right) = $this->calculate($grid, $options);
+
 			$styles += array(
 				'width' => $width.'px',
 				'float' => 'left',
@@ -128,6 +128,8 @@ class Grid implements Plugins_interface {
 				'margin-left' => $left.'px'
 			);
 		} else if (array_key_exists('cols-width', $options)) {
+			$options['cols'] = $options['cols-width'];
+			list($width, $left, $right) = $this->calculate($grid, $options);
 			$styles['width'] = $width.'px';
 		}
 

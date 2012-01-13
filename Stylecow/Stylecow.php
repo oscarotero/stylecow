@@ -464,9 +464,10 @@ class Stylecow {
 			if (strpos($name, ' ') !== false) {
 				$name = substr($name, strrpos($name, ' '));
 			}
-			$params = trim(substr($str, $pos + 1));
 
-			if ($params && $params !== ')') {
+			$params = substr(trim(substr($str, $pos + 1)), 0, -1);
+
+			if ($params) {
 				$params = $this->explode($params);
 			} else {
 				$params = array();

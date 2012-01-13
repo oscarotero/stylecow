@@ -449,7 +449,34 @@ class Vendor_prefixes implements Plugins_interface {
 						break;
 				}
 
-				$sub_values[$sk] = '-webkit-gradient(linear, '.$start.', '.$end.', from('.$params[0].'), to('.$params[1].'))';
+				$color_stops = array();
+				$tk = count($params)-1;
+
+				foreach ($params as $k => $param) {
+					list($color, $stop) = $this->Css->explode($param, ' ');
+
+				 	if ($k === 0) {
+				 		$text = 'from';
+					} else if ($k === $tk) {
+						$text = 'to';
+					} else {
+						$text = 'color-stop';
+					}
+
+					if ($stop) {
+						if (preg_match('/%$/', $stop)) {
+							$stop = intval($top) / 100;
+						}
+
+						$color_stops[] = $text.'('.$stop.', '.$color.')';
+					} else {
+						$color_stops[] = $text.'('.$color.')';
+					}
+				}
+
+				if ($color_stops) {
+					$sub_values[$sk] = '-webkit-gradient(linear, '.$start.', '.$end.', '.implode(', ', $color_stops).')';
+				}
 			}
 
 			$values[$k] = implode(' ', $sub_values);

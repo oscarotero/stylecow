@@ -1,9 +1,9 @@
 <?php
 /**
-* Rem plugin (version 0.1)
+* Rem plugin (version 0.1.1)
 * for styleCow PHP library
 *
-* 2011. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
+* 2012. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
 */
 
 namespace Stylecow;
@@ -55,7 +55,7 @@ class Rem implements Plugins_interface {
 				$new_properties = array();
 
 				foreach ($code['properties'] as $k_property => $property) {
-					if (preg_match('/([0-9]+)rem/', implode($property['value']), $match)) {
+					if (preg_match('/([0-9\.]+)rem/', implode($property['value']), $match)) {
 						$new_values = array();
 
 						foreach ($property['value'] as $k_value => $value) {
@@ -63,7 +63,7 @@ class Rem implements Plugins_interface {
 								$new_values[] = $value;
 							}
 
-							$new_value = preg_replace_callback('/([0-9]+)rem/', array($this, 'remCallback'), $value);
+							$new_value = preg_replace_callback('/([0-9\.]+)rem/', array($this, 'remCallback'), $value);
 
 							if ($new_value !== $value) {
 								$new_values[] = $new_value;
@@ -92,6 +92,10 @@ class Rem implements Plugins_interface {
 	 * return none
 	 */
 	private function remCallback ($matches) {
+		if ($matches[1][0] === '.') {
+			$matches[1] = '0'.$matches[1];
+		}
+
 		return ($this->rem * $matches[1]).'px';
 	}
 }

@@ -578,9 +578,9 @@ class Stylecow {
 			}
 
 			if ($code['type']) {
-				$selector = trim($code['type'].' '.implode(', ', $code['selector']));
+				$selector = trim($code['type'].' '.implode(','."\n", $code['selector']));
 			} else {
-				$selector = implode(', ', $code['selector']);
+				$selector = implode(','."\n", $code['selector']);
 			}
 
 			if (isset($code['properties'])) {

@@ -53,6 +53,10 @@ class Color implements Plugins_interface {
 					}
 				}
 			}
+
+			if ($code['content']) {
+				$array_code[$k_code]['content'] = $this->_transform($code['content']);
+			}
 		}
 
 		return $array_code;

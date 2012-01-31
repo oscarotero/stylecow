@@ -578,9 +578,9 @@ class Stylecow {
 			}
 
 			if ($code['type']) {
-				$selector = trim($code['type'].' '.implode(','."\n", $code['selector']));
+				$selector = trim($code['type'].' '.implode(",\n".$tab_selector, $code['selector']));
 			} else {
-				$selector = implode(','."\n", $code['selector']);
+				$selector = implode(",\n".$tab_selector, $code['selector']);
 			}
 
 			if (isset($code['properties'])) {

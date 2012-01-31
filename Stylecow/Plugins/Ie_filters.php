@@ -1,6 +1,6 @@
 <?php
 /**
-* Ie_filters plugin (version 0.1)
+* Ie_filters plugin (version 0.1.1)
 * for styleCow PHP library
 *
 * 2011. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
@@ -9,7 +9,7 @@
 namespace Stylecow;
 
 class Ie_filters implements Plugins_interface {
-	public $position = 2;
+	public $position = 5;
 
 	private $Css;
 
@@ -256,7 +256,6 @@ class Ie_filters implements Plugins_interface {
 	 */
 	private function addFilter (&$array_code, $filter) {
 		$filter_key = $this->Css->getPropertyKey($array_code['properties'], 'filter');
-		$ms_filter_key = $this->Css->getPropertyKey($array_code['properties'], '-ms-filter');
 
 		if ($filter_key === false) {
 			$array_code['properties'][] = array(
@@ -265,15 +264,6 @@ class Ie_filters implements Plugins_interface {
 			);
 		} else {
 			$array_code['properties'][$filter_key]['value'][] = $filter;
-		}
-
-		if ($ms_filter_key === false) {
-			$array_code['properties'][] = array(
-				'name' => '-ms-filter',
-				'value' => array($filter)
-			);
-		} else {
-			$array_code['properties'][$ms_filter_key]['value'][] = $filter;
 		}
 	}
 }

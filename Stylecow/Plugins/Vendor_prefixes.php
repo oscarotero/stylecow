@@ -105,10 +105,10 @@ class Vendor_prefixes implements Plugins_interface {
 			'inline-block' => array('moz')
 		),
 		'background' => array(
-			'linear-gradient' => array('moz', 'webkit')
+			'linear-gradient' => array('moz', 'webkit', 'o')
 		),
 		'background-image' => array(
-			'linear-gradient' => array('moz', 'webkit')
+			'linear-gradient' => array('moz', 'webkit', 'o')
 		)
 	);
 

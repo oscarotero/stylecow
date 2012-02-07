@@ -260,7 +260,8 @@ class Ie_filters implements Plugins_interface {
 		if ($filter_key === false) {
 			$array_code['properties'][] = array(
 				'name' => 'filter',
-				'value' => array($filter)
+				'value' => array($filter),
+				'browser' => 'ms'
 			);
 		} else {
 			$array_code['properties'][$filter_key]['value'][] = $filter;

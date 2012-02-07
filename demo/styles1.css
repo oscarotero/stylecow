@@ -38,6 +38,10 @@ $variables {
 	background: $color;
 }
 
+::selection {
+	color: blue;
+}
+
 .l10 { background: color($color, light:10); }
 .l20 { background: color($color, light:20); }
 .l30 { background: color($color, light:30); }

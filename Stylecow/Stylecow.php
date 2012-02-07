@@ -523,21 +523,14 @@ class Stylecow {
 
 
 	/**
-	 * public function show ([bool $header], [int $cache])
+	 * public function show ([string $browser])
 	 *
 	 * Prints the css file
 	 */
-	public function show ($header = true, $cache = 0) {
-		if ($header) {
-			header('Content-type: text/css');
+	public function show ($browser = null) {
+		header('Content-type: text/css');
 
-			if ($cache && is_int($cache)) {
-				header('Expires: '.gmdate('D, d M Y H:i:s',(time() + $cache).' GMT'));
-			}
-		}
-
-		//Get text
-		echo $this->toString();
+		echo $this->toString($browser);
 
 		die();
 	}
@@ -545,35 +538,35 @@ class Stylecow {
 
 
 	/**
-	 * public function toString ()
+	 * public function toString ([string $browser])
 	 *
 	 * Returns transformed text
 	 * Returns string
 	 */
-	public function toString () {
+	public function toString ($browser = null) {
 		if (is_string($this->code)) {
 			return $this->code;
 		}
-
-		return $this->_toString($this->code);
+//print_r($this->code);
+		return $this->_toString($this->code, 0, $browser, '');
 	}
 
 
 
 	/**
-	 * private function _toString (array $array_code)
+	 * private function _toString (array $array_code, int $tabs, string $browser, string $parent_browser)
 	 *
 	 * Returns transformed text
 	 * Returns string
 	 */
-	private function _toString ($array_code, $tabs = 0) {
+	private function _toString ($array_code, $tabs = 0, $browser, $parent_browser) {
 		$text = '';
 		$tab_selector = str_repeat("\t", $tabs);
 		$tab_property = str_repeat("\t", $tabs + 1);
 
 		//Get text
 		foreach ($array_code as $code) {
-			if (!$code['is_css']) {
+			if (!$code['is_css'] || ($browser === '' && $code['browser'])) {
 				continue;
 			}
 
@@ -585,13 +578,19 @@ class Stylecow {
 
 			if (isset($code['properties'])) {
 				$text_properties = '';
-				
+
 				foreach ($code['properties'] as $property) {
+					if ($browser && ($code['browser'] !== $browser) && ($property['browser'] !== $browser) && ($parent_browser !== $browser)) {
+						continue;
+					} else if ($browser === '' && $property['browser']) {
+						continue;
+					}
+
 					$text_properties .= $tab_property.$property['name'].': '.implode(', ', $property['value']).";\n";
 				}
 
 				if ($code['content']) {
-					$text_properties .= $this->_toString($code['content'], $tabs + 1);
+					$text_properties .= $this->_toString($code['content'], $tabs + 1, $browser, $code['browser']);
 				}
 
 				if ($text_properties) {

@@ -1,10 +1,10 @@
 <?php
 /**
-* Rem plugin (version 0.1.1)
-* for styleCow PHP library
-*
-* 2012. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
-*/
+ * Rem plugin (version 0.1.1)
+ * for styleCow PHP library
+ *
+ * 2012. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
+ */
 
 namespace Stylecow;
 

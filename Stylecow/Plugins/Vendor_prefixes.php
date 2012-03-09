@@ -1,10 +1,10 @@
 <?php
 /**
-* Vendor_prefixes plugin (version 0.1.1)
-* for styleCow PHP library
-*
-* 2011. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
-*/
+ * Vendor_prefixes plugin (version 0.1.2)
+ * for styleCow PHP library
+ *
+ * 2012. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
+ */
 
 namespace Stylecow;
 
@@ -175,13 +175,13 @@ class Vendor_prefixes implements Plugins_interface {
 		foreach ($array_code as $code) {
 			if ($code['type'] && $this->type_prefixes[$code['type']]) {
 				foreach ($this->type_prefixes[$code['type']] as $prefix => $new_type_prefix) {
-					if (($code['browser'] && $code['browser'] !== $prefix) || ($prefix_scope && $prefix !== $prefix_scope)) {
+					if (($code['prefix'] && $code['prefix'] !== $prefix) || ($prefix_scope && $prefix !== $prefix_scope)) {
 						continue;
 					}
 
 					$new_code = $code;
 					$new_code['type'] = $new_type_prefix;
-					$new_code['browser'] = $prefix;
+					$new_code['prefix'] = $prefix;
 
 					if ($new_code['content']) {
 						$new_code['content'] = $this->_transformType($new_code['content'], $prefix);
@@ -190,7 +190,7 @@ class Vendor_prefixes implements Plugins_interface {
 					$new_array_code[] = $new_code;
 				}
 			} else if ($code['content']) {
-				$code['content'] = $this->_transformType($code['content'], $code['browser']);
+				$code['content'] = $this->_transformType($code['content'], $code['prefix']);
 			}
 
 			$new_array_code[] = $code;
@@ -210,7 +210,7 @@ class Vendor_prefixes implements Plugins_interface {
 
 		foreach ($array_code as $code) {
 			if ($code['content']) {
-				$code['content'] = $this->_transformSelector($code['content'], $code['browser']);
+				$code['content'] = $this->_transformSelector($code['content'], $code['prefix']);
 			}
 
 			$new_array_code[] = $code;
@@ -220,13 +220,13 @@ class Vendor_prefixes implements Plugins_interface {
 					foreach ($this->selector_prefixes as $selector_prefix => $prefixes) {
 						if (strpos($selector, $selector_prefix) !== false) {
 							foreach ($prefixes as $prefix => $new_selector_prefix) {
-								if (($code['browser'] && $code['browser'] !== $prefix) || ($prefix_scope && $prefix !== $prefix_scope)) {
+								if (($code['prefix'] && $code['prefix'] !== $prefix) || ($prefix_scope && $prefix !== $prefix_scope)) {
 									continue;
 								}
 
 								$new_code = $code;
 								$new_code['selector'] = array(str_replace($selector_prefix, $new_selector_prefix, $selector));
-								$new_code['browser'] = $prefix;
+								$new_code['prefix'] = $prefix;
 
 								if ($new_code['content']) {
 									$new_code['content'] = $this->_transformSelector($new_code['content'], $prefix);
@@ -255,7 +255,7 @@ class Vendor_prefixes implements Plugins_interface {
 
 		foreach ($array_code as $code) {
 			if ($code['content']) {
-				$code['content'] = $this->_transformProperties($code['content'], $code['browser']);
+				$code['content'] = $this->_transformProperties($code['content'], $code['prefix']);
 			}
 
 			$new_code = $code;
@@ -272,14 +272,14 @@ class Vendor_prefixes implements Plugins_interface {
 
 					if ($this->property_prefixes[$property['name']]) {
 						foreach ($this->property_prefixes[$property['name']] as $prefix) {
-							if (($code['browser'] && $code['browser'] !== $prefix) || ($prefix_scope && $prefix !== $prefix_scope)) {
+							if (($code['prefix'] && $code['prefix'] !== $prefix) || ($prefix_scope && $prefix !== $prefix_scope)) {
 								continue;
 							}
 
 							$new_code['properties'][] = array(
 								'name' => '-'.$prefix.'-'.$property['name'],
 								'value' => $property['value'],
-								'browser' => $prefix
+								'prefix' => $prefix
 							);
 						}
 					}
@@ -305,7 +305,7 @@ class Vendor_prefixes implements Plugins_interface {
 
 		foreach ($array_code as $code) {
 			if ($code['content']) {
-				$code['content'] = $this->_transformValues($code['content'], $code['browser']);
+				$code['content'] = $this->_transformValues($code['content'], $code['prefix']);
 			}
 
 			$new_code = $code;
@@ -328,7 +328,7 @@ class Vendor_prefixes implements Plugins_interface {
 						foreach ($this->value_prefixes[$property['name']] as $property_value => $prefixes) {
 							if (preg_match('/(^|[^-])'.preg_quote($property_value, '/').'([^\w]|$)?/', implode($property['value']))) {
 								foreach ($prefixes as $prefix) {
-									if (($code['browser'] && $code['browser'] !== $prefix) || ($prefix_scope && $prefix !== $prefix_scope)) {
+									if (($code['prefix'] && $code['prefix'] !== $prefix) || ($prefix_scope && $prefix !== $prefix_scope)) {
 										continue;
 									}
 
@@ -340,8 +340,7 @@ class Vendor_prefixes implements Plugins_interface {
 
 									$new_code['properties'][] = array(
 										'name' => $property['name'],
-										'value' => $new_values,
-										'browser' => $prefix
+										'value' => $new_values
 									);
 								}
 							}
@@ -369,7 +368,7 @@ class Vendor_prefixes implements Plugins_interface {
 				$code['properties'][] = array(
 					'name' => '-moz-border-radius-topright',
 					'value' => $values,
-					'browser' => 'moz'
+					'prefix' => 'moz'
 				);
 				return;
 
@@ -377,7 +376,7 @@ class Vendor_prefixes implements Plugins_interface {
 				$code['properties'][] = array(
 					'name' => '-moz-border-radius-topleft',
 					'value' => $values,
-					'browser' => 'moz'
+					'prefix' => 'moz'
 				);
 				return;
 
@@ -385,7 +384,7 @@ class Vendor_prefixes implements Plugins_interface {
 				$code['properties'][] = array(
 					'name' => '-moz-border-radius-bottomright',
 					'value' => $values,
-					'browser' => 'moz'
+					'prefix' => 'moz'
 				);
 				return;
 
@@ -393,7 +392,7 @@ class Vendor_prefixes implements Plugins_interface {
 				$code['properties'][] = array(
 					'name' => '-moz-border-radius-bottomleft',
 					'value' => $values,
-					'browser' => 'moz'
+					'prefix' => 'moz'
 				);
 				return;
 		}
@@ -407,7 +406,7 @@ class Vendor_prefixes implements Plugins_interface {
 	 */
 	private function linearGradient (&$code, $name, $values) {
 		foreach ($values as $k => $value) {
-			$sub_values = $this->Css->explode($value, ' ');
+			$sub_values = $this->Css->explode(' ', $value);
 
 			foreach ($sub_values as $sk => $sub_value) {
 				if (strpos($sub_value, 'linear-gradient') === false) {
@@ -454,7 +453,7 @@ class Vendor_prefixes implements Plugins_interface {
 				$tk = count($params)-1;
 
 				foreach ($params as $k => $param) {
-					list($color, $stop) = $this->Css->explode($param, ' ');
+					list($color, $stop) = $this->Css->explode(' ', $param);
 
 				 	if ($k === 0) {
 				 		$text = 'from';
@@ -486,7 +485,7 @@ class Vendor_prefixes implements Plugins_interface {
 		$code['properties'][] = array(
 			'name' => $name,
 			'value' => $values,
-			'browser' => 'webkit'
+			'prefix' => 'webkit'
 		);
 	}
 }

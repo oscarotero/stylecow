@@ -1,10 +1,10 @@
 <?php
 /**
-* Matches plugin (version 0.1)
-* for styleCow PHP library
-*
-* 2011. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
-*/
+ * Matches plugin (version 0.1)
+ * for styleCow PHP library
+ *
+ * 2011. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
+ */
 
 namespace Stylecow;
 

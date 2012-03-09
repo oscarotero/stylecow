@@ -1,10 +1,10 @@
 <?php
 /**
-* Color plugin (version 0.1)
-* for styleCow PHP library
-*
-* 2011. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
-*/
+ * Color plugin (version 0.2)
+ * for styleCow PHP library
+ *
+ * 2012. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
+ */
 
 namespace Stylecow;
 
@@ -49,7 +49,7 @@ class Color implements Plugins_interface {
 							continue;
 						}
 
-						$array_code[$k_code]['properties'][$k_property]['value'][$k_value] = preg_replace_callback('/color\(([^\)]+)\)/', array($this, 'colorCallback'), $value);
+						$array_code[$k_code]['properties'][$k_property]['value'][$k_value] = preg_replace_callback('/color\((((rgba?|hsla?)?\([^\)]+\))?[^\)]+)\)/', array($this, 'colorCallback'), $value);
 					}
 				}
 			}

@@ -1,12 +1,12 @@
 <?php
 /**
-* styleCow PHP library (version 0.1b2)
-*
-* 2011. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
-*
-* styleCow is released under the GNU Affero GPL version 3.
-* More information at http://www.gnu.org/licenses/agpl-3.0.html
-*/
+ * styleCow PHP library (version 0.2)
+ *
+ * 2012. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
+ *
+ * styleCow is released under the GNU Affero GPL version 3.
+ * More information at http://www.gnu.org/licenses/agpl-3.0.html
+ */
 
 namespace Stylecow;
 
@@ -311,7 +311,7 @@ class Stylecow {
 				list($type, $selector) = $this->explodeTrim(' ', $selector, 2);
 			}
 
-			$selector = $this->explode($selector);
+			$selector = $this->explode(',', $selector);
 
 			$string_code = trim(substr($string_code, $pos + 1));
 			$length = strlen($string_code);
@@ -397,12 +397,16 @@ class Stylecow {
 
 
 	/**
-	 * public function explode (string $string, [string $delimiter], [string $str_in], [string $str_out])
+	 * public function explode (string $string, [string $delimiter], [string $str_in], [string $str_out], [int $limit])
 	 *
 	 * Converts strings in arrays
 	 * Returns array
 	 */
-	public function explode ($string, $delimiter = ',', $str_in = '(', $str_out = ')') {
+	public function explode ($delimiter, $string, $limit = null, $str_in = '(', $str_out = ')') {
+		if (strpos($string, $str_in) === false) {
+			return is_null($limit) ? explode($delimiter, $string) : explode($delimiter, $string, $limit);
+		}
+
 		$array = array();
 
 		while ($string) {
@@ -452,7 +456,7 @@ class Stylecow {
 	public function explodeFunctions ($string) {
 		$functions = array();
 
-		$parts = $this->explode($string, ' ');
+		$parts = $this->explode(' ', $string);
 
 		foreach ($parts as $str) {
 			if (($pos = strpos($str, '(')) === false) {
@@ -468,7 +472,7 @@ class Stylecow {
 			$params = substr(trim(substr($str, $pos + 1)), 0, -1);
 
 			if ($params) {
-				$params = $this->explode($params);
+				$params = $this->explode(',', $params);
 			} else {
 				$params = array();
 			}
@@ -507,7 +511,7 @@ class Stylecow {
 	public function explodeTrim ($delimiter, $text, $limit = null) {
 		$return = array();
 
-		$explode = is_null($limit) ? explode($delimiter, $text) : explode($delimiter, $text, $limit);
+		$explode = $this->explode($delimiter, $text, $limit);
 
 		foreach ($explode as $text_value) {
 			$text_value = trim($text_value);
@@ -523,14 +527,21 @@ class Stylecow {
 
 
 	/**
-	 * public function show ([string $browser])
+	 * public function show ([bool $header], [int $cache])
 	 *
 	 * Prints the css file
 	 */
-	public function show ($browser = null) {
-		header('Content-type: text/css');
+	public function show ($header = true, $cache = 0) {
+		if ($header) {
+			header('Content-type: text/css');
 
-		echo $this->toString($browser);
+			if ($cache && is_int($cache)) {
+				header('Expires: '.gmdate('D, d M Y H:i:s',(time() + $cache).' GMT'));
+			}
+		}
+
+		//Get text
+		echo $this->toString();
 
 		die();
 	}
@@ -538,35 +549,35 @@ class Stylecow {
 
 
 	/**
-	 * public function toString ([string $browser])
+	 * public function toString ()
 	 *
 	 * Returns transformed text
 	 * Returns string
 	 */
-	public function toString ($browser = null) {
+	public function toString () {
 		if (is_string($this->code)) {
 			return $this->code;
 		}
-//print_r($this->code);
-		return $this->_toString($this->code, 0, $browser, '');
+
+		return $this->_toString($this->code);
 	}
 
 
 
 	/**
-	 * private function _toString (array $array_code, int $tabs, string $browser, string $parent_browser)
+	 * private function _toString (array $array_code)
 	 *
 	 * Returns transformed text
 	 * Returns string
 	 */
-	private function _toString ($array_code, $tabs = 0, $browser, $parent_browser) {
+	private function _toString ($array_code, $tabs = 0) {
 		$text = '';
 		$tab_selector = str_repeat("\t", $tabs);
 		$tab_property = str_repeat("\t", $tabs + 1);
 
 		//Get text
 		foreach ($array_code as $code) {
-			if (!$code['is_css'] || ($browser === '' && $code['browser'])) {
+			if (!$code['is_css']) {
 				continue;
 			}
 
@@ -578,19 +589,13 @@ class Stylecow {
 
 			if (isset($code['properties'])) {
 				$text_properties = '';
-
+				
 				foreach ($code['properties'] as $property) {
-					if ($browser && ($code['browser'] !== $browser) && ($property['browser'] !== $browser) && ($parent_browser !== $browser)) {
-						continue;
-					} else if ($browser === '' && $property['browser']) {
-						continue;
-					}
-
 					$text_properties .= $tab_property.$property['name'].': '.implode(', ', $property['value']).";\n";
 				}
 
 				if ($code['content']) {
-					$text_properties .= $this->_toString($code['content'], $tabs + 1, $browser, $code['browser']);
+					$text_properties .= $this->_toString($code['content'], $tabs + 1);
 				}
 
 				if ($text_properties) {

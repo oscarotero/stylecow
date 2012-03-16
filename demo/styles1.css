@@ -8,6 +8,7 @@ hsl(100, 100%, 30%)
 */
 body {
 	font-size: 1.2em;
+	background: color(black, 10);
 }
 .wrapper {
 	font-size: 2em;

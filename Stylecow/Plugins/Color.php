@@ -1,6 +1,6 @@
 <?php
 /**
- * Color plugin (version 0.2)
+ * Color plugin (version 0.3)
  * for styleCow PHP library
  *
  * 2012. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)

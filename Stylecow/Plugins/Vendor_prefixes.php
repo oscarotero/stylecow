@@ -1,6 +1,6 @@
 <?php
 /**
- * Vendor_prefixes plugin (version 0.1.2)
+ * Vendor_prefixes plugin (version 0.1.3)
  * for styleCow PHP library
  *
  * 2012. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
@@ -405,8 +405,8 @@ class Vendor_prefixes implements Plugins_interface {
 	 * Return array
 	 */
 	private function linearGradient (&$code, $name, $values) {
-		foreach ($values as $k => $value) {
-			$sub_values = $this->Css->explode(' ', $value);
+		foreach ($values as $vk => $value) {
+			$sub_values = $this->Css->explode(' ', trim($value));
 
 			foreach ($sub_values as $sk => $sub_value) {
 				if (strpos($sub_value, 'linear-gradient') === false) {
@@ -453,7 +453,7 @@ class Vendor_prefixes implements Plugins_interface {
 				$tk = count($params)-1;
 
 				foreach ($params as $k => $param) {
-					list($color, $stop) = $this->Css->explode(' ', $param);
+					list($color, $stop) = $this->Css->explode(' ', trim($param));
 
 				 	if ($k === 0) {
 				 		$text = 'from';
@@ -479,7 +479,7 @@ class Vendor_prefixes implements Plugins_interface {
 				}
 			}
 
-			$values[$k] = implode(' ', $sub_values);
+			$values[$vk] = implode(' ', $sub_values);
 		}
 
 		$code['properties'][] = array(

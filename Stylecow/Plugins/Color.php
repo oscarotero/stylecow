@@ -1,6 +1,6 @@
 <?php
 /**
- * Color plugin (version 0.3)
+ * Color plugin (version 0.4)
  * for styleCow PHP library
  *
  * 2012. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
@@ -313,8 +313,21 @@ class Color implements Plugins_interface {
 	private function toRGBA ($color) {
 		if ($color[0] === '#') {
 			return $this->HEX_RGBA(substr($color, 1));
-		} else if (isset($this->color_names[$color])) {
+		}
+		if (isset($this->color_names[$color])) {
 			return $this->HEX_RGBA(substr($this->color_names[$color], 1));
+		}
+		if (preg_match('/rgb\((\d+)[,\s]+(\d+)[,\s]+(\d+)\)/', $color, $matches)) {
+			return array(intval($matches[1]), intval($matches[2]), intval($matches[3]), 1);
+		}
+		if (preg_match('/rgba\((\d+)[,\s]+(\d+)[,\s]+(\d+)[,\s]+(\d+)\)/', $color, $matches)) {
+			return array(intval($matches[1]), intval($matches[2]), intval($matches[3]), floatval($matches[4]));
+		}
+		if (preg_match('/hsl\((\d+)[,\s]+(\d+)[,\s]+(\d+)\)/', $color, $matches)) {
+			return $this->HSLA_RGBA(array(intval($matches[1]), intval($matches[2]), intval($matches[3]), 1));
+		}
+		if (preg_match('/hsla\((\d+)[,\s]+(\d+)[,\s]+(\d+)[,\s]+(\d+)\)/', $color, $matches)) {
+			return $this->HSLA_RGBA(array(intval($matches[1]), intval($matches[2]), intval($matches[3]), floatval($matches[4])));
 		}
 
 		return array(0, 0, 0, 1);
@@ -334,7 +347,7 @@ class Color implements Plugins_interface {
 		$s = intval($s)/100;
 		$l = intval($l)/100;
 
-		if ($s == 0) {
+		if ($s === 0) {
 			return array(
 				round($l * 255),
 				round($l * 255),

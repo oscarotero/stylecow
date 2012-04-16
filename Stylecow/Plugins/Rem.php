@@ -1,9 +1,14 @@
 <?php
 /**
- * Rem plugin (version 0.1.1)
- * for styleCow PHP library
+ * Stylecow PHP library
  *
- * 2012. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
+ * Rem plugin
+ *
+ * PHP version 5.3
+ *
+ * @author Oscar Otero <http://oscarotero.com> <oom@oscarotero.com>
+ * @license GNU Affero GPL version 3. http://www.gnu.org/licenses/agpl-3.0.html
+ * @version 0.1.1 (2012)
  */
 
 namespace Stylecow;
@@ -16,9 +21,9 @@ class Rem implements Plugins_interface {
 
 
 	/**
-	 * public function __construct (Stylecow $Css)
+	 * Constructor
 	 *
-	 * return none
+	 * @param Stylecow  $Css  The Stylecow instance
 	 */
 	public function __construct (Stylecow $Css) {
 		$this->Css = $Css;
@@ -26,9 +31,7 @@ class Rem implements Plugins_interface {
 
 
 	/**
-	 * public function transform ()
-	 *
-	 * return none
+	 * Transform the parsed css code
 	 */
 	public function transform () {
 		$this->Css->code = $this->_transform($this->Css->code);
@@ -37,9 +40,11 @@ class Rem implements Plugins_interface {
 
 
 	/**
-	 * private function _transform (array $array_code)
+	 * Private function to transform recursively the parsed css code
 	 *
-	 * return none
+	 * @param array  $array_code        The piece of the parsed css code
+	 *
+	 * @return array  The transformed code
 	 */
 	private function _transform ($array_code) {
 		foreach ($array_code as $k_code => $code) {
@@ -87,9 +92,11 @@ class Rem implements Plugins_interface {
 
 
 	/**
-	 * private function remCallback (array $matches)
+	 * The internal callback to replace the rem value by its value in pixels
 	 *
-	 * return none
+	 * @param array  $matches  The matches found in the css code
+	 *
+	 * @return string  The rem value in pixels
 	 */
 	private function remCallback ($matches) {
 		if ($matches[1][0] === '.') {

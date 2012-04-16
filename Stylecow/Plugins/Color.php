@@ -1,9 +1,14 @@
 <?php
 /**
- * Color plugin (version 0.4)
- * for styleCow PHP library
+ * Stylecow PHP library
  *
- * 2012. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
+ * Color plugin
+ *
+ * PHP version 5.3
+ *
+ * @author Oscar Otero <http://oscarotero.com> <oom@oscarotero.com>
+ * @license GNU Affero GPL version 3. http://www.gnu.org/licenses/agpl-3.0.html
+ * @version 0.4 (2012)
  */
 
 namespace Stylecow;
@@ -164,9 +169,9 @@ class Color implements Plugins_interface {
 
 
 	/**
-	 * public function __construct (Stylecow $Css)
+	 * Constructor
 	 *
-	 * return none
+	 * @param Stylecow  $Css  The Stylecow instance
 	 */
 	public function __construct (Stylecow $Css) {
 		$this->Css = $Css;
@@ -174,9 +179,7 @@ class Color implements Plugins_interface {
 
 
 	/**
-	 * public function transform ()
-	 *
-	 * return none
+	 * Transform the parsed css code
 	 */
 	public function transform () {
 		$this->Css->code = $this->_transform($this->Css->code);
@@ -185,9 +188,11 @@ class Color implements Plugins_interface {
 
 
 	/**
-	 * private function _transform (array $array_code)
+	 * Private function to transform recursively the parsed css code
 	 *
-	 * return none
+	 * @param array  $array_code  The piece of the parsed css code
+	 *
+	 * @return array  The transformed code
 	 */
 	private function _transform ($array_code) {
 		foreach ($array_code as $k_code => $code) {
@@ -214,9 +219,11 @@ class Color implements Plugins_interface {
 
 
 	/**
-	 * private function colorCallback (array $matches)
+	 * The internal callback to replace each color() function with the css color syntax
 	 *
-	 * return none
+	 * @param array  $matches  The matches found in the preg_replace_callback
+	 *
+	 * @return array  The transformed color
 	 */
 	private function colorCallback ($matches) {
 		list($color, $operations) = $this->Css->explodeTrim(',', $matches[1], 2);
@@ -269,9 +276,11 @@ class Color implements Plugins_interface {
 
 
 	/**
-	 * private function editChannel (array &$channels, string $channel_name, string/ing $new_value)
+	 * Edit one of the color channel (red, green, blue, alpha, hue, saturation and light)
 	 *
-	 * return string
+	 * @param array       &$channels     The array with all channels of the color
+	 * @param array       $channel_name  The name of the channel to edit
+	 * @param string/int  $new_value     The new value of the channel
 	 */
 	private function editChannel (&$channels, $channel_name, $new_value) {
 		static $channels_info = array(
@@ -306,9 +315,11 @@ class Color implements Plugins_interface {
 
 
 	/**
-	 * private function toRGBA (string $color)
+	 * Convert any css color syntax to rgba
 	 *
-	 * return string
+	 * @param string  $color  The css color syntax
+	 *
+	 * @return array  The rgba value
 	 */
 	private function toRGBA ($color) {
 		if ($color[0] === '#') {
@@ -336,9 +347,11 @@ class Color implements Plugins_interface {
 
 
 	/**
-	 * private function HSLA_RGBA (array $hsla)
+	 * Convert a HSLA color to RGBA
 	 *
-	 * return array
+	 * @param array  $hsla  The hsla color values
+	 *
+	 * @return array  The rgba value
 	 */
 	private function HSLA_RGBA ($hsla) {
 		list($h, $s, $l, $a) = $hsla;
@@ -374,9 +387,7 @@ class Color implements Plugins_interface {
 
 
 	/**
-	 * private function Hue_RGB (int $v1, int $v2, int $vH)
-	 *
-	 * return array
+	 * Internal function used by HSLA_RGBA() to convert a Hue value to R, G, and B
 	 */
 	private function Hue_RGB ($v1, $v2, $vH, $k = false) {
 		if ($vH < 0) {
@@ -403,9 +414,11 @@ class Color implements Plugins_interface {
 
 
 	/**
-	 * private function RGBA_HSLA (array $rgba)
+	 * Convert RGBA color values to HSLA
 	 *
-	 * return array
+	 * @param array  $rgba  The rgba color values
+	 *
+	 * @return array  The hsla value
 	 */
 	private function RGBA_HSLA ($rgba) {
 		list($r, $g, $b, $a) = $rgba;
@@ -456,9 +469,11 @@ class Color implements Plugins_interface {
 
 
 	/**
-	 * private function RGBA_HEX (array $rgba)
+	 * Convert RGBA color values to hexadecimal
 	 *
-	 * return string
+	 * @param array  $rgba  The rgba color values
+	 *
+	 * @return string  The hexadecimal value
 	 */
 	private function RGBA_HEX ($rgba) {
 		$r = dechex(($rgba[0] > 255) ? 255 : $rgba[0]);
@@ -481,9 +496,11 @@ class Color implements Plugins_interface {
 
 
 	/**
-	 * private function HEXA_RGBA (string $hex)
+	 * Convert hexadecimal color value to RGBA
 	 *
-	 * return array
+	 * @param string  $hex  The hex color value
+	 *
+	 * @return array  The rgba value
 	 */
 	private function HEX_RGBA ($hex) {
 		if (strlen($hex) === 3) {

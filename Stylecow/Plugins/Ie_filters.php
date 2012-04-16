@@ -1,9 +1,14 @@
 <?php
 /**
- * Ie_filters plugin (version 0.1.1)
- * for styleCow PHP library
+ * Stylecow PHP library
  *
- * 2011. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
+ * Ie_filters plugin
+ *
+ * PHP version 5.3
+ *
+ * @author Oscar Otero <http://oscarotero.com> <oom@oscarotero.com>
+ * @license GNU Affero GPL version 3. http://www.gnu.org/licenses/agpl-3.0.html
+ * @version 0.1.1 (2011)
  */
 
 namespace Stylecow;
@@ -13,10 +18,11 @@ class Ie_filters implements Plugins_interface {
 
 	private $Css;
 
+
 	/**
-	 * public function __construct (Stylecow $Css)
+	 * Constructor
 	 *
-	 * return none
+	 * @param Stylecow  $Css  The Stylecow instance
 	 */
 	public function __construct (Stylecow $Css) {
 		$this->Css = $Css;
@@ -24,9 +30,7 @@ class Ie_filters implements Plugins_interface {
 
 
 	/**
-	 * public function transform ()
-	 *
-	 * return none
+	 * Transform the parsed css code
 	 */
 	public function transform () {
 		$this->Css->code = $this->_transform($this->Css->code);
@@ -34,9 +38,11 @@ class Ie_filters implements Plugins_interface {
 
 
 	/**
-	 * private function _transform (array $array_code)
+	 * Private function to transform recursively the parsed css code
 	 *
-	 * return none
+	 * @param array  $array_code  The piece of the parsed css code
+	 *
+	 * @return array  The transformed code
 	 */
 	private function _transform ($array_code) {
 		foreach ($array_code as $k_code => $code) {
@@ -119,9 +125,10 @@ class Ie_filters implements Plugins_interface {
 
 
 	/**
-	 * private function rotate (&array $code, array $params)
+	 * Generate the Ie filter to emulate the rotation of an element: tranform: rotate(4deg);
 	 *
-	 * return none
+	 * @param array  &$code   The piece of the parsed code
+	 * @param array  $params  The rotation parameters
 	 */
 	private function rotate (&$code, $params) {
 		$value = intval($params[0]);
@@ -159,9 +166,10 @@ class Ie_filters implements Plugins_interface {
 
 
 	/**
-	 * private function linearGradient (&array $code, array $params)
+	 * Generate the Ie filter to emulate the rotation of an element: background: linear-gradient(top, #333, #999);
 	 *
-	 * Return array
+	 * @param array  &$code   The piece of the parsed code
+	 * @param array  $params  The linear gradient parameters
 	 */
 	private function linearGradient (&$code, $params) {
 		$point = 'top';
@@ -222,9 +230,10 @@ class Ie_filters implements Plugins_interface {
 
 
 	/**
-	 * private function rgba (&array $code, array $params)
+	 * Generate the Ie filter to emulate the background rgba color of an element: background: rgba(0, 0, 0, 0.5);
 	 *
-	 * Return array
+	 * @param array  &$code   The piece of the parsed code
+	 * @param array  $params  The rgba parameters
 	 */
 	private function rgba (&$code, $params) {
 		$r = dechex($params[0]);
@@ -249,10 +258,12 @@ class Ie_filters implements Plugins_interface {
 	}
 
 
+	
 	/**
-	 * private function addFilter (array &$array_code, string $filter)
+	 * Add an ie filter to the parsed code
 	 *
-	 * return none
+	 * @param array   &$array_code  The piece of the parsed code
+	 * @param string  $params       The ie filter code to insert
 	 */
 	private function addFilter (&$array_code, $filter) {
 		$filter_key = $this->Css->getPropertyKey($array_code['properties'], 'filter');

@@ -1,9 +1,14 @@
 <?php
 /**
- * Matches plugin (version 0.1)
- * for styleCow PHP library
+ * Stylecow PHP library
  *
- * 2011. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
+ * Matches plugin
+ *
+ * PHP version 5.3
+ *
+ * @author Oscar Otero <http://oscarotero.com> <oom@oscarotero.com>
+ * @license GNU Affero GPL version 3. http://www.gnu.org/licenses/agpl-3.0.html
+ * @version 0.1 (2011)
  */
 
 namespace Stylecow;
@@ -13,10 +18,11 @@ class Matches implements Plugins_interface {
 
 	private $Css;
 
+
 	/**
-	 * public function __construct (Stylecow $Css)
+	 * Constructor
 	 *
-	 * return none
+	 * @param Stylecow  $Css  The Stylecow instance
 	 */
 	public function __construct (Stylecow $Css) {
 		$this->Css = $Css;
@@ -24,9 +30,7 @@ class Matches implements Plugins_interface {
 
 
 	/**
-	 * public function transform ()
-	 *
-	 * return none
+	 * Transform the parsed css code
 	 */
 	public function transform () {
 		$this->Css->code = $this->_transform($this->Css->code);
@@ -34,9 +38,11 @@ class Matches implements Plugins_interface {
 
 
 	/**
-	 * private function _transform ($array_code)
+	 * Private function to transform recursively the parsed css code
 	 *
-	 * return none
+	 * @param array  $array_code  The piece of the parsed css code
+	 *
+	 * @return array  The transformed code
 	 */
 	private function _transform ($array_code) {
 		foreach ($array_code as $k_code => $code) {

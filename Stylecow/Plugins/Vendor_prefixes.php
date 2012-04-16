@@ -1,9 +1,14 @@
 <?php
 /**
- * Vendor_prefixes plugin (version 0.1.3)
- * for styleCow PHP library
+ * Stylecow PHP library
  *
- * 2012. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
+ * Variables plugin
+ *
+ * PHP version 5.3
+ *
+ * @author Oscar Otero <http://oscarotero.com> <oom@oscarotero.com>
+ * @license GNU Affero GPL version 3. http://www.gnu.org/licenses/agpl-3.0.html
+ * @version 0.1.3 (2012)
  */
 
 namespace Stylecow;
@@ -139,10 +144,11 @@ class Vendor_prefixes implements Plugins_interface {
 
 	private $Css;
 
+
 	/**
-	 * public function __construct (Stylecow $Css)
+	 * Constructor
 	 *
-	 * return none
+	 * @param Stylecow  $Css  The Stylecow instance
 	 */
 	public function __construct (Stylecow $Css) {
 		$this->Css = $Css;
@@ -150,9 +156,7 @@ class Vendor_prefixes implements Plugins_interface {
 
 
 	/**
-	 * public function transform ()
-	 *
-	 * return none
+	 * Transform the parsed css code
 	 */
 	public function transform () {
 		$code = $this->_transformType($this->Css->code);
@@ -165,9 +169,12 @@ class Vendor_prefixes implements Plugins_interface {
 
 
 	/**
-	 * private function _transformType (array $array_code, [string $prefix_scope])
+	 * Private function to add the type prefixes
 	 *
-	 * return none
+	 * @param array  $array_code    The piece of the parsed css code
+	 * @param array  $prefix_scope  The browser prefix
+	 *
+	 * @return array  The transformed code
 	 */
 	private function _transformType ($array_code, $prefix_scope = '') {
 		$new_array_code = array();
@@ -200,10 +207,14 @@ class Vendor_prefixes implements Plugins_interface {
 	}
 
 
+	
 	/**
-	 * private function _transformSelector (array $array_code, [string $prefix_scope])
+	 * Private function to add the selector prefixes
 	 *
-	 * return none
+	 * @param array  $array_code    The piece of the parsed css code
+	 * @param array  $prefix_scope  The browser prefix
+	 *
+	 * @return array  The transformed code
 	 */
 	private function _transformSelector ($array_code, $prefix_scope = '') {
 		$new_array_code = array();
@@ -246,9 +257,12 @@ class Vendor_prefixes implements Plugins_interface {
 
 
 	/**
-	 * private function _transformProperties (array $array_code, [string $prefix_scope])
+	 * Private function to add the properties prefixes
 	 *
-	 * return none
+	 * @param array  $array_code    The piece of the parsed css code
+	 * @param array  $prefix_scope  The browser prefix
+	 *
+	 * @return array  The transformed code
 	 */
 	private function _transformProperties ($array_code, $prefix_scope = '') {
 		$new_array_code = array();
@@ -294,11 +308,13 @@ class Vendor_prefixes implements Plugins_interface {
 
 
 
-
 	/**
-	 * private function _transformValues (array $array_code, [string $prefix_scope])
+	 * Private function to add the value prefixes
 	 *
-	 * return none
+	 * @param array  $array_code    The piece of the parsed css code
+	 * @param array  $prefix_scope  The browser prefix
+	 *
+	 * @return array  The transformed code
 	 */
 	private function _transformValues ($array_code, $prefix_scope = '') {
 		$new_array_code = array();
@@ -358,9 +374,13 @@ class Vendor_prefixes implements Plugins_interface {
 
 
 	/**
-	 * private function borderRadius (&array $code, array $name, array $values)
+	 * Fix the different syntaxis for the border-radius
 	 *
-	 * Return array
+	 * @param array   $code    The piece of the parsed css code
+	 * @param string  $name    The name of the border-radius property
+	 * @param array   $values  The values of the property
+	 *
+	 * @return array  The border-radius code
 	 */
 	private function borderRadius (&$code, $name, $values) {
 		switch ($name) {
@@ -399,10 +419,15 @@ class Vendor_prefixes implements Plugins_interface {
 	}
 
 
+
 	/**
-	 * private function linearGradient (&string $code, string $name, array $values)
+	 * Fix the different syntaxis for the linear-gradient
 	 *
-	 * Return array
+	 * @param array   $code    The piece of the parsed css code
+	 * @param string  $name    The name of the linear-gradient property
+	 * @param array   $values  The values of the property
+	 *
+	 * @return array  The linear-gradient code
 	 */
 	private function linearGradient (&$code, $name, $values) {
 		foreach ($values as $vk => $value) {

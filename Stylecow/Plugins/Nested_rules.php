@@ -1,9 +1,14 @@
 <?php
 /**
- * Nested_rules plugin (version 0.1.1)
- * for styleCow PHP library
+ * Stylecow PHP library
  *
- * 2011. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
+ * Nested_rules plugin
+ *
+ * PHP version 5.3
+ *
+ * @author Oscar Otero <http://oscarotero.com> <oom@oscarotero.com>
+ * @license GNU Affero GPL version 3. http://www.gnu.org/licenses/agpl-3.0.html
+ * @version 0.1.1 (2011)
  */
 
 namespace Stylecow;
@@ -13,10 +18,11 @@ class Nested_rules implements Plugins_interface {
 
 	private $Css;
 
+
 	/**
-	 * public function __construct (Stylecow $Css)
+	 * Constructor
 	 *
-	 * return none
+	 * @param Stylecow  $Css  The Stylecow instance
 	 */
 	public function __construct (Stylecow $Css) {
 		$this->Css = $Css;
@@ -24,9 +30,7 @@ class Nested_rules implements Plugins_interface {
 
 
 	/**
-	 * public function transform ()
-	 *
-	 * return none
+	 * Transform the parsed css code
 	 */
 	public function transform () {
 		$this->Css->code = $this->_transform($this->Css->code);
@@ -34,9 +38,12 @@ class Nested_rules implements Plugins_interface {
 
 
 	/**
-	 * private function _transform (array $array_code, [array $parent_selectors])
+	 * Private function to transform recursively the parsed css code
 	 *
-	 * return none
+	 * @param array  $array_code        The piece of the parsed css code
+	 * @param array  $parent_selectors  The parent selectors to joint
+	 *
+	 * @return array  The transformed code
 	 */
 	private function _transform ($array_code, $parent_selectors = array()) {
 		$new_array_code = array();
@@ -75,29 +82,5 @@ class Nested_rules implements Plugins_interface {
 		}
 
 		return $new_array_code;
-	}
-
-
-	/**
-	 * private function nested (array $array_code, array $parent_selectors)
-	 *
-	 * return none
-	 */
-	private function nested ($array_code, $parent_selectors) {
-		foreach ($array_code as $k_code => $code) {
-			foreach ($code['selector'] as $k_selector => $selector) {
-				$selector = ($selector[0] == '&') ? substr($selector, 1) : ' '.$selector;
-
-				foreach ($parent_selectors as $parent_selector) {
-					$array_code[$k_code]['selector'][$k_selector] = $parent_selector.$selector;
-				}
-
-				if ($code['content']) {
-					$array_code[$k_code]['content'] = $this->nested($code['content'], $array_code[$k_code]['selector']);
-				}
-			}
-		}
-
-		return $array_code;
 	}
 }

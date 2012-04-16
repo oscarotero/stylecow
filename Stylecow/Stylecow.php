@@ -1,11 +1,14 @@
 <?php
 /**
- * styleCow PHP library (version 0.2)
+ * Stylecow PHP library
  *
- * 2012. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
+ * Core class
  *
- * styleCow is released under the GNU Affero GPL version 3.
- * More information at http://www.gnu.org/licenses/agpl-3.0.html
+ * PHP version 5.3
+ *
+ * @author Oscar Otero <http://oscarotero.com> <oom@oscarotero.com>
+ * @license GNU Affero GPL version 3. http://www.gnu.org/licenses/agpl-3.0.html
+ * @version 0.2 (2012)
  */
 
 namespace Stylecow;
@@ -18,10 +21,12 @@ class Stylecow {
 
 
 	/**
-	 * public function load (string $file_path, [string $file_url])
+	 * Loads a css file and resolves its included css files
 	 *
-	 * Loads a css file and parse it
-	 * Returns boolean
+	 * @param string  $file_path  The file to load
+	 * @param string  $file_url   The url of the file (required to resolve the url of images or @import)
+	 *
+	 * @return $this
 	 */
 	public function load ($file_path, $file_url = null) {
 		if (is_null($file_url)) {
@@ -44,10 +49,13 @@ class Stylecow {
 
 
 	/**
-	 * public function resolve (string $code, string $base_path, string $base_url)
+	 * Resolves all url() and @import requests and removes the comments
 	 *
-	 * Resolves @import, fixes urls, remove comments, etc
-	 * Returns string
+	 * @param string  $code       The css code to resolve
+	 * @param string  $base_path  The base path used to include the import
+	 * @param string  $base_url   The base url to fix the urls, etc
+	 *
+	 * @return string  The resolved code
 	 */
 	public function resolve ($code, $base_path, $base_url) {
 		$current_base_path = $this->current_base_path;
@@ -78,9 +86,12 @@ class Stylecow {
 
 
 	/**
-	 * private function importCallback (string $matches)
+	 * The callback used in the function resolve() to replace the @import for the imported file code.
+	 * If the url file is absolute (start by http://) doesn't replace anything
 	 *
-	 * Returns string
+	 * @param string  $matches  The matches of the preg_replace_callback
+	 *
+	 * @return string  The new code
 	 */
 	private function importCallback ($matches) {
 		$file = trim(str_replace(array('\'', '"', 'url(', ')'), '', $matches[1]));
@@ -106,9 +117,11 @@ class Stylecow {
 
 
 	/**
-	 * private function urlCallback (string $matches)
+	 * The callback used in the function resolve() to fix the urls in the url() functions.
 	 *
-	 * Returns string
+	 * @param string  $matches  The matches of the preg_replace_callback
+	 *
+	 * @return string  The new code
 	 */
 	private function urlCallback ($matches) {
 		$url = $matches[1];
@@ -129,10 +142,11 @@ class Stylecow {
 
 
 	/**
-	 * public function transform (array/string $plugins)
+	 * Transform the css code using the plugins
 	 *
-	 * Process the css file
-	 * Returns this
+	 * @param array  $plugins  The list of the plugins to execute
+	 *
+	 * @return $this
 	 */
 	public function transform ($plugins) {
 		if (is_string($this->code)) {
@@ -174,10 +188,13 @@ class Stylecow {
 
 
 	/**
-	 * public function getPropertyKey (array $properties, string $name)
+	 * Search a property name in an array of properties and returns its key.
+	 * This function is used by some plugins and other functions to search and replace css properties.
 	 *
-	 * Returns a property numeric key
-	 * Returns int/false
+	 * @param array   $properties  The list of properties. Each property is a subarray with 'name' and 'values' keys.
+	 * @param string  $name        The name of the property to search
+	 *
+	 * @return int/false  The key of the property or false if it's not found
 	 */
 	public function getPropertyKey ($properties, $name) {
 		foreach ($properties as $k => $property) {
@@ -192,10 +209,14 @@ class Stylecow {
 
 
 	/**
-	 * public function getProperty (array $properties, string $name, [int $key])
+	 * Returns the values of a property.
+	 * This function is used by some plugins and other functions to access to all values of a property
 	 *
-	 * Returns a property values
-	 * Returns array/false
+	 * @param array   $properties  The list of properties. Each property is a subarray with 'name' and 'values' keys.
+	 * @param string  $name        The name of the property to search
+	 * @param int     $key         If it's defined, returns just this value, otherwise returns all values.
+	 *
+	 * @return array/string/false  The value of the property, an array of all values or false if the property is not found
 	 */
 	public function getProperty ($properties, $name, $key = false) {
 		$k = $this->getPropertyKey($properties, $name);
@@ -210,10 +231,15 @@ class Stylecow {
 
 
 	/**
-	 * public function addProperty (&array $properties, string $name, string $value, int $replace_mode)
+	 * Adds a new property to a list of properties.
+	 * This function is used by some plugins and other functions to add or modify css properties
 	 *
-	 * Adds a css property
-	 * Returns boolean
+	 * @param array   &$properties   The list of properties. Each property is a subarray with 'name' and 'values' keys.
+	 * @param string  $name          The name of the property to add
+	 * @param int     $value         The value of the property
+	 * @param int     $replace_mode  The type of the replace mode. 0 = add new without check / 1 = add new or replace if exists / 2 = add new if not exists
+	 *
+	 * @return bool  True if a new value has been inserted, false otherwise.
 	 */
 	public function addProperty (&$properties, $name, $value, $replace_mode = 0) {
 		switch ($replace_mode) {
@@ -268,17 +294,14 @@ class Stylecow {
 
 
 	/**
-	 * public function parse (string $string_code)
+	 * Parses the css code into an multidimensional array with all selectors, properties and values.
 	 *
-	 * Converts a css string to multidimensional array
-	 * Returns array
+	 * @param string  $string_code  The css code to parse
+	 *
+	 * @return array  The parsed css code
 	 */
 	public function parse ($string_code) {
 		$array_code = array();
-
-		if (strpos($string_code, 'header {') === 0) {
-			$este = true;
-		}
 
 		while ($string_code) {
 			$pos = strpos($string_code, '{');
@@ -400,10 +423,15 @@ class Stylecow {
 
 
 	/**
-	 * public function explode (string $string, [string $delimiter], [string $str_in], [string $str_out], [int $limit])
+	 * Explode a string in an array using a delimiter. Ignore the delimiter placed between parenthesis or other characters
 	 *
-	 * Converts strings in arrays
-	 * Returns array
+	 * @param string  $delimiter  The delimiter used.
+	 * @param string  $string     The string to explode
+	 * @param int     $limit      The limit of th explode
+	 * @param string  $str_in     The character to start to ignore the delimiter. By default "("
+	 * @param string  $str_out    The character to end to ignore the delimiter. By default ")"
+	 *
+	 * @return array  The exploded array.
 	 */
 	public function explode ($delimiter, $string, $limit = null, $str_in = '(', $str_out = ')') {
 		if (strpos($string, $str_in) === false) {
@@ -452,9 +480,11 @@ class Stylecow {
 
 
 	/**
-	 * public function explodeFunctions (string $string)
+	 * Search for all the css functions in a css code, for example scale(1, 1.2)
 	 *
-	 * Returns false/array
+	 * @param string  $string  The css code to parse
+	 *
+	 * @return array  List of all functions found. Each function is an array with the name and all parameters.
 	 */
 	public function explodeFunctions ($string) {
 		$functions = array();
@@ -488,11 +518,11 @@ class Stylecow {
 
 
 
-
 	/**
-	 * public function explodeSettings (string $string, array &$settings)
+	 * Explode the stylecow settings: css comments with the syntax "stylecow some-custom-settings"
 	 *
-	 * Returns array
+	 * @param string  &$string    The css string
+	 * @param array   &$settings  The found settings will be stored here
 	 */
 	public function explodeSettings (&$string, &$settings) {
 		$settings = array();
@@ -506,10 +536,13 @@ class Stylecow {
 
 
 	/**
-	 * public function explodeTrim (string $delimiter, string $text, [int $limit])
+	 * Explode a string into an array and trim its value. All empty values will be ignored
 	 *
-	 * Explodes a string and trim its values
-	 * Returns string
+	 * @param string  $delimiter  The delimiter used.
+	 * @param string  $text       The string to explode
+	 * @param int     $limit      The limit of th explode
+	 *
+	 * @return array  The exploded array
 	 */
 	public function explodeTrim ($delimiter, $text, $limit = null) {
 		$return = array();
@@ -530,9 +563,9 @@ class Stylecow {
 
 
 	/**
-	 * public function show ([string $browser])
+	 * Send the content-type header and output the css
 	 *
-	 * Prints the css file
+	 * @param boolean  $browser  You can filter the css code for one browser (moz,webkit,ms,o) or all non specific browsers (empy string). By default is null (all browsers)
 	 */
 	public function show ($browser = null) {
 		header('Content-type: text/css');
@@ -545,10 +578,11 @@ class Stylecow {
 
 
 	/**
-	 * public function toString ([string $browser])
+	 * Convert the parsed and transformed code to css code and returns it.
 	 *
-	 * Returns transformed text
-	 * Returns string
+	 * @param boolean  $browser  You can filter the css code for one browser (moz,webkit,ms,o) or all non specific browsers (empy string). By default is null (all browsers)
+	 *
+	 * @return string  The css code
 	 */
 	public function toString ($browser = null) {
 		if (is_string($this->code)) {
@@ -560,18 +594,22 @@ class Stylecow {
 
 
 
+	
 	/**
-	 * private function _toString (array $array_code, int $tabs, string $browser, string $parent_browser)
+	 * Private function executed recursively that converts the parsed code into a css code
 	 *
-	 * Returns transformed text
-	 * Returns string
+	 * @param array   $array_code      The piece of parsed code to convert to string
+	 * @param int     $tabs            The number of tabulations
+	 * @param string  $browser         The browser filter
+	 * @param string  $parent_browser  The parent browser filter
+	 *
+	 * @return string  The css code
 	 */
 	private function _toString ($array_code, $tabs = 0, $browser, $parent_browser) {
 		$text = '';
 		$tab_selector = str_repeat("\t", $tabs);
 		$tab_property = str_repeat("\t", $tabs + 1);
 
-		//Get text
 		foreach ($array_code as $code) {
 			if (!$code['is_css'] || ($browser === '' && $code['browser'])) {
 				continue;

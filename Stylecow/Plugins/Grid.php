@@ -1,9 +1,14 @@
 <?php
 /**
- * Grid plugin (version 0.1.1)
- * for styleCow PHP library
+ * Stylecow PHP library
  *
- * 2011. Created by Oscar Otero (http://oscarotero.com / http://anavallasuiza.com)
+ * Grid plugin
+ *
+ * PHP version 5.3
+ *
+ * @author Oscar Otero <http://oscarotero.com> <oom@oscarotero.com>
+ * @license GNU Affero GPL version 3. http://www.gnu.org/licenses/agpl-3.0.html
+ * @version 0.1.1 (2011)
  */
 
 namespace Stylecow;
@@ -14,10 +19,11 @@ class Grid implements Plugins_interface {
 	private $grids = array();
 	private $Css;
 
+
 	/**
-	 * public function __construct (Stylecow $Css)
+	 * Constructor
 	 *
-	 * return none
+	 * @param Stylecow  $Css  The Stylecow instance
 	 */
 	public function __construct (Stylecow $Css) {
 		$this->Css = $Css;
@@ -25,9 +31,7 @@ class Grid implements Plugins_interface {
 
 	
 	/**
-	 * public function transform ()
-	 *
-	 * return none
+	 * Transform the parsed css code
 	 */
 	public function transform () {
 		$this->Css->code = $this->_transform($this->Css->code);
@@ -35,9 +39,11 @@ class Grid implements Plugins_interface {
 
 
 	/**
-	 * private function _transform (array $array_code)
+	 * Private function to transform recursively the parsed css code
 	 *
-	 * return none
+	 * @param array  $array_code  The piece of the parsed css code
+	 *
+	 * @return array  The transformed code
 	 */
 	private function _transform ($array_code) {
 		foreach ($array_code as $k_code => $code) {
@@ -109,10 +115,14 @@ class Grid implements Plugins_interface {
 	}
 
 
+	
 	/**
-	 * private function getStyles (array $grid, int $options)
+	 * Get the styles for a grid function
 	 *
-	 * return none
+	 * @param array  $grid     The grid configuration
+	 * @param array  $options  The used functions of the grid (cols, cols-width, etc)
+	 *
+	 * @return array  The css styles
 	 */
 	private function getStyles ($grid, $options) {
 		$styles = array();
@@ -154,6 +164,14 @@ class Grid implements Plugins_interface {
 	}
 
 
+	/**
+	 * Calculate the width, left and right for a grid element
+	 *
+	 * @param array  $grid     The grid configuration
+	 * @param array  $options  The used functions of the grid (cols, cols-width, etc)
+	 *
+	 * @return array  An array with three elements: width, left and right values
+	 */
 	private function calculate ($grid, $options) {
 		$width = ($grid['width'] - ($grid['gutter'] * ($grid['columns'] - 1))) / $grid['columns'];
 

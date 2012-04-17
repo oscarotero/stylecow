@@ -3,12 +3,19 @@
  * Stylecow PHP library
  *
  * Nested_rules plugin
+ * Allows write css in a tree way
+ *
+ * Examples:
+ * article.post {
+ *   header {
+ *   }
+ * }
  *
  * PHP version 5.3
  *
  * @author Oscar Otero <http://oscarotero.com> <oom@oscarotero.com>
  * @license GNU Affero GPL version 3. http://www.gnu.org/licenses/agpl-3.0.html
- * @version 0.1.1 (2011)
+ * @version 0.1.2 (2012)
  */
 
 namespace Stylecow;

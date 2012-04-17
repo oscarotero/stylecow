@@ -3,12 +3,17 @@
  * Stylecow PHP library
  *
  * Grid plugin
+ * Provides a grid system to build websites with columns:
+ *
+ * Examples:
+ * $grid: cols(3);
+ * $grid: cols(2) left(1);
  *
  * PHP version 5.3
  *
  * @author Oscar Otero <http://oscarotero.com> <oom@oscarotero.com>
  * @license GNU Affero GPL version 3. http://www.gnu.org/licenses/agpl-3.0.html
- * @version 0.1.1 (2011)
+ * @version 0.1.2 (2012)
  */
 
 namespace Stylecow;

@@ -3,12 +3,16 @@
  * Stylecow PHP library
  *
  * Rem plugin
+ * Allows use rem values for old browsers (ie8 and lower)
+ *
+ * Example:
+ * font-size: 2rem;
  *
  * PHP version 5.3
  *
  * @author Oscar Otero <http://oscarotero.com> <oom@oscarotero.com>
  * @license GNU Affero GPL version 3. http://www.gnu.org/licenses/agpl-3.0.html
- * @version 0.1.1 (2012)
+ * @version 0.1.2 (2012)
  */
 
 namespace Stylecow;

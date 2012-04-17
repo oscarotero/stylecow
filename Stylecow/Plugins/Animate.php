@@ -3,6 +3,10 @@
  * Stylecow PHP library
  *
  * Animate plugin
+ * Implement predefined animations easily
+ * 
+ * Example:
+ * $animate: flash;
  *
  * Based in the work of Dan Eden in http://daneden.me/animate
  * LICENSED UNDER THE  MIT LICENSE (MIT)
@@ -15,7 +19,7 @@
  *
  * @author Oscar Otero <http://oscarotero.com> <oom@oscarotero.com>
  * @license GNU Affero GPL version 3. http://www.gnu.org/licenses/agpl-3.0.html
- * @version 0.1.2 (2011)
+ * @version 0.1.3 (2012)
  */
 
 namespace Stylecow;

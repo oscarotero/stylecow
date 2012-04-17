@@ -2,13 +2,17 @@
 /**
  * Stylecow PHP library
  *
- * Variables plugin
+ * Vendor_prefixes plugin
+ * Adds the vendor prefixes of all css properties, selectors and values in need.
+ *
+ * Example:
+ * border-radius: 5px;
  *
  * PHP version 5.3
  *
  * @author Oscar Otero <http://oscarotero.com> <oom@oscarotero.com>
  * @license GNU Affero GPL version 3. http://www.gnu.org/licenses/agpl-3.0.html
- * @version 0.1.3 (2012)
+ * @version 0.1.4 (2012)
  */
 
 namespace Stylecow;

@@ -3,12 +3,16 @@
  * Stylecow PHP library
  *
  * Variables plugin
+ * Allows use predefined variables in the css
+ *
+ * Example:
+ * color: $my-color;
  *
  * PHP version 5.3
  *
  * @author Oscar Otero <http://oscarotero.com> <oom@oscarotero.com>
  * @license GNU Affero GPL version 3. http://www.gnu.org/licenses/agpl-3.0.html
- * @version 0.1 (2011)
+ * @version 0.1.1 (2012)
  */
 
 namespace Stylecow;
@@ -100,5 +104,21 @@ class Variables implements Plugins_interface {
 		}
 
 		return $array_code;
+	}
+
+
+	/**
+	 * The internal callback to replace the variables for their values
+	 *
+	 * @param array  $matches  The matches found in the preg_replace_callback
+	 *
+	 * @return string  The value of the variable. If it's not exists, returns the same string
+	 */
+	private function replace ($matches) {
+		if (isset($this->variables[$matches[0]])) {
+			return $this->variables[$matches[0]];
+		}
+
+		return $matches[0];
 	}
 }

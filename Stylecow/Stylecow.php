@@ -8,7 +8,7 @@
  *
  * @author Oscar Otero <http://oscarotero.com> <oom@oscarotero.com>
  * @license GNU Affero GPL version 3. http://www.gnu.org/licenses/agpl-3.0.html
- * @version 0.2 (2012)
+ * @version 0.3 (2012)
  */
 
 namespace Stylecow;
@@ -65,6 +65,7 @@ class Stylecow {
 		$this->current_base_url = dirname($base_url);
 
 		//Remove comments
+		$code = preg_replace('|/\*\s*stylecow\s+(.*)\s*\*/|Us', '|$stylecow \\1$|', $code);
 		$code = preg_replace('|/\*.*\*/|Us', '', $code);
 
 		//Url
@@ -159,7 +160,12 @@ class Stylecow {
 
 		include_once($plugins_dir.'Plugins_interface.php');
 
-		foreach ((array)$plugins as $plugin) {
+		foreach ((array)$plugins as $plugin => $settings) {
+			if (is_int($plugin)) {
+				$plugin = $settings;
+				$settings = array();
+			}
+
 			$plugin = ucfirst($plugin);
 			$plugin_file = $plugins_dir.$plugin.'.php';
 
@@ -171,7 +177,7 @@ class Stylecow {
 			include_once($plugin_file);
 
 			$plugin = '\\Stylecow\\'.$plugin;
-			$plugins_objects[$plugin] = new $plugin($this);
+			$plugins_objects[$plugin] = new $plugin($this, $settings);
 			$plugins_positions[$plugin] = $plugins_objects[$plugin]->position;
 		}
 

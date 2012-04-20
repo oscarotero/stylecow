@@ -8,7 +8,7 @@
  *
  * @author Oscar Otero <http://oscarotero.com> <oom@oscarotero.com>
  * @license GNU Affero GPL version 3. http://www.gnu.org/licenses/agpl-3.0.html
- * @version 0.1.1 (2012)
+ * @version 0.1.2 (2012)
  */
 
 namespace Stylecow;
@@ -18,9 +18,10 @@ interface Plugins_interface {
 	/**
 	 * Constructor
 	 *
-	 * @param Stylecow  $Css  The Stylecow instance
+	 * @param Stylecow  $Css       The Stylecow instance
+	 * @param array     $settings  The settings for this plugin
 	 */
-	public function __construct (Stylecow $Css);
+	public function __construct (Stylecow $Css, array $settings);
 
 
 	/**

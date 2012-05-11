@@ -87,7 +87,7 @@ class Vendor_prefixes implements Plugins_interface {
 		'grid-row-align' => array('ms'),
 		'grid-row-span' => array('ms'),
 		'grid-rows' => array('ms'),
-		'hyphens' => array('moz', 'epub', 'webkit'),
+		'hyphens' => array('moz', 'epub', 'webkit', 'ms'),
 		'opacity' => array('moz', 'webkit'),
 		'text-overflow' => array('o'),
 		'text-size-adjust' => array('moz', 'webkit', 'ms'),

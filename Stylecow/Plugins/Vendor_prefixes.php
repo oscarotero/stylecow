@@ -12,7 +12,7 @@
  *
  * @author Oscar Otero <http://oscarotero.com> <oom@oscarotero.com>
  * @license GNU Affero GPL version 3. http://www.gnu.org/licenses/agpl-3.0.html
- * @version 0.1.5 (2012)
+ * @version 0.1.6 (2012)
  */
 
 namespace Stylecow;
@@ -87,7 +87,7 @@ class Vendor_prefixes implements Plugins_interface {
 		'grid-row-align' => array('ms'),
 		'grid-row-span' => array('ms'),
 		'grid-rows' => array('ms'),
-		'hyphens' => array('moz', 'epub'),
+		'hyphens' => array('moz', 'epub', 'webkit'),
 		'opacity' => array('moz', 'webkit'),
 		'text-overflow' => array('o'),
 		'text-size-adjust' => array('moz', 'webkit', 'ms'),

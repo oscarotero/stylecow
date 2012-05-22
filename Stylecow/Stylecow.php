@@ -8,7 +8,7 @@
  *
  * @author Oscar Otero <http://oscarotero.com> <oom@oscarotero.com>
  * @license GNU Affero GPL version 3. http://www.gnu.org/licenses/agpl-3.0.html
- * @version 0.3 (2012)
+ * @version 0.3.1 (2012)
  */
 
 namespace Stylecow;
@@ -286,6 +286,16 @@ class Stylecow {
 						}
 					}
 
+					$properties[] = array(
+						'name' => $name,
+						'value' => (array)$value
+					);
+				}
+				return true;
+
+			//Add only if doesn't exit strictly
+			case 3:
+				if ($this->getPropertyKey($properties, $name) === false) {
 					$properties[] = array(
 						'name' => $name,
 						'value' => (array)$value

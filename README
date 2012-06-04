@@ -43,6 +43,12 @@ echo $styleCow->toString();
 //You can use also the function show() to print the code with http headers and die
 $styleCow->show();
 
+//Print or show the code with options:
+$styleCow->toString(array(
+	'minify' => true, //Minify the code: remove spaces, linebreaks, etc
+	'browser' => 'moz' //Returns only the css properties with the vendor prefix "-moz-"
+));
+
 
 ======================================================
 PLUGIN: Vendor_prefixes

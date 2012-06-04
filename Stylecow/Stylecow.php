@@ -8,7 +8,7 @@
  *
  * @author Oscar Otero <http://oscarotero.com> <oom@oscarotero.com>
  * @license GNU Affero GPL version 3. http://www.gnu.org/licenses/agpl-3.0.html
- * @version 0.3.1 (2012)
+ * @version 0.3.2 (2012)
  */
 
 namespace Stylecow;
@@ -353,7 +353,7 @@ class Stylecow {
 				list($type, $selector) = $this->explodeTrim(' ', $selector, 2);
 			}
 
-			$selector = $this->explode(',', $selector);
+			$selector = $this->explodeTrim(',', $selector);
 
 			$string_code = trim(substr($string_code, $pos + 1));
 			$length = strlen($string_code);
@@ -581,12 +581,12 @@ class Stylecow {
 	/**
 	 * Send the content-type header and output the css
 	 *
-	 * @param boolean  $browser  You can filter the css code for one browser (moz,webkit,ms,o) or all non specific browsers (empy string). By default is null (all browsers)
+	 * @param array  $options  Options to export (minify, browser filter, etc)
 	 */
-	public function show ($browser = null) {
+	public function show ($options = null) {
 		header('Content-type: text/css');
 
-		echo $this->toString($browser);
+		echo $this->toString($options);
 
 		die();
 	}
@@ -596,16 +596,25 @@ class Stylecow {
 	/**
 	 * Convert the parsed and transformed code to css code and returns it.
 	 *
-	 * @param boolean  $browser  You can filter the css code for one browser (moz,webkit,ms,o) or all non specific browsers (empy string). By default is null (all browsers)
+	 * @param boolean  $options  Options to the css code (filter by vendor prefixes and minify)
 	 *
 	 * @return string  The css code
 	 */
-	public function toString ($browser = null) {
+	public function toString (array $options = null) {
 		if (is_string($this->code)) {
-			return $this->code;
+			$this->code = $this->parse($this->code);
 		}
 
-		return $this->_toString($this->code, 0, $browser, '');
+		$current_options = array(
+			'browser' => null,
+			'minify' => null
+		);
+
+		if (isset($options)) {
+			$current_options = array_replace($current_options, $options);
+		}
+
+		return $this->_toString($this->code, $current_options['minify'] ? null : 0, $current_options['browser'], '');
 	}
 
 
@@ -615,7 +624,7 @@ class Stylecow {
 	 * Private function executed recursively that converts the parsed code into a css code
 	 *
 	 * @param array   $array_code      The piece of parsed code to convert to string
-	 * @param int     $tabs            The number of tabulations
+	 * @param int     $tabs            The number of tabulations. Null to minify the css
 	 * @param string  $browser         The browser filter
 	 * @param string  $parent_browser  The parent browser filter
 	 *
@@ -623,8 +632,26 @@ class Stylecow {
 	 */
 	private function _toString ($array_code, $tabs = 0, $browser, $parent_browser) {
 		$text = '';
-		$tab_selector = str_repeat("\t", $tabs);
-		$tab_property = str_repeat("\t", $tabs + 1);
+
+		if (isset($tabs)) {
+			$tab_selector = str_repeat("\t", $tabs);
+			$tab_property = str_repeat("\t", $tabs + 1);
+			$type_separator = ",\n".$tab_selector;
+			$property_start = ": ";
+			$property_end = ";\n";
+			$selector_start = " {\n";
+			$selector_end = "}\n";
+		} else {
+			$tab_selector = '';
+			$tab_property = '';
+			$type_separator = ',';
+			$property_start = ':';
+			$property_end = ';';
+			$property_separator = ',';
+			$selector_start = '{';
+			$selector_end = '}';
+		}
+		
 
 		foreach ($array_code as $code) {
 			if (!$code['is_css'] || ($browser === '' && $code['browser'])) {
@@ -632,9 +659,9 @@ class Stylecow {
 			}
 
 			if ($code['type']) {
-				$selector = trim($code['type'].' '.implode(",\n".$tab_selector, $code['selector']));
+				$selector = trim($code['type'].' '.implode($type_separator, $code['selector']));
 			} else {
-				$selector = implode(",\n".$tab_selector, $code['selector']);
+				$selector = implode($type_separator, $code['selector']);
 			}
 
 			if (isset($code['properties'])) {
@@ -647,18 +674,18 @@ class Stylecow {
 						continue;
 					}
 
-					$text_properties .= $tab_property.$property['name'].': '.implode(', ', $property['value']).";\n";
+					$text_properties .= $tab_property.$property['name'].$property_start.implode($property_separator, $property['value']).$property_end;
 				}
 
 				if ($code['content']) {
-					$text_properties .= $this->_toString($code['content'], $tabs + 1, $browser, $code['browser']);
+					$text_properties .= $this->_toString($code['content'], isset($tabs) ? ($tabs + 1) : null, $browser, $code['browser']);
 				}
 
 				if ($text_properties) {
-					$text .= $tab_selector.$selector." {\n".$text_properties.$tab_selector."}\n";
+					$text .= $tab_selector.$selector.$selector_start.$text_properties.$tab_selector.$selector_end;
 				}
-			} else {
-				$text .= $tab_selector.$selector.";\n";
+			} else if (!$browser || ($code['browser'] === $browser) || ($parent_browser === $browser)) {
+				$text .= $tab_selector.$selector.$property_end;
 			}
 		}
 

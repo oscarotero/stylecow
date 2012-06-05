@@ -12,7 +12,7 @@
  *
  * @author Oscar Otero <http://oscarotero.com> <oom@oscarotero.com>
  * @license GNU Affero GPL version 3. http://www.gnu.org/licenses/agpl-3.0.html
- * @version 0.1.6 (2012)
+ * @version 0.1.7 (2012)
  */
 
 namespace Stylecow;
@@ -452,18 +452,21 @@ class Vendor_prefixes implements Plugins_interface {
 				}
 
 				switch ($point) {
+					case 'center top':
 					case 'top':
 					case '90deg':
 						$start = 'left top';
 						$end = 'left bottom';
 						break;
 
+					case 'center bottom':
 					case 'bottom':
 					case '-90deg':
 						$start = 'left bottom';
 						$end = 'left top';
 						break;
 
+					case 'left top':
 					case 'left':
 					case '180deg':
 					case '-180deg':
@@ -471,6 +474,7 @@ class Vendor_prefixes implements Plugins_interface {
 						$end = 'right top';
 						break;
 
+					case 'right top':
 					case 'right':
 					case '0deg':
 					case '360deg':

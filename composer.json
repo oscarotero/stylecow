@@ -1,0 +1,24 @@
+{
+	"name": "stylecow/stylecow",
+	"type": "library",
+	"description": "CSS preprocesor written in PHP",
+	"version": "0.3.2",
+	"keywords": ["css", "preprocesor"],
+	"homepage": "http://idc.anavallasuiza.com/project/stylecow/",
+	"license": "AGPL-3.0",
+	"authors": [
+		{
+			"name": "Oscar Otero",
+			"email": "oom@oscarotero.com",
+			"homepage": "http://oscarotero.com",
+			"role": "Developer"
+		}
+	],
+	"support": {
+		"email": "oom@oscarotero.com",
+		"issues": "https://github.com/oscarotero/Fol/issues"
+	},
+	"require": {
+		"php": ">=5.3.0"
+	}
+}

@@ -12,7 +12,7 @@
  *
  * @author Oscar Otero <http://oscarotero.com> <oom@oscarotero.com>
  * @license GNU Affero GPL version 3. http://www.gnu.org/licenses/agpl-3.0.html
- * @version 0.1.7 (2012)
+ * @version 0.1.8 (2012)
  */
 
 namespace Stylecow;
@@ -185,9 +185,9 @@ class Vendor_prefixes implements Plugins_interface {
 		$new_array_code = array();
 
 		foreach ($array_code as $code) {
-			if ($code['type'] && $this->type_prefixes[$code['type']]) {
+			if ($code['type'] && isset($this->type_prefixes[$code['type']])) {
 				foreach ($this->type_prefixes[$code['type']] as $prefix => $new_type_prefix) {
-					if (($code['browser'] && $code['browser'] !== $prefix) || ($prefix_scope && $prefix !== $prefix_scope)) {
+					if ((isset($code['browser']) && $code['browser'] !== $prefix) || ($prefix_scope && $prefix !== $prefix_scope)) {
 						continue;
 					}
 
@@ -202,7 +202,7 @@ class Vendor_prefixes implements Plugins_interface {
 					$new_array_code[] = $new_code;
 				}
 			} else if ($code['content']) {
-				$code['content'] = $this->_transformType($code['content'], $code['browser']);
+				$code['content'] = $this->_transformType($code['content'], isset($code['browser']) ? $code['browser'] : null);
 			}
 
 			$new_array_code[] = $code;
@@ -226,7 +226,7 @@ class Vendor_prefixes implements Plugins_interface {
 
 		foreach ($array_code as $code) {
 			if ($code['content']) {
-				$code['content'] = $this->_transformSelector($code['content'], $code['browser']);
+				$code['content'] = $this->_transformSelector($code['content'], isset($code['browser']) ? $code['browser'] : null);
 			}
 
 			$new_array_code[] = $code;
@@ -236,7 +236,7 @@ class Vendor_prefixes implements Plugins_interface {
 					foreach ($this->selector_prefixes as $selector_prefix => $prefixes) {
 						if (strpos($selector, $selector_prefix) !== false) {
 							foreach ($prefixes as $prefix => $new_selector_prefix) {
-								if (($code['browser'] && $code['browser'] !== $prefix) || ($prefix_scope && $prefix !== $prefix_scope)) {
+								if ((isset($code['browser']) && $code['browser'] !== $prefix) || ($prefix_scope && $prefix !== $prefix_scope)) {
 									continue;
 								}
 
@@ -274,7 +274,7 @@ class Vendor_prefixes implements Plugins_interface {
 
 		foreach ($array_code as $code) {
 			if ($code['content']) {
-				$code['content'] = $this->_transformProperties($code['content'], $code['browser']);
+				$code['content'] = $this->_transformProperties($code['content'], isset($code['browser']) ? $code['browser'] : null);
 			}
 
 			$new_code = $code;
@@ -285,13 +285,13 @@ class Vendor_prefixes implements Plugins_interface {
 				foreach ($code['properties'] as $property) {
 					$new_code['properties'][] = $property;
 
-					if ($fn = $this->property_fn_prefixes[$property['name']]) {
+					if (isset($this->property_fn_prefixes[$property['name']]) && $fn = $this->property_fn_prefixes[$property['name']]) {
 						$this->$fn($new_code, $property['name'], $property['value']);
 					}
 
-					if ($this->property_prefixes[$property['name']]) {
+					if (isset($this->property_prefixes[$property['name']])) {
 						foreach ($this->property_prefixes[$property['name']] as $prefix) {
-							if (($code['browser'] && $code['browser'] !== $prefix) || ($prefix_scope && $prefix !== $prefix_scope)) {
+							if ((isset($code['browser']) && $code['browser'] !== $prefix) || ($prefix_scope && $prefix !== $prefix_scope)) {
 								continue;
 							}
 
@@ -326,7 +326,7 @@ class Vendor_prefixes implements Plugins_interface {
 
 		foreach ($array_code as $code) {
 			if ($code['content']) {
-				$code['content'] = $this->_transformValues($code['content'], $code['browser']);
+				$code['content'] = $this->_transformValues($code['content'], isset($code['browser']) ? $code['browser'] : null);
 			}
 
 			$new_code = $code;
@@ -337,7 +337,7 @@ class Vendor_prefixes implements Plugins_interface {
 				foreach ($code['properties'] as $property) {
 					$new_code['properties'][] = $property;
 
-					if ($fn = $this->value_fn_prefixes[$property['name']]) {
+					if (isset($this->value_fn_prefixes[$property['name']])) {
 						foreach ($this->value_fn_prefixes[$property['name']] as $property_value => $fn) {
 							if (preg_match('/(^|[^-])'.preg_quote($property_value, '/').'([^\w]|$)?/', implode($property['value']))) {
 								$this->$fn($new_code, $property['name'], $property['value']);
@@ -345,11 +345,11 @@ class Vendor_prefixes implements Plugins_interface {
 						}
 					}
 
-					if ($this->value_prefixes[$property['name']]) {
+					if (isset($this->value_prefixes[$property['name']])) {
 						foreach ($this->value_prefixes[$property['name']] as $property_value => $prefixes) {
 							if (preg_match('/(^|[^-])'.preg_quote($property_value, '/').'([^\w]|$)?/', implode($property['value']))) {
 								foreach ($prefixes as $prefix) {
-									if (($code['browser'] && $code['browser'] !== $prefix) || ($prefix_scope && $prefix !== $prefix_scope)) {
+									if ((isset($code['browser']) && $code['browser'] !== $prefix) || ($prefix_scope && $prefix !== $prefix_scope)) {
 										continue;
 									}
 

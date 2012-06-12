@@ -12,7 +12,7 @@
  *
  * @author Oscar Otero <http://oscarotero.com> <oom@oscarotero.com>
  * @license GNU Affero GPL version 3. http://www.gnu.org/licenses/agpl-3.0.html
- * @version 0.1.2 (2012)
+ * @version 0.2.0 (2012)
  */
 
 namespace Stylecow;
@@ -33,6 +33,12 @@ class Variables implements Plugins_interface {
 	 */
 	public function __construct (Stylecow $Css, array $settings) {
 		$this->Css = $Css;
+
+		if ($settings && isset($settings['variables'])) {
+			foreach ($settings['variables'] as $name => $value) {
+				$this->variables['$'.$name] = $value;
+			}
+		}
 	}
 
 	
@@ -78,7 +84,7 @@ class Variables implements Plugins_interface {
 				$unset = array();
 
 				foreach ($code['properties'] as $k_property => $property) {
-					if ($this->styles[$property['name']]) {
+					if (isset($this->styles[$property['name']])) {
 						$code = array_merge_recursive($code, $this->styles[$property['name']]);
 						$unset[] = $k_property;
 					}
@@ -94,6 +100,12 @@ class Variables implements Plugins_interface {
 							$code['properties'][$k_property]['value'][$k_value] = preg_replace_callback('/\$[\w-]+/', array($this, 'replace'), $value);
 						}
 					}
+				}
+			}
+
+			foreach ($code['selector'] as $k_selector => $selector) {
+				if (strpos($selector, '$') !== false) {
+					$code['selector'][$k_selector] = preg_replace_callback('/\$[\w-]+/', array($this, 'replace'), $selector);
 				}
 			}
 

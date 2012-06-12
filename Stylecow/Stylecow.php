@@ -8,7 +8,7 @@
  *
  * @author Oscar Otero <http://oscarotero.com> <oom@oscarotero.com>
  * @license GNU Affero GPL version 3. http://www.gnu.org/licenses/agpl-3.0.html
- * @version 0.3.2 (2012)
+ * @version 0.3.3 (2012)
  */
 
 namespace Stylecow;
@@ -328,7 +328,10 @@ class Stylecow {
 				$type = '';
 
 				if ($selector[0] == '@' || $selector[0] == '$') {
-					list($type, $selector) = $this->explodeTrim(' ', $selector, 2);
+					$selector = $this->explodeTrim(' ', $selector, 2);
+				
+					$type = $selector[0];
+					$selector = isset($selector[1]) ? $selector[1] : '';
 				}
 
 				$array_code[] = array(
@@ -350,7 +353,14 @@ class Stylecow {
 			$type = '';
 
 			if ($selector[0] === '@' || $selector[0] === '$') {
-				list($type, $selector) = $this->explodeTrim(' ', $selector, 2);
+				$selector = $this->explodeTrim(' ', $selector, 2);
+				
+				$type = $selector[0];
+				$selector = isset($selector[1]) ? $selector[1] : '';
+			}
+
+			if ($selector !== '' && $selector[0] === '\\') {
+				$selector = substr($selector, 1);
 			}
 
 			$selector = $this->explodeTrim(',', $selector);
@@ -639,6 +649,7 @@ class Stylecow {
 			$type_separator = ",\n".$tab_selector;
 			$property_start = ": ";
 			$property_end = ";\n";
+			$property_separator = ', ';
 			$selector_start = " {\n";
 			$selector_end = "}\n";
 		} else {
@@ -654,7 +665,7 @@ class Stylecow {
 		
 
 		foreach ($array_code as $code) {
-			if (!$code['is_css'] || ($browser === '' && $code['browser'])) {
+			if (!$code['is_css'] || ($browser === '' && isset($code['browser']) && $code['browser'])) {
 				continue;
 			}
 
@@ -668,9 +679,9 @@ class Stylecow {
 				$text_properties = '';
 
 				foreach ($code['properties'] as $property) {
-					if ($browser && ($code['browser'] !== $browser) && ($property['browser'] !== $browser) && ($parent_browser !== $browser)) {
+					if ($browser && (isset($code['browser']) && $code['browser'] !== $browser) && (isset($property['browser']) && $property['browser'] !== $browser) && ($parent_browser !== $browser)) {
 						continue;
-					} else if ($browser === '' && $property['browser']) {
+					} else if ($browser === '' && isset($property['browser']) && $property['browser']) {
 						continue;
 					}
 
@@ -678,13 +689,13 @@ class Stylecow {
 				}
 
 				if ($code['content']) {
-					$text_properties .= $this->_toString($code['content'], isset($tabs) ? ($tabs + 1) : null, $browser, $code['browser']);
+					$text_properties .= $this->_toString($code['content'], isset($tabs) ? ($tabs + 1) : null, $browser, isset($code['browser']) ? $code['browser'] : null);
 				}
 
 				if ($text_properties) {
 					$text .= $tab_selector.$selector.$selector_start.$text_properties.$tab_selector.$selector_end;
 				}
-			} else if (!$browser || ($code['browser'] === $browser) || ($parent_browser === $browser)) {
+			} else if (!$browser || (isset($code['browser']) && $code['browser'] === $browser) || ($parent_browser === $browser)) {
 				$text .= $tab_selector.$selector.$property_end;
 			}
 		}

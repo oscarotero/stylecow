@@ -2,7 +2,7 @@
 	"name": "stylecow/stylecow",
 	"type": "library",
 	"description": "CSS preprocesor written in PHP",
-	"version": "0.3.2",
+	"version": "0.3.3",
 	"keywords": ["css", "preprocessor"],
 	"homepage": "http://idc.anavallasuiza.com/project/stylecow/",
 	"license": "AGPL-3.0",

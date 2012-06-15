@@ -435,3 +435,24 @@ body {
 	font-size: 19.2px;
 	font-size: 1rem;
 }
+
+
+======================================================
+PLUGINS: Math
+======================================================
+
+You can execute math operations (+-*/%):
+
+
+origin:
+---------------
+.foo {
+	font-size: math(2+4)em;
+}
+
+
+result:
+---------------
+.foo {
+	font-size: 6em;
+}

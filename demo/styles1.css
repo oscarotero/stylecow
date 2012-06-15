@@ -6,8 +6,25 @@ rgb(51, 153, 0)
 hsl(100, 100%, 30%)
 
 */
+
+$grid {
+	width: 960px;
+	columns: 12;
+	gutter: 30px;
+}
+
+$variables {
+	color: #369;
+	width: 4;
+	height: 7;
+	menu: .content {
+		text-align: left;
+	}
+}
+
+
 body {
-	font-size: 1.2em;
+	font-size: math($width+$height + 0.4)em;
 	background: color(black, 10);
 }
 .wrapper {
@@ -18,18 +35,6 @@ body {
 }
 .wrapper div {
 	font-size: 1rem;
-}
-$grid {
-	width: 960px;
-	columns: 12;
-	gutter: 30px;
-}
-
-$variables {
-	color: #369;
-	menu: .content {
-		text-align: left;
-	}
 }
 
 .color {

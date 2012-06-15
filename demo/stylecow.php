@@ -16,7 +16,8 @@ $styleCow->transform(array(
 	'Nested_rules',
 	'Animate',
 	'Color',
-	'Rem'
+	'Rem',
+	'Math'
 ));
 
 $styleCow->show();

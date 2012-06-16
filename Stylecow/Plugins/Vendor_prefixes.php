@@ -12,7 +12,7 @@
  *
  * @author Oscar Otero <http://oscarotero.com> <oom@oscarotero.com>
  * @license GNU Affero GPL version 3. http://www.gnu.org/licenses/agpl-3.0.html
- * @version 0.1.8 (2012)
+ * @version 0.1.9 (2012)
  */
 
 namespace Stylecow;
@@ -487,7 +487,10 @@ class Vendor_prefixes implements Plugins_interface {
 				$tk = count($params)-1;
 
 				foreach ($params as $k => $param) {
-					list($color, $stop) = $this->Css->explode(' ', trim($param));
+					$param = $this->Css->explode(' ', trim($param));
+
+					$color = $param[0];
+					$stop = isset($param[1]) ? $param[1] : null;
 
 				 	if ($k === 0) {
 				 		$text = 'from';

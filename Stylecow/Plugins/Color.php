@@ -312,9 +312,9 @@ class Color implements Plugins_interface {
 		}
 
 		if ($new_value > $channel_info[1]) {
-			$value = $channel_info[1];
-		} else if ($value < 0) {
-			$value = 0;
+			$new_value = $channel_info[1];
+		} else if ($new_value < 0) {
+			$new_value = 0;
 		}
 
 		$channels[$channel_info[0]] = $new_value;

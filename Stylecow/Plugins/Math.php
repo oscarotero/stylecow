@@ -82,10 +82,29 @@ class Math implements Plugins_interface {
 	 * @return array  The result of the operation
 	 */
 	private function mathCallback ($matches) {
-		if (preg_match('/^[\+\*\/%\.0-9- ]*$/', $matches[1])) {
+		$value = '';
+
+		if (strpos($matches[1], 'px')) {
+			$value = 'px';
+			$matches[1] = str_replace('px', '', $matches[1]);
+		} else if (strpos($matches[1], '%')) {
+			$value = '%';
+			$matches[1] = str_replace('%', '', $matches[1]);
+		} else if (strpos($matches[1], 'em')) {
+			$value = 'em';
+			$matches[1] = str_replace('em', '', $matches[1]);
+		} else if (strpos($matches[1], 'rem')) {
+			$value = 'rem';
+			$matches[1] = str_replace('rem', '', $matches[1]);
+		} else if (strpos($matches[1], 'pt')) {
+			$value = 'pt';
+			$matches[1] = str_replace('pt', '', $matches[1]);
+		}
+
+		if (preg_match('/^[\+\*\/\.0-9- ]*$/', $matches[1])) {
 			$calculate = create_function('', 'return('.$matches[1].');');
 
-			return round($calculate(), 2);
+			return round($calculate(), 2).$value;
 		}
 
 		return $matches[0];

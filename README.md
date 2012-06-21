@@ -108,11 +108,19 @@ Resolve the :matches() css4 selector (http://www.w3.org/TR/2011/WD-selectors4-20
 
 #### And Stylecow converts to
 
-	div.foo h1 a, div.foo h2 a, div.foo h3 a, div.foo h4 a, div.foo h5 a, div.foo h6 a {
+	div.foo h1 a,
+	div.foo h2 a,
+	div.foo h3 a,
+	div.foo h4 a,
+	div.foo h5 a,
+	div.foo h6 a {
 		color: blue;
 	}
 
-	div.foo article header h1, div.foo article header h2, div.foo section header h1, div.foo section header h2 {
+	div.foo article header h1,
+	div.foo article header h2,
+	div.foo section header h1,
+	div.foo section header h2 {
 		color: black;
 	}
 
@@ -203,7 +211,8 @@ Resolves the nested rules, allowing to write css in a more legible way:
 		margin-bottom: 20px;
 	}
 
-	article.main header h1, article.main header h2 {
+	article.main header h1,
+	article.main header h2 {
 		font-size: Helvetica, sans-serif;
 		color: #000;
 	}

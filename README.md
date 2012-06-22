@@ -49,6 +49,20 @@ $styleCow->toString(array(
 Plugins
 =======
 
+Stylecow provides some plugins (and you can make your owns):
+
+* [Vendor_prefixes](#vendor_prefixes)
+* [Matches](#matches)
+* [Variables](#variables)
+* [Nested_rules](#nested_rules)
+* [Ie_filters](#ie_filters)
+* [Grid](#grid)
+* [Animate](#animate)
+* [Color](#color)
+* [Rem](#rem)
+* [Math](#math)
+
+
 Vendor_prefixes
 ---------------
 

@@ -509,7 +509,7 @@ You can execute math operations (+-*/):
 .foo {
 	font-size: math(2+4)em;
 }
-
+```
 
 #### And Stylecow converts to
 

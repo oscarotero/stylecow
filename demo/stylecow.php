@@ -21,12 +21,12 @@ $sc->load(__DIR__.'/'.$_GET['styles']);
 
 $sc->transform(array(
 	'Stylecow\\Plugins\\Color',
-	'Stylecow\\Plugins\\NestedRules',
-	'Stylecow\\Plugins\\Matches',
-	'Stylecow\\Plugins\\Math',
-	'Stylecow\\Plugins\\IeFilters',
-	'Stylecow\\Plugins\\Rem',
-	'Stylecow\\Plugins\\VendorPrefixes'
+	//'Stylecow\\Plugins\\NestedRules',
+	//'Stylecow\\Plugins\\Matches',
+	//'Stylecow\\Plugins\\Math',
+	//'Stylecow\\Plugins\\IeFilters',
+	//'Stylecow\\Plugins\\Rem',
+	//'Stylecow\\Plugins\\VendorPrefixes'
 ));
 
 //Show the result code

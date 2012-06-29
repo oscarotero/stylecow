@@ -181,14 +181,16 @@ class Color extends Plugin implements PluginsInterface {
 	 * @return array The transformed code
 	 */
 	public function transform (array $array_code) {
-		return Stylecow::propertyWalk($array_code, function ($property) {
+		$self = $this;
+
+		return Stylecow::propertyWalk($array_code, function ($property) use ($self) {
 			foreach ($property['value'] as &$value) {
 				if (strpos($value, 'color(') === false) {
 					continue;
 				}
 
-				$value = Stylecow::executeFunctions($value, 'color', function ($arguments) {
-					return $this->processColor(array_shift($arguments), $arguments);
+				$value = Stylecow::executeFunctions($value, 'color', function ($arguments) use ($self) {
+					return $self->processColor(array_shift($arguments), $arguments);
 				});
 			}
 
@@ -205,7 +207,7 @@ class Color extends Plugin implements PluginsInterface {
 	 *
 	 * @return array The transformed color
 	 */
-	private function processColor ($color, $operations) {
+	public function processColor ($color, $operations) {
 		$rgba = $this->toRGBA($color);
 
 		foreach ($operations as $operation) {

@@ -14,34 +14,36 @@
 namespace Stylecow;
 
 class Stylecow {
-	public $code = array();
+	const PROPERTY_ADD = 0;
+	const PROPERTY_REPLACE = 1;
+	const PROPERTY_IF_FAMILY_UNDEFINED = 2;
+	const PROPERTY_IF_UNDEFINED = 3;
 
-	private $current_base_path = null;
-	private $current_base_url = null;
+	private $code = array();
+	private $basePath;
+	private $baseUrl;
+
 
 
 	/**
 	 * Loads a css file and resolves its included css files
 	 *
-	 * @param string  $file_path  The file to load
-	 * @param string  $file_url   The url of the file (required to resolve the url of images or @import)
+	 * @param string $file The file to load
 	 *
 	 * @return $this
 	 */
-	public function load ($file_path, $file_url = null) {
-		if (is_null($file_url)) {
-			$file_url = $file_path;
-		}
-
+	public function load ($file) {
+		$this->basePath = (strpos($file, '/') === false) ? '' : dirname($file);
+		$this->baseUrl = '';
 		$this->code = array();
 
-		if (!is_file($file_path)) {
-			die("'".$file_path."' does not exists");
+		if (!is_file($file)) {
+			$this->code[] = array('comment' => "Stylecow error: '$file' does not exists");
+
+			return $this;
 		}
 
-		$code = file_get_contents($file_path);
-
-		$this->code = $this->resolve($code, $file_path, $file_url);
+		$this->code = $this->resolve(file_get_contents($file));
 
 		return $this;
 	}
@@ -51,37 +53,45 @@ class Stylecow {
 	/**
 	 * Resolves all url() and @import requests and removes the comments
 	 *
-	 * @param string  $code       The css code to resolve
-	 * @param string  $base_path  The base path used to include the import
-	 * @param string  $base_url   The base url to fix the urls, etc
+	 * @param string $code The css code to resolve
 	 *
-	 * @return string  The resolved code
+	 * @return string The resolved code
 	 */
-	public function resolve ($code, $base_path, $base_url) {
-		$current_base_path = $this->current_base_path;
-		$current_base_url = $this->current_base_url;
-
-		$this->current_base_path = dirname($base_path);
-		$this->current_base_url = dirname($base_url);
+	private function resolve ($code) {
 
 		//Remove comments
-		$code = preg_replace('|/\*\s*stylecow\s+(.*)\s*\*/|Us', '|$stylecow \\1$|', $code);
 		$code = preg_replace('|/\*.*\*/|Us', '', $code);
 
-		//Url
+		//Resolve imported images
 		if (strpos($code, 'url(') !== false) {
 			$code = preg_replace_callback('#url\(["\']?([^\)\'"]*)["\']?\)#', array($this, 'urlCallback'), $code);
 		}
 
-		//Import
+		//Resolve importes styles
 		if (strpos($code, '@import') !== false) {
 			$code = preg_replace_callback('/\@import([^;]*);/', array($this, 'importCallback'), $code);
 		}
 
-		$this->current_base_path = $current_base_path;
-		$this->current_base_url = $current_base_url;
-
 		return $code;
+	}
+
+
+
+	/**
+	 * The callback used in the function resolve() to fix the urls in the url() functions.
+	 *
+	 * @param string $matches The matches of the preg_replace_callback
+	 *
+	 * @return string The new code
+	 */
+	private function urlCallback ($matches) {
+		$url = $matches[1];
+
+		if (empty($this->baseUrl) || parse_url($url, PHP_URL_SCHEME) || $url[0] === '/') {
+			return 'url(\''.$url.'\')';
+		}
+
+		return 'url(\''.self::fixPath($this->baseUrl.'/'.$url).'\')';
 	}
 
 
@@ -97,47 +107,57 @@ class Stylecow {
 	private function importCallback ($matches) {
 		$file = trim(str_replace(array('\'', '"', 'url(', ')'), '', $matches[1]));
 
-		if (parse_url($file, PHP_URL_SCHEME)) {
+		if (($file[0] === '/') || parse_url($file, PHP_URL_SCHEME)) {
 			return $matches[0];
 		}
 
-		if ($file[0] === '/') {
-			$file_url = $file_path = $file;
-		} else {
-			$file_url = preg_replace('#/\w+/\.\./#', '/', $this->current_base_url.'/'.$file);
-			$file_path = preg_replace('#/\w+/\.\./#', '/', $this->current_base_path.'/'.$file);
-		}
+		$filePath = $this->basePath ? $this->basePath.'/'.$file : $file;
+		$fileUrl = $this->baseUrl ? $this->baseUrl.'/'.$file : $file;
 
-		if (is_file($file_path)) {
-			return $this->resolve(file_get_contents($file_path), $file_path, $file_url);
+		if (is_file($filePath)) {
+			$basePath = $this->basePath;
+			$baseUrl = $this->baseUrl;
+
+			$this->basePath = (strpos($filePath, '/') === false) ? '' : dirname($filePath);
+			$this->baseUrl = (strpos($fileUrl, '/') === false) ? '' : dirname($fileUrl);
+
+			$code = $this->resolve(file_get_contents($filePath));
+
+			$this->basePath = $basePath;
+			$this->baseUrl = $baseUrl;
+
+			return $code;
 		}
 
 		return $matches[0];
 	}
 
 
+	
+	/**
+	 * Returns the array with the code parsed
+	 *
+	 * @return array The parsed code
+	 */
+	public function getParsedCode () {
+		if (is_string($this->code)) {
+			$this->code = $this->parse($this->code);
+		}
+
+		return $this->code;
+	}
+
+
 
 	/**
-	 * The callback used in the function resolve() to fix the urls in the url() functions.
+	 * Set new parsed code
 	 *
-	 * @param string  $matches  The matches of the preg_replace_callback
-	 *
-	 * @return string  The new code
+	 * @param array $code The new parsed code
+	 * 
+	 * @return array The parsed code
 	 */
-	private function urlCallback ($matches) {
-		$url = $matches[1];
-
-		if (parse_url($url, PHP_URL_SCHEME) || $url[0] === '/') {
-			return 'url(\''.$url.'\')';
-		}
-
-		$url = $this->current_base_url.'/'.$url;
-
-		while (preg_match('#/\w+/\.\./#', $url)) {
-			$url = preg_replace('#/\w+/\.\./#', '/', $url);
-		}
-
-		return 'url(\''.$url.'\')';
+	public function setParsedCode (array $code) {
+		$this->code = $code;
 	}
 
 
@@ -189,122 +209,6 @@ class Stylecow {
 		}
 
 		return $this;
-	}
-
-
-
-	/**
-	 * Search a property name in an array of properties and returns its key.
-	 * This function is used by some plugins and other functions to search and replace css properties.
-	 *
-	 * @param array   $properties  The list of properties. Each property is a subarray with 'name' and 'values' keys.
-	 * @param string  $name        The name of the property to search
-	 *
-	 * @return int/false  The key of the property or false if it's not found
-	 */
-	public function getPropertyKey ($properties, $name) {
-		foreach ($properties as $k => $property) {
-			if ($property['name'] === $name) {
-				return $k;
-			}
-		}
-
-		return false;
-	}
-
-
-
-	/**
-	 * Returns the values of a property.
-	 * This function is used by some plugins and other functions to access to all values of a property
-	 *
-	 * @param array   $properties  The list of properties. Each property is a subarray with 'name' and 'values' keys.
-	 * @param string  $name        The name of the property to search
-	 * @param int     $key         If it's defined, returns just this value, otherwise returns all values.
-	 *
-	 * @return array/string/false  The value of the property, an array of all values or false if the property is not found
-	 */
-	public function getProperty ($properties, $name, $key = false) {
-		$k = $this->getPropertyKey($properties, $name);
-
-		if ($k === false) {
-			return false;
-		}
-
-		return ($key === false) ? $properties[$k] : $properties[$k][$key];
-	}
-
-
-
-	/**
-	 * Adds a new property to a list of properties.
-	 * This function is used by some plugins and other functions to add or modify css properties
-	 *
-	 * @param array   &$properties   The list of properties. Each property is a subarray with 'name' and 'values' keys.
-	 * @param string  $name          The name of the property to add
-	 * @param int     $value         The value of the property
-	 * @param int     $replace_mode  The type of the replace mode. 0 = add new without check / 1 = add new or replace if exists / 2 = add new if not exists
-	 *
-	 * @return bool  True if a new value has been inserted, false otherwise.
-	 */
-	public function addProperty (&$properties, $name, $value, $replace_mode = 0) {
-		switch ($replace_mode) {
-
-			//Add new, no check for duplications
-			case 0:
-				$properties[] = array(
-					'name' => $name,
-					'value' => (array)$value
-				);
-				return true;
-			
-			//Replace if exists
-			case 1:
-				$key = $this->getPropertyKey($properties, $name);
-
-				if ($key === false) {
-					$properties[] = array(
-						'name' => $name,
-						'value' => (array)$value
-					);
-				} else {
-					$properties[$key] = array(
-						'name' => $name,
-						'value' => (array)$value
-					);
-				}
-				return true;
-			
-			//Add only if doesn't exit
-			case 2:
-				if ($this->getPropertyKey($properties, $name) === false) {
-					if (strpos($name, '-') !== false) {
-						$short_name = current(explode('-', $name, 2));
-						
-						if ($this->getPropertyKey($properties, $short_name) !== false) {
-							return true;
-						}
-					}
-
-					$properties[] = array(
-						'name' => $name,
-						'value' => (array)$value
-					);
-				}
-				return true;
-
-			//Add only if doesn't exit strictly
-			case 3:
-				if ($this->getPropertyKey($properties, $name) === false) {
-					$properties[] = array(
-						'name' => $name,
-						'value' => (array)$value
-					);
-				}
-				return true;
-		}
-
-		return false;
 	}
 
 
@@ -419,8 +323,6 @@ class Stylecow {
 					foreach ($this->explodeTrim(';', $properties_string) as $property) {
 						list($n, $v) = $this->explodeTrim(':', $property, 2);
 
-						$this->explodeSettings($v, $settings);
-
 						$code['properties'][] = array(
 							'name' => $n,
 							'value' => $v === '' ? array() : array($v),
@@ -446,145 +348,6 @@ class Stylecow {
 		return $array_code;
 	}
 
-
-
-	/**
-	 * Explode a string in an array using a delimiter. Ignore the delimiter placed between parenthesis or other characters
-	 *
-	 * @param string  $delimiter  The delimiter used.
-	 * @param string  $string     The string to explode
-	 * @param int     $limit      The limit of th explode
-	 * @param string  $str_in     The character to start to ignore the delimiter. By default "("
-	 * @param string  $str_out    The character to end to ignore the delimiter. By default ")"
-	 *
-	 * @return array  The exploded array.
-	 */
-	public function explode ($delimiter, $string, $limit = null, $str_in = '(', $str_out = ')') {
-		if (strpos($string, $str_in) === false) {
-			return is_null($limit) ? explode($delimiter, $string) : explode($delimiter, $string, $limit);
-		}
-
-		$array = array();
-
-		while ($string) {
-			if (strpos($string,$delimiter) === false) {
-				$array[] = trim($string);
-				break;
-			}
-
-			for ($n = 0, $in = 0, $length = strlen($string); $n <= $length; $n++) {
-				$l = isset($string[$n]) ? $string[$n] : '';
-
-				if ($l === $str_in) {
-					$in++;
-					continue;
-				}
-
-				if ($l === $str_out && $in) {
-					$in--;
-					continue;
-				}
-
-				if (($l === $delimiter || $l === $str_out || $n === $length) && !$in) {
-					$array[] = trim(substr($string, 0, $n));
-					$string = trim(substr($string, $n+1));
-
-					if ($l === $str_out) {
-						break;
-					}
-
-					continue 2;
-				}
-			}
-
-			break;
-		}
-
-		return $array;
-	}
-
-
-
-	/**
-	 * Search for all the css functions in a css code, for example scale(1, 1.2)
-	 *
-	 * @param string  $string  The css code to parse
-	 *
-	 * @return array  List of all functions found. Each function is an array with the name and all parameters.
-	 */
-	public function explodeFunctions ($string) {
-		$functions = array();
-
-		$parts = $this->explode(' ', $string);
-
-		foreach ($parts as $str) {
-			if (($pos = strpos($str, '(')) === false) {
-				continue;
-			}
-
-			$name = substr($str, 0, $pos);
-			
-			if (strpos($name, ' ') !== false) {
-				$name = substr($name, strrpos($name, ' '));
-			}
-
-			$params = substr(trim(substr($str, $pos + 1)), 0, -1);
-
-			if ($params) {
-				$params = $this->explode(',', $params);
-			} else {
-				$params = array();
-			}
-
-			$functions[] = array($name, $params);
-		}
-
-		return $functions;
-	}
-
-
-
-	/**
-	 * Explode the stylecow settings: css comments with the syntax "stylecow some-custom-settings"
-	 *
-	 * @param string  &$string    The css string
-	 * @param array   &$settings  The found settings will be stored here
-	 */
-	public function explodeSettings (&$string, &$settings) {
-		$settings = array();
-
-		if (strpos($string, '|$') && preg_match('/\|\$stylecow (.*)\$\|/i', $string, $matches)) {
-			$string = str_replace($matches[0], '', $string);
-			$settings = $this->explodeTrim(',', strtolower($matches[1]));
-		}
-	}
-
-
-
-	/**
-	 * Explode a string into an array and trim its value. All empty values will be ignored
-	 *
-	 * @param string  $delimiter  The delimiter used.
-	 * @param string  $text       The string to explode
-	 * @param int     $limit      The limit of th explode
-	 *
-	 * @return array  The exploded array
-	 */
-	public function explodeTrim ($delimiter, $text, $limit = null) {
-		$return = array();
-
-		$explode = $this->explode($delimiter, $text, $limit);
-
-		foreach ($explode as $text_value) {
-			$text_value = trim($text_value);
-
-			if ($text_value !== '') {
-				$return[] = $text_value;
-			}
-		}
-
-		return $return;
-	}
 
 
 
@@ -644,6 +407,7 @@ class Stylecow {
 		$text = '';
 
 		if (isset($tabs)) {
+			$comments = true;
 			$tab_selector = str_repeat("\t", $tabs);
 			$tab_property = str_repeat("\t", $tabs + 1);
 			$type_separator = ",\n".$tab_selector;
@@ -653,6 +417,7 @@ class Stylecow {
 			$selector_start = " {\n";
 			$selector_end = "}\n";
 		} else {
+			$comments = false;
 			$tab_selector = '';
 			$tab_property = '';
 			$type_separator = ',';
@@ -663,8 +428,11 @@ class Stylecow {
 			$selector_end = '}';
 		}
 		
-
 		foreach ($array_code as $code) {
+			if (isset($code['comment']) && $comments) {
+				$text .= $tab_selector.'/* '.$code['comment'].' */';
+			}
+
 			if (!$code['is_css'] || ($browser === '' && isset($code['browser']) && $code['browser'])) {
 				continue;
 			}
@@ -701,6 +469,291 @@ class Stylecow {
 		}
 
 		return $text;
+	}
+
+
+
+	/**
+	 * Utils: resolve '//' or '/./' or '/foo/../' in a path
+	 *
+	 * @var string $path The path to fix
+	 *
+	 * @return string The fixed path
+	 */
+	static public function fixPath ($path) {
+		$replace = array('#(/\.?/)#', '#/(?!\.\.)[^/]+/\.\./#');
+
+		do {
+			$path = preg_replace($replace, '/', $path, -1, $n);
+		} while ($n > 0);
+
+		return $path;
+	}
+
+
+
+	/**
+	 * Utils: Search a property name in an array of properties and returns its key.
+	 *
+	 * @param array $properties The list of properties. Each property is a subarray with 'name' and 'values' keys.
+	 * @param string $name The name of the property to search
+	 *
+	 * @return int/false The key of the property or false if it's not found
+	 */
+	static public function searchProperty ($properties, $name) {
+		foreach ($properties as $k => $property) {
+			if ($property['name'] === $name) {
+				return $k;
+			}
+		}
+
+		return false;
+	}
+
+
+
+	/**
+	 * Utils: Returns the values of a property.
+	 *
+	 * @param array $properties The list of properties. Each property is a subarray with 'name' and 'values' keys.
+	 * @param string $name The name of the property to search
+	 * @param int $key If it's defined, returns just this value, otherwise returns all values.
+	 *
+	 * @return array/string/false The value of the property, an array of all values or false if the property is not found
+	 */
+	static public function getProperty ($properties, $name, $key = false) {
+		$k = self::searchProperty($properties, $name);
+
+		if ($k === false) {
+			return false;
+		}
+
+		return ($key === false) ? $properties[$k] : $properties[$k][$key];
+	}
+
+
+
+	/**
+	 * Utils: Adds a new property to a list of properties.
+	 *
+	 * @param array   &$properties   The list of properties. Each property is a subarray with 'name' and 'values' keys.
+	 * @param string  $name          The name of the property to add
+	 * @param int     $value         The value of the property
+	 * @param int     $replace_mode  The type of the replace mode
+	 *
+	 * @return bool  True if a new value has been inserted, false otherwise.
+	 */
+	static public function addProperty (&$properties, $name, $value, $replace_mode = 0) {
+		switch ($replace_mode) {
+
+			case self::PROPERTY_ADD:
+				$properties[] = array(
+					'name' => $name,
+					'value' => (array)$value
+				);
+
+				return true;
+			
+			case self::PROPERTY_REPLACE:
+				if (($key = self::searchProperty($properties, $name)) === false) {
+					$properties[] = array(
+						'name' => $name,
+						'value' => (array)$value
+					);
+				} else {
+					$properties[$key] = array(
+						'name' => $name,
+						'value' => (array)$value
+					);
+				}
+
+				return true;
+			
+			case self::PROPERTY_IF_FAMILY_UNDEFINED:
+				if (self::searchProperty($properties, $name) === false) {
+					if (strpos($name, '-') !== false) {
+						$short_name = current(explode('-', $name, 2));
+						
+						if (self::searchProperty($properties, $short_name) !== false) {
+							return true;
+						}
+					}
+
+					$properties[] = array(
+						'name' => $name,
+						'value' => (array)$value
+					);
+				}
+				return true;
+
+			case self::PROPERTY_IF_UNDEFINED:
+				if (self::searchProperty($properties, $name) === false) {
+					$properties[] = array(
+						'name' => $name,
+						'value' => (array)$value
+					);
+				}
+				return true;
+		}
+
+		return false;
+	}
+
+
+
+	/**
+	 * Utils: Explode a string in an array using a delimiter. Ignore the delimiter placed between parenthesis or other characters
+	 *
+	 * @param string $delimiter The delimiter used.
+	 * @param string $string The string to explode
+	 * @param int $limit The limit of the explode
+	 * @param string $str_in The character to start to ignore the delimiter. By default "("
+	 * @param string $str_out The character to end to ignore the delimiter. By default ")"
+	 *
+	 * @return array The exploded array.
+	 */
+	static public function explode ($delimiter, $string, $limit = null, $str_in = '(', $str_out = ')') {
+		if (strpos($string, $str_in) === false) {
+			return is_null($limit) ? explode($delimiter, $string) : explode($delimiter, $string, $limit);
+		}
+
+		$array = array();
+
+		while ($string) {
+			if (strpos($string,$delimiter) === false) {
+				$array[] = trim($string);
+				break;
+			}
+
+			for ($n = 0, $in = 0, $length = strlen($string); $n <= $length; $n++) {
+				$l = isset($string[$n]) ? $string[$n] : '';
+
+				if ($l === $str_in) {
+					$in++;
+					continue;
+				}
+
+				if ($l === $str_out && $in) {
+					$in--;
+					continue;
+				}
+
+				if (($l === $delimiter || $l === $str_out || $n === $length) && !$in) {
+					$array[] = trim(substr($string, 0, $n));
+					$string = trim(substr($string, $n+1));
+
+					if ($l === $str_out) {
+						break;
+					}
+
+					continue 2;
+				}
+			}
+
+			break;
+		}
+
+		return $array;
+	}
+
+
+
+	/**
+	 * Utils: Explode a string into an array and trim its value. All empty values will be ignored
+	 *
+	 * @param string $delimiter The delimiter used.
+	 * @param string $text The string to explode
+	 * @param int $limit The limit of th explode
+	 * @param string $str_in The character to start to ignore the delimiter. By default "("
+	 * @param string $str_out The character to end to ignore the delimiter. By default ")"
+	 *
+	 * @return array  The exploded array
+	 */
+	static public function explodeTrim ($delimiter, $text, $limit = null, $str_in = '(', $str_out = ')') {
+		$return = array();
+
+		$explode = self::explode($delimiter, $text, $limit, $str_in, $str_out);
+
+		foreach ($explode as $text_value) {
+			$text_value = trim($text_value);
+
+			if ($text_value !== '') {
+				$return[] = $text_value;
+			}
+		}
+
+		return $return;
+	}
+
+
+
+	/**
+	 * Utils: Search for all the css functions in a css code, for example scale(1, 1.2) and execute a callback
+	 *
+	 * @param string $string The css code to parse
+	 * @param string $function If it's defined, only apply the callback to the function specified
+	 * @param callable $callback The function to execute
+	 *
+	 * @return array  List of all functions found. Each function is an array with the name and all parameters.
+	 */
+	static public function executeFunctions ($string, $function, $callback) {
+		if ((strpos($string, '(') === false) || (isset($function) && strpos($string, $function.'(') === false)) {
+			return $string;
+		}
+
+		$length = strlen($string);
+		$index = 0;
+
+		while ($index < $length) {
+			if (($index = strpos($string, '(', $index)) === false) {
+				break;
+			}
+
+			$name = preg_match('/([\w-]+)$/', substr($string, 0, $index), $matches);
+			$name = $matches[1];
+
+			if (isset($function) && ($name !== $function)) {
+				$index++;
+				continue;
+			}
+
+			$start = $index - strlen($name);
+
+			for ($end = $index, $in = 0; $end <= $length; $end++) {
+				$l = isset($string[$end]) ? $string[$end] : '';
+
+				if ($l === '(') {
+					$in++;
+					continue;
+				}
+
+				if ($l === ')' && $in) {
+					$in--;
+					
+					if (!$in) {
+						break;
+					}
+				}
+			}
+
+			$parameters = substr($string, $index + 1, $end - $index - 1);
+			$result = $callback(empty($parameters) ? array() : self::explodeTrim(',', $parameters), $name);
+
+			if (isset($result)) {
+				$string = substr_replace($string, $result, $start, ($end - $start + 1));
+				$length = strlen($string);
+
+				if (strpos($result, '(') === false) {
+					$index = $start + strlen($result);
+				} else {
+					$index = $start + strpos($result, '(');
+				}
+			}
+
+			$index++;
+		}
+
+		return $string;
 	}
 }
 ?>

@@ -16,13 +16,15 @@
  * @version 0.4.4 (2012)
  */
 
-namespace Stylecow;
+namespace Stylecow\Plugins;
 
-class Color implements Plugins_interface {
+use Stylecow\Stylecow;
+
+class Color {
 	public $position = 4;
+	private $settings;
 
-	private $Css;
-	private $color_names = array(
+	static $color_names = array(
 		'aliceblue' => '#F0F8FF',
 		'antiquewhite' => '#FAEBD7',
 		'aqua' => '#00FFFF',
@@ -179,28 +181,19 @@ class Color implements Plugins_interface {
 	 * @param Stylecow  $Css       The Stylecow instance
 	 * @param array     $settings  The settings for this plugin
 	 */
-	public function __construct (Stylecow $Css, array $settings) {
-		$this->Css = $Css;
+	public function __construct (array $settings = array()) {
+		$this->settings = $settings;
 	}
 
 
 	/**
-	 * Transform the parsed css code
-	 */
-	public function transform () {
-		$this->Css->code = $this->_transform($this->Css->code);
-	}
-
-
-
-	/**
-	 * Private function to transform recursively the parsed css code
+	 * Search for color() function and execute it
 	 *
 	 * @param array  $array_code  The piece of the parsed css code
 	 *
 	 * @return array  The transformed code
 	 */
-	private function _transform ($array_code) {
+	public function transform ($array_code) {
 		foreach ($array_code as $k_code => $code) {
 			if ($code['properties']) {
 				foreach ($code['properties'] as $k_property => $property) {
@@ -209,13 +202,17 @@ class Color implements Plugins_interface {
 							continue;
 						}
 
-						$array_code[$k_code]['properties'][$k_property]['value'][$k_value] = preg_replace_callback('/color\((((rgba?|hsla?)?\([^\)]+\))?[^\)]+)\)/', array($this, 'colorCallback'), $value);
+						$value = Stylecow::executeFunctions($value, 'color', function ($arguments) {
+							return $this->processColor(array_shift($arguments), $arguments);
+						});
+
+						$array_code[$k_code]['properties'][$k_property]['value'][$k_value] = $value;
 					}
 				}
 			}
 
 			if ($code['content']) {
-				$array_code[$k_code]['content'] = $this->_transform($code['content']);
+				$array_code[$k_code]['content'] = $this->transform($code['content']);
 			}
 		}
 
@@ -231,14 +228,10 @@ class Color implements Plugins_interface {
 	 *
 	 * @return array  The transformed color
 	 */
-	private function colorCallback ($matches) {
-		$matches = $this->Css->explodeTrim(',', $matches[1], 2);
-		$color = $matches[0];
-		$operations = isset($matches[1]) ? $matches[1] : '';
-
+	private function processColor ($color, $operations) {
 		$rgba = $this->toRGBA($color);
 
-		foreach (explode(',', $operations) as $operation) {
+		foreach ($operations as $operation) {
 			if (strpos($operation, ':') === false) {
 				if (preg_match('/^[0-9]+$/', $operation)) {
 					$function = 'tint';
@@ -333,8 +326,8 @@ class Color implements Plugins_interface {
 		if ($color[0] === '#') {
 			return $this->HEX_RGBA(substr($color, 1));
 		}
-		if (isset($this->color_names[strtolower($color)])) {
-			return $this->HEX_RGBA(substr($this->color_names[strtolower($color)], 1));
+		if (isset(self::$color_names[strtolower($color)])) {
+			return $this->HEX_RGBA(substr(self::$color_names[strtolower($color)], 1));
 		}
 		if (preg_match('/rgb\((\d+)[,\s]+(\d+)[,\s]+(\d+)\)/', $color, $matches)) {
 			return array(intval($matches[1]), intval($matches[2]), intval($matches[3]), 1);

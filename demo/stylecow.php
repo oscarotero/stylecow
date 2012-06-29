@@ -1,32 +1,33 @@
 <?php
 error_reporting(E_ALL & ~E_NOTICE);
 
-include('../Stylecow/Stylecow.php');
-include('../Stylecow/Plugins/Color.php');
+//Use a loader PSR-0 compatible
 
-$styleCow = new Stylecow\Stylecow;
-$colorPlugin = new Stylecow\Plugins\Color();
+include('Loader.php');
 
-$styleCow->load(__DIR__.'/'.$_GET['styles']);
+Loader::setLibrariesPath(dirname(__DIR__));
+Loader::register();
 
-$new_code = $colorPlugin->_transform($styleCow->getParsedCode());
 
-print_r($new_code);
+//Initialize stylecow
 
-die();
+$sc = new Stylecow\Stylecow;
 
-$styleCow->transform(array(
-	'Vendor_prefixes',
-	'Variables',
-	'Ie_filters',
-	'Grid',
-	'Matches',
-	'Nested_rules',
-	'Animate',
-	'Color',
-	'Rem',
-	'Math'
+//Load the css file
+
+$sc->load(__DIR__.'/'.$_GET['styles']);
+
+//Execute the plugins
+
+$sc->transform(array(
+	'Stylecow\\Plugins\\Color',
+	'Stylecow\\Plugins\\NestedRules',
+	'Stylecow\\Plugins\\Matches',
+	'Stylecow\\Plugins\\Math',
+	'Stylecow\\Plugins\\IeFilters',
+	'Stylecow\\Plugins\\Rem'
 ));
 
-$styleCow->show();
+//Show the result code
+$sc->show();
 ?>

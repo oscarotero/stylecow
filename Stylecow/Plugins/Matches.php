@@ -15,44 +15,25 @@
  * @version 0.1.2 (2012)
  */
 
-namespace Stylecow;
+namespace Stylecow\Plugins;
 
-class Matches implements Plugins_interface {
-	public $position = 2;
+use Stylecow\Stylecow;
 
-	private $Css;
-
-
-	/**
-	 * Constructor
-	 *
-	 * @param Stylecow  $Css       The Stylecow instance
-	 * @param array     $settings  The settings for this plugin
-	 */
-	public function __construct (Stylecow $Css, array $settings) {
-		$this->Css = $Css;
-	}
+class Matches extends Plugin implements PluginsInterface {
+	static protected $position = 2;
 
 
 	/**
-	 * Transform the parsed css code
-	 */
-	public function transform () {
-		$this->Css->code = $this->_transform($this->Css->code);
-	}
-
-
-	/**
-	 * Private function to transform recursively the parsed css code
+	 * Resolve all matches in the selectors
 	 *
-	 * @param array  $array_code  The piece of the parsed css code
+	 * @param array $array_code The piece of the parsed css code
 	 *
-	 * @return array  The transformed code
+	 * @return array The transformed code
 	 */
-	private function _transform ($array_code) {
+	public function transform (array $array_code) {
 		foreach ($array_code as $k_code => $code) {
 			if ($code['content']) {
-				$code['content'] = $this->_transform($code['content']);
+				$code['content'] = $this->transform($code['content']);
 			}
 
 			if ($code['selector'] && $code['is_css']) {
@@ -61,7 +42,7 @@ class Matches implements Plugins_interface {
 						if (preg_match('/:matches\(([^\)]*)\)/', $selector, $match)) {
 							unset($code['selector'][$k_selector]);
 
-							foreach ($this->Css->explodeTrim(',', $match[1]) as $sub_selector) {
+							foreach (Stylecow::explodeTrim(',', $match[1]) as $sub_selector) {
 								$code['selector'][] = str_replace($match[0], $sub_selector, $selector);
 							}
 						}

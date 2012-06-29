@@ -15,83 +15,57 @@
  * @version 0.1.3 (2012)
  */
 
-namespace Stylecow;
+namespace Stylecow\Plugins;
 
-class Rem implements Plugins_interface {
-	public $position = 4;
+use Stylecow\Stylecow;
 
-	private $Css;
+class Rem extends Plugin implements PluginsInterface {
+	static protected $position = 4;
+
 	private $rem = 16;
 
 
 	/**
-	 * Constructor
+	 * Search for all rem values and fix them
 	 *
-	 * @param Stylecow  $Css       The Stylecow instance
-	 * @param array     $settings  The settings for this plugin
-	 */
-	public function __construct (Stylecow $Css, array $settings) {
-		$this->Css = $Css;
-	}
-
-
-	/**
-	 * Transform the parsed css code
-	 */
-	public function transform () {
-		$this->Css->code = $this->_transform($this->Css->code);
-	}
-
-
-
-	/**
-	 * Private function to transform recursively the parsed css code
+	 * @param array $array_code The piece of the parsed css code
 	 *
-	 * @param array  $array_code        The piece of the parsed css code
-	 *
-	 * @return array  The transformed code
+	 * @return array The transformed code
 	 */
-	private function _transform ($array_code) {
-		foreach ($array_code as $k_code => $code) {
-			if ($code['is_css'] && $code['properties'] && $code['selector'] && in_array('body', $code['selector'])) {
-				foreach ($code['properties'] as $property) {
-					if ($property['name'] === 'font-size') {
-						$this->rem = floatval($property['value'][0]) * 16;
-					}
-				}
-			}
+	public function transform (array $array_code) {
+		$key = Stylecow::searchSelector($array_code, 'body');
 
-			if ($code['properties']) {
-				$new_properties = array();
+		if ($key !== false) {
+			$key_property = Stylecow::searchProperty($array_code[$key]['properties'], 'font-size');
 
-				foreach ($code['properties'] as $k_property => $property) {
-					if (preg_match('/([0-9\.]+)rem/', implode($property['value']), $match)) {
-						$new_values = array();
-
-						foreach ($property['value'] as $k_value => $value) {
-							if (strpos($value, 'rem') === false) {
-								$new_values[] = $value;
-							}
-
-							$new_value = preg_replace_callback('/([0-9\.]+)rem/', array($this, 'remCallback'), $value);
-
-							if ($new_value !== $value) {
-								$new_values[] = $new_value;
-							}
-						}
-
-						$new_properties[] = array('name' => $property['name'], 'value' => $new_values);
-					}
-
-					$new_properties[] = $property;
-				}
-
-				$array_code[$k_code]['properties'] = $new_properties;
+			if ($key_property !== false) {
+				$this->rem = floatval($array_code[$key]['properties'][$key_property]['value'][0]) * 16;
 			}
 		}
-		
 
-		return $array_code;
+		return Stylecow::propertyWalk($array_code, function ($property) {
+			if (!preg_match('/([0-9\.]+)rem/', implode($property['value']))) {
+				return $property;
+			}
+
+			$new_values = array();
+
+			foreach ($property['value'] as $k_value => $value) {
+				if (strpos($value, 'rem') === false) {
+					$new_values[] = $value;
+				}
+
+				$new_value = preg_replace_callback('/([0-9\.]+)rem/', array($this, 'remCallback'), $value);
+
+				if ($new_value !== $value) {
+					$new_values[] = $new_value;
+				}
+			}
+
+			$property['value'] = $new_values;
+
+			return $property;
+		});
 	}
 
 

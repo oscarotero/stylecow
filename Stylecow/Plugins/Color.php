@@ -20,11 +20,9 @@ namespace Stylecow\Plugins;
 
 use Stylecow\Stylecow;
 
-class Color {
-	public $position = 4;
-	private $settings;
-
-	static $color_names = array(
+class Color extends Plugin implements PluginsInterface {
+	static protected $position = 4;
+	static protected $color_names = array(
 		'aliceblue' => '#F0F8FF',
 		'antiquewhite' => '#FAEBD7',
 		'aqua' => '#00FFFF',
@@ -176,47 +174,26 @@ class Color {
 
 
 	/**
-	 * Constructor
-	 *
-	 * @param Stylecow  $Css       The Stylecow instance
-	 * @param array     $settings  The settings for this plugin
-	 */
-	public function __construct (array $settings = array()) {
-		$this->settings = $settings;
-	}
-
-
-	/**
 	 * Search for color() function and execute it
 	 *
-	 * @param array  $array_code  The piece of the parsed css code
+	 * @param array $array_code The piece of the parsed css code
 	 *
-	 * @return array  The transformed code
+	 * @return array The transformed code
 	 */
-	public function transform ($array_code) {
-		foreach ($array_code as $k_code => $code) {
-			if ($code['properties']) {
-				foreach ($code['properties'] as $k_property => $property) {
-					foreach ($property['value'] as $k_value => $value) {
-						if (strpos($value, 'color(') === false) {
-							continue;
-						}
-
-						$value = Stylecow::executeFunctions($value, 'color', function ($arguments) {
-							return $this->processColor(array_shift($arguments), $arguments);
-						});
-
-						$array_code[$k_code]['properties'][$k_property]['value'][$k_value] = $value;
-					}
+	public function transform (array $array_code) {
+		return Stylecow::propertyWalk($array_code, function ($property) {
+			foreach ($property['value'] as &$value) {
+				if (strpos($value, 'color(') === false) {
+					continue;
 				}
+
+				$value = Stylecow::executeFunctions($value, 'color', function ($arguments) {
+					return $this->processColor(array_shift($arguments), $arguments);
+				});
 			}
 
-			if ($code['content']) {
-				$array_code[$k_code]['content'] = $this->transform($code['content']);
-			}
-		}
-
-		return $array_code;
+			return $property;
+		});
 	}
 
 
@@ -224,9 +201,9 @@ class Color {
 	/**
 	 * The internal callback to replace each color() function with the css color syntax
 	 *
-	 * @param array  $matches  The matches found in the preg_replace_callback
+	 * @param array $matches The matches found in the preg_replace_callback
 	 *
-	 * @return array  The transformed color
+	 * @return array The transformed color
 	 */
 	private function processColor ($color, $operations) {
 		$rgba = $this->toRGBA($color);

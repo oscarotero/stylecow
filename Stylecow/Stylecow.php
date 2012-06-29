@@ -18,6 +18,7 @@ class Stylecow {
 	const PROPERTY_REPLACE = 1;
 	const PROPERTY_IF_FAMILY_UNDEFINED = 2;
 	const PROPERTY_IF_UNDEFINED = 3;
+	const PROPERTY_APPEND = 4;
 
 	private $code = array();
 	private $basePath;
@@ -170,15 +171,8 @@ class Stylecow {
 	 * @return $this
 	 */
 	public function transform ($plugins) {
-		if (is_string($this->code)) {
-			$this->code = $this->parse($this->code);
-		}
-
-		$plugins_dir = __DIR__.'/Plugins/';
 		$plugins_objects = array();
 		$plugins_positions = array();
-
-		include_once($plugins_dir.'Plugins_interface.php');
 
 		foreach ((array)$plugins as $plugin => $settings) {
 			if (is_int($plugin)) {
@@ -186,27 +180,24 @@ class Stylecow {
 				$settings = array();
 			}
 
-			$plugin = ucfirst($plugin);
-			$plugin_file = $plugins_dir.$plugin.'.php';
-
-			if (!is_file($plugin_file)) {
-				echo "'$plugin_file' does not exists!";
+			if (!class_exists($plugin)) {
+				echo "'$plugin' does not exists!";
 				die();
 			}
 
-			include_once($plugin_file);
-
-			$plugin = '\\Stylecow\\'.$plugin;
-			$plugins_objects[$plugin] = new $plugin($this, $settings);
-			$plugins_positions[$plugin] = $plugins_objects[$plugin]->position;
+			$plugins_objects[$plugin] = new $plugin($settings);
+			$plugins_positions[$plugin] = $plugins_objects[$plugin]->getPosition();
 		}
 
 		asort($plugins_positions);
 
-		//Execute plugins
+		$code = $this->getParsedCode();
+
 		foreach ($plugins_positions as $plugin => $pos) {
-			$plugins_objects[$plugin]->transform();
+			$code = $plugins_objects[$plugin]->transform($code);
 		}
+
+		$this->setParsedCode($code);
 
 		return $this;
 	}
@@ -536,20 +527,22 @@ class Stylecow {
 	/**
 	 * Utils: Adds a new property to a list of properties.
 	 *
-	 * @param array   &$properties   The list of properties. Each property is a subarray with 'name' and 'values' keys.
-	 * @param string  $name          The name of the property to add
-	 * @param int     $value         The value of the property
-	 * @param int     $replace_mode  The type of the replace mode
+	 * @param array &$properties The list of properties. Each property is a subarray with 'name' and 'values' keys.
+	 * @param string $name The name of the property to add
+	 * @param int $value The value of the property
+	 * @param int $replace_mode The type of the replace mode
+	 * @param string $browser Optional browser value
 	 *
-	 * @return bool  True if a new value has been inserted, false otherwise.
+	 * @return bool True if a new value has been inserted, false otherwise.
 	 */
-	static public function addProperty (&$properties, $name, $value, $replace_mode = 0) {
+	static public function addProperty (&$properties, $name, $value, $replace_mode = 0, $browser = null) {
 		switch ($replace_mode) {
 
 			case self::PROPERTY_ADD:
 				$properties[] = array(
 					'name' => $name,
-					'value' => (array)$value
+					'value' => (array)$value,
+					'browser' => $browser
 				);
 
 				return true;
@@ -558,12 +551,14 @@ class Stylecow {
 				if (($key = self::searchProperty($properties, $name)) === false) {
 					$properties[] = array(
 						'name' => $name,
-						'value' => (array)$value
+						'value' => (array)$value,
+						'browser' => $browser
 					);
 				} else {
 					$properties[$key] = array(
 						'name' => $name,
-						'value' => (array)$value
+						'value' => (array)$value,
+						'browser' => $browser
 					);
 				}
 
@@ -581,7 +576,8 @@ class Stylecow {
 
 					$properties[] = array(
 						'name' => $name,
-						'value' => (array)$value
+						'value' => (array)$value,
+						'browser' => $browser
 					);
 				}
 				return true;
@@ -590,8 +586,21 @@ class Stylecow {
 				if (self::searchProperty($properties, $name) === false) {
 					$properties[] = array(
 						'name' => $name,
-						'value' => (array)$value
+						'value' => (array)$value,
+						'browser' => $browser
 					);
+				}
+				return true;
+
+			case self::PROPERTY_APPEND:
+				if (($key = self::searchProperty($properties, $name)) === false) {
+					$properties[] = array(
+						'name' => $name,
+						'value' => (array)$value,
+						'browser' => $browser
+					);
+				} else {
+					$properties[$key]['value'][] = $value;
 				}
 				return true;
 		}
@@ -754,6 +763,69 @@ class Stylecow {
 		}
 
 		return $string;
+	}
+
+
+	/**
+	 * Utils: Execute the callback for each properties key in the array of the parsed code
+	 *
+	 * @param array $array_code The parsed code
+	 * @param callable $callback The function to execute. It has just one argument with the properties data
+	 *
+	 * @return array  The executed array
+	 */
+	static public function propertiesWalk ($array_code, $callback) {
+		foreach ($array_code as $k_code => $code) {
+			if ($code['properties']) {
+				$array_code[$k_code]['properties'] = (array)$callback($code['properties']);
+			}
+
+			if ($code['content']) {
+				$array_code[$k_code]['content'] = self::propertiesWalk($code['content'], $callback);
+			}
+		}
+
+		return $array_code;
+	}
+
+
+	/**
+	 * Utils: Execute the callback for each individual property the array of the parsed code
+	 *
+	 * @param array $array_code The parsed code
+	 * @param callable $callback The function to execute. It has jus one argument with the property name and values
+	 *
+	 * @return array  The executed array
+	 */
+	static public function propertyWalk ($array_code, $callback) {
+		return Stylecow::propertiesWalk($array_code, function ($properties) use ($callback) {
+			foreach ($properties as $k_property => &$property) {
+				$property = (array)$callback($property);
+			}
+
+			return $properties;
+		});
+
+		return $array_code;
+	}
+
+
+	/**
+	 * Utils: Search for a specific selector and returns the key of the code.
+	 *
+	 * @param array $array_code The parsed code
+	 * @param string $selector The exact selector to search
+	 *
+	 * @return int/false The key of the code or false if the selector had not been found
+	 */
+	static public function searchSelector ($array_code, $selector) {
+		foreach ($array_code as $key => $code) {
+			if ($code['is_css'] && $code['properties'] && $code['selector'] && in_array($selector, $code['selector'])) {
+				return $key;
+			}
+		}
+
+		return false;
 	}
 }
 ?>

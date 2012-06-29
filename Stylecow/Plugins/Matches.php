@@ -12,7 +12,7 @@
  *
  * @author Oscar Otero <http://oscarotero.com> <oom@oscarotero.com>
  * @license GNU Affero GPL version 3. http://www.gnu.org/licenses/agpl-3.0.html
- * @version 0.1.2 (2012)
+ * @version 1.0.0 (2012)
  */
 
 namespace Stylecow\Plugins;
@@ -31,28 +31,21 @@ class Matches extends Plugin implements PluginsInterface {
 	 * @return array The transformed code
 	 */
 	public function transform (array $array_code) {
-		foreach ($array_code as $k_code => $code) {
-			if ($code['content']) {
-				$code['content'] = $this->transform($code['content']);
-			}
+		return Stylecow::selectorsWalk($array_code, function ($selectors) {
 
-			if ($code['selector'] && $code['is_css']) {
-				while (strpos(implode($code['selector']), ':matches(') !== false) {
-					foreach ($code['selector'] as $k_selector => $selector) {
-						if (preg_match('/:matches\(([^\)]*)\)/', $selector, $match)) {
-							unset($code['selector'][$k_selector]);
+			while (strpos(implode($selectors), ':matches(') !== false) {
+				foreach ($selectors as $k_selector => $selector) {
+					if (preg_match('/:matches\(([^\)]*)\)/', $selector, $match)) {
+						unset($selectors[$k_selector]);
 
-							foreach (Stylecow::explodeTrim(',', $match[1]) as $sub_selector) {
-								$code['selector'][] = str_replace($match[0], $sub_selector, $selector);
-							}
+						foreach (Stylecow::explodeTrim(',', $match[1]) as $sub_selector) {
+							$selectors[] = str_replace($match[0], $sub_selector, $selector);
 						}
 					}
 				}
 			}
 
-			$array_code[$k_code] = $code;
-		}
-
-		return $array_code;
+			return $selectors;
+		});
 	}
 }

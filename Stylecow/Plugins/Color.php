@@ -13,7 +13,7 @@
  *
  * @author Oscar Otero <http://oscarotero.com> <oom@oscarotero.com>
  * @license GNU Affero GPL version 3. http://www.gnu.org/licenses/agpl-3.0.html
- * @version 0.4.4 (2012)
+ * @version 1.0.0 (2012)
  */
 
 namespace Stylecow\Plugins;
@@ -183,18 +183,10 @@ class Color extends Plugin implements PluginsInterface {
 	public function transform (array $array_code) {
 		$self = $this;
 
-		return Stylecow::propertyWalk($array_code, function ($property) use ($self) {
-			foreach ($property['value'] as &$value) {
-				if (strpos($value, 'color(') === false) {
-					continue;
-				}
-
-				$value = Stylecow::executeFunctions($value, 'color', function ($arguments) use ($self) {
-					return $self->processColor(array_shift($arguments), $arguments);
-				});
-			}
-
-			return $property;
+		return Stylecow::valueWalk($array_code, function ($value) use ($self) {
+			return Stylecow::executeFunctions($value, 'color', function ($arguments) use ($self) {
+				return $self->processColor(array_shift($arguments), $arguments);
+			});
 		});
 	}
 
@@ -208,7 +200,7 @@ class Color extends Plugin implements PluginsInterface {
 	 * @return array The transformed color
 	 */
 	public function processColor ($color, $operations) {
-		$rgba = $this->toRGBA($color);
+		$rgba = self::toRGBA($color);
 
 		foreach ($operations as $operation) {
 			if (strpos($operation, ':') === false) {
@@ -219,16 +211,16 @@ class Color extends Plugin implements PluginsInterface {
 					continue;
 				}
 			} else {
-				list($function, $value) = $this->Css->explodeTrim(':', $operation, 2);
+				list($function, $value) = Stylecow::explodeTrim(':', $operation, 2);
 			}
 
 			switch ($function) {
 				case 'hue':
 				case 'saturation':
 				case 'light':
-					$hsla = $this->RGBA_HSLA($rgba);
+					$hsla = self::RGBA_HSLA($rgba);
 					$this->editChannel($hsla, $function, $value);
-					$rgba = $this->HSLA_RGBA($hsla);
+					$rgba = self::HSLA_RGBA($hsla);
 					break;
 				
 				case 'red':
@@ -250,7 +242,7 @@ class Color extends Plugin implements PluginsInterface {
 			return 'rgba('.implode(', ', $rgba).')';
 		}
 
-		return '#'.$this->RGBA_HEX($rgba);
+		return '#'.self::RGBA_HEX($rgba);
 	}
 
 
@@ -301,12 +293,12 @@ class Color extends Plugin implements PluginsInterface {
 	 *
 	 * @return array  The rgba value
 	 */
-	private function toRGBA ($color) {
+	static public function toRGBA ($color) {
 		if ($color[0] === '#') {
-			return $this->HEX_RGBA(substr($color, 1));
+			return self::HEX_RGBA(substr($color, 1));
 		}
 		if (isset(self::$color_names[strtolower($color)])) {
-			return $this->HEX_RGBA(substr(self::$color_names[strtolower($color)], 1));
+			return self::HEX_RGBA(substr(self::$color_names[strtolower($color)], 1));
 		}
 		if (preg_match('/rgb\((\d+)[,\s]+(\d+)[,\s]+(\d+)\)/', $color, $matches)) {
 			return array(intval($matches[1]), intval($matches[2]), intval($matches[3]), 1);
@@ -315,10 +307,10 @@ class Color extends Plugin implements PluginsInterface {
 			return array(intval($matches[1]), intval($matches[2]), intval($matches[3]), floatval($matches[4]));
 		}
 		if (preg_match('/hsl\((\d+)[,\s]+(\d+)[,\s]+(\d+)\)/', $color, $matches)) {
-			return $this->HSLA_RGBA(array(intval($matches[1]), intval($matches[2]), intval($matches[3]), 1));
+			return self::HSLA_RGBA(array(intval($matches[1]), intval($matches[2]), intval($matches[3]), 1));
 		}
 		if (preg_match('/hsla\((\d+)[,\s]+(\d+)[,\s]+(\d+)[,\s]+(\d+)\)/', $color, $matches)) {
-			return $this->HSLA_RGBA(array(intval($matches[1]), intval($matches[2]), intval($matches[3]), floatval($matches[4])));
+			return self::HSLA_RGBA(array(intval($matches[1]), intval($matches[2]), intval($matches[3]), floatval($matches[4])));
 		}
 
 		return array(0, 0, 0, 1);
@@ -333,7 +325,7 @@ class Color extends Plugin implements PluginsInterface {
 	 *
 	 * @return array  The rgba value
 	 */
-	private function HSLA_RGBA ($hsla) {
+	static public function HSLA_RGBA ($hsla) {
 		list($h, $s, $l, $a) = $hsla;
 
 		$h = intval($h)/360;
@@ -358,9 +350,9 @@ class Color extends Plugin implements PluginsInterface {
 		$var_1 = 2 * $l - $var_2;
 
 		return array(
-			round(255 * $this->Hue_RGB($var_1, $var_2, $h + (1/3), true)),
-			round(255 * $this->Hue_RGB($var_1, $var_2, $h)),
-			round(255 * $this->Hue_RGB($var_1, $var_2, $h - (1/3))),
+			round(255 * self::Hue_RGB($var_1, $var_2, $h + (1/3), true)),
+			round(255 * self::Hue_RGB($var_1, $var_2, $h)),
+			round(255 * self::Hue_RGB($var_1, $var_2, $h - (1/3))),
 			$a
 		);
 	}
@@ -369,7 +361,7 @@ class Color extends Plugin implements PluginsInterface {
 	/**
 	 * Internal function used by HSLA_RGBA() to convert a Hue value to R, G, and B
 	 */
-	private function Hue_RGB ($v1, $v2, $vH, $k = false) {
+	static public function Hue_RGB ($v1, $v2, $vH, $k = false) {
 		if ($vH < 0) {
 			$vH += 1;
 		} else if ($vH > 1) {
@@ -400,7 +392,7 @@ class Color extends Plugin implements PluginsInterface {
 	 *
 	 * @return array  The hsla value
 	 */
-	private function RGBA_HSLA ($rgba) {
+	static public function RGBA_HSLA ($rgba) {
 		list($r, $g, $b, $a) = $rgba;
 
 		$min = min($r, $g, $b);
@@ -455,7 +447,7 @@ class Color extends Plugin implements PluginsInterface {
 	 *
 	 * @return string  The hexadecimal value
 	 */
-	private function RGBA_HEX ($rgba) {
+	static public function RGBA_HEX ($rgba) {
 		$r = dechex(($rgba[0] > 255) ? 255 : $rgba[0]);
 		$g = dechex(($rgba[1] > 255) ? 255 : $rgba[1]);
 		$b = dechex(($rgba[2] > 255) ? 255 : $rgba[2]);
@@ -482,7 +474,7 @@ class Color extends Plugin implements PluginsInterface {
 	 *
 	 * @return array  The rgba value
 	 */
-	private function HEX_RGBA ($hex) {
+	static public function HEX_RGBA ($hex) {
 		if (strlen($hex) === 3) {
 			list($r, $g, $b) = array($hex[0].$hex[0], $hex[1].$hex[1], $hex[2].$hex[2]);
 		} else {

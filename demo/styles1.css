@@ -2,6 +2,7 @@ body {
 	background: color(black, 10);
 	font-family: Arial;
 	font-style: italic;
+	font-size: 50em;
 	opacity: 0.5;
 	background: rgba(0, 0, 0, 0.5);
 	border-top-left-radius: 3px;

@@ -12,7 +12,7 @@
  *
  * @author Oscar Otero <http://oscarotero.com> <oom@oscarotero.com>
  * @license GNU Affero GPL version 3. http://www.gnu.org/licenses/agpl-3.0.html
- * @version 0.1.9 (2012)
+ * @version 1.0.0 (2012)
  */
 
 namespace Stylecow\Plugins;
@@ -21,7 +21,8 @@ use Stylecow\Stylecow;
 
 class VendorPrefixes extends Plugin implements PluginsInterface {
 	static protected $position = 3;
-	static protected $property_prefixes = array(
+
+	static $property_prefixes = array(
 		'animation' => array('moz', 'webkit', 'o', 'ms'),
 		'animation-delay' => array('moz', 'webkit', 'o', 'ms'),
 		'animation-direction' => array('moz', 'webkit', 'o', 'ms'),
@@ -102,14 +103,14 @@ class VendorPrefixes extends Plugin implements PluginsInterface {
 		'user-select' => array('moz', 'webkit')
 	);
 
-	static protected $property_fn_prefixes = array(
+	static $property_fn_prefixes = array(
 		'border-top-left-radius' => 'borderRadius',
 		'border-top-right-radius' => 'borderRadius',
 		'border-bottom-left-radius' => 'borderRadius',
 		'border-bottom-right-radius' => 'borderRadius'
 	);
 
-	static protected $value_prefixes = array(
+	static $value_prefixes = array(
 		'display' => array(
 			'box' => array('moz', 'webkit'),
 			'inline-block' => array('moz')
@@ -122,7 +123,7 @@ class VendorPrefixes extends Plugin implements PluginsInterface {
 		)
 	);
 
-	static protected $value_fn_prefixes = array(
+	static $value_fn_prefixes = array(
 		'background' => array(
 			'linear-gradient' => 'linearGradient'
 		),
@@ -131,11 +132,11 @@ class VendorPrefixes extends Plugin implements PluginsInterface {
 		)
 	);
 
-	static protected $selector_prefixes = array(
+	static $selector_prefixes = array(
 		'::selection' => array('moz' => '::-moz-selection')
 	);
 
-	static protected $type_prefixes = array(
+	static $type_prefixes = array(
 		'@keyframes' => array(
 			'moz' => '@-moz-keyframes',
 			'webkit' => '@-webkit-keyframes',
@@ -173,8 +174,8 @@ class VendorPrefixes extends Plugin implements PluginsInterface {
 		$new_array_code = array();
 
 		foreach ($array_code as $code) {
-			if ($code['type'] && isset(self::$type_prefixes[$code['type']])) {
-				foreach (self::$type_prefixes[$code['type']] as $prefix => $new_type_prefix) {
+			if ($code['type'] && isset(VendorPrefixes::$type_prefixes[$code['type']])) {
+				foreach (VendorPrefixes::$type_prefixes[$code['type']] as $prefix => $new_type_prefix) {
 					if ((isset($code['browser']) && $code['browser'] !== $prefix) || ($prefix_scope && $prefix !== $prefix_scope)) {
 						continue;
 					}
@@ -221,7 +222,7 @@ class VendorPrefixes extends Plugin implements PluginsInterface {
 
 			if ($code['is_css']) {
 				foreach ($code['selector'] as $selector) {
-					foreach (self::$selector_prefixes as $selector_prefix => $prefixes) {
+					foreach (VendorPrefixes::$selector_prefixes as $selector_prefix => $prefixes) {
 						if (strpos($selector, $selector_prefix) !== false) {
 							foreach ($prefixes as $prefix => $new_selector_prefix) {
 								if ((isset($code['browser']) && $code['browser'] !== $prefix) || ($prefix_scope && $prefix !== $prefix_scope)) {
@@ -258,18 +259,20 @@ class VendorPrefixes extends Plugin implements PluginsInterface {
 	 * @return array  The transformed code
 	 */
 	private function transformProperties ($array_code, $prefix_scope = '') {
-		return Stylecow::propertiesWalk($array_code, function ($properties) {
+		$self = $this;
+
+		return Stylecow::propertiesWalk($array_code, function ($properties) use ($self) {
 			$new_properties = $properties;
 
 			foreach ($properties as $property) {
-				if (isset(self::$property_fn_prefixes[$property['name']]) && $fn = self::$property_fn_prefixes[$property['name']]) {
-					$v = $this->$fn($property['name'], $property['value']);
+				if (isset(VendorPrefixes::$property_fn_prefixes[$property['name']]) && $fn = VendorPrefixes::$property_fn_prefixes[$property['name']]) {
+					$v = $self->$fn($property['name'], $property['value']);
 
 					Stylecow::addProperty($new_properties, $v['name'], $v['value'], Stylecow::PROPERTY_IF_UNDEFINED, $v['browser']);
 				}
 
-				if (isset(self::$property_prefixes[$property['name']])) {
-					foreach (self::$property_prefixes[$property['name']] as $prefix) {
+				if (isset(VendorPrefixes::$property_prefixes[$property['name']])) {
+					foreach (VendorPrefixes::$property_prefixes[$property['name']] as $prefix) {
 						if ((isset($code['browser']) && $code['browser'] !== $prefix) || ($prefix_scope && $prefix !== $prefix_scope)) {
 							continue;
 						}
@@ -294,22 +297,24 @@ class VendorPrefixes extends Plugin implements PluginsInterface {
 	 * @return array  The transformed code
 	 */
 	private function transformValues ($array_code, $prefix_scope = '') {
-		return Stylecow::propertiesWalk($array_code, function ($properties) {
+		$self = $this;
+
+		return Stylecow::propertiesWalk($array_code, function ($properties) use ($self) {
 			$new_properties = $properties;
 
 			foreach ($properties as $property) {
-				if (isset(self::$value_fn_prefixes[$property['name']])) {
-					foreach (self::$value_fn_prefixes[$property['name']] as $property_value => $fn) {
+				if (isset(VendorPrefixes::$value_fn_prefixes[$property['name']])) {
+					foreach (VendorPrefixes::$value_fn_prefixes[$property['name']] as $property_value => $fn) {
 						if (preg_match('/(^|[^-])'.preg_quote($property_value, '/').'([^\w]|$)?/', implode($property['value']))) {
-							$v = $this->$fn($property['name'], $property['value']);
+							$v = $self->$fn($property['name'], $property['value']);
 
 							Stylecow::addProperty($new_properties, $v['name'], $v['value'], Stylecow::PROPERTY_ADD, $v['browser']);
 						}
 					}
 				}
 
-				if (isset(self::$value_prefixes[$property['name']])) {
-					foreach (self::$value_prefixes[$property['name']] as $property_value => $prefixes) {
+				if (isset(VendorPrefixes::$value_prefixes[$property['name']])) {
+					foreach (VendorPrefixes::$value_prefixes[$property['name']] as $property_value => $prefixes) {
 						if (preg_match('/(^|[^-])'.preg_quote($property_value, '/').'([^\w]|$)?/', implode($property['value']))) {
 							foreach ($prefixes as $prefix) {
 								if ((isset($code['browser']) && $code['browser'] !== $prefix) || ($prefix_scope && $prefix !== $prefix_scope)) {
@@ -344,7 +349,7 @@ class VendorPrefixes extends Plugin implements PluginsInterface {
 	 *
 	 * @return array  The border-radius code
 	 */
-	private function borderRadius ($name, $values) {
+	public function borderRadius ($name, $values) {
 		switch ($name) {
 			case 'border-top-right-radius':
 				return array(
@@ -386,7 +391,7 @@ class VendorPrefixes extends Plugin implements PluginsInterface {
 	 *
 	 * @return array  The linear-gradient code
 	 */
-	private function linearGradient ($name, $values) {
+	public function linearGradient ($name, $values) {
 		foreach ($values as &$value) {
 			$value = Stylecow::executeFunctions($value, 'linear-gradient', function ($params) {
 				$point = 'top';

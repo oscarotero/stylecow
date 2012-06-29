@@ -12,7 +12,7 @@
  *
  * @author Oscar Otero <http://oscarotero.com> <oom@oscarotero.com>
  * @license GNU Affero GPL version 3. http://www.gnu.org/licenses/agpl-3.0.html
- * @version 0.1.3 (2012)
+ * @version 1.0.0 (2012)
  */
 
 namespace Stylecow\Plugins;
@@ -33,38 +33,55 @@ class Rem extends Plugin implements PluginsInterface {
 	 * @return array The transformed code
 	 */
 	public function transform (array $array_code) {
-		$key = Stylecow::searchSelector($array_code, 'body');
+		$key = Stylecow::searchSelector($array_code, ':root');
 
-		if ($key !== false) {
-			$key_property = Stylecow::searchProperty($array_code[$key]['properties'], 'font-size');
+		if ($key === false) {
+			$key = Stylecow::searchSelector($array_code, 'html');
 
-			if ($key_property !== false) {
-				$this->rem = floatval($array_code[$key]['properties'][$key_property]['value'][0]) * 16;
+			if ($key === false) {
+				$key = Stylecow::searchSelector($array_code, 'body');
 			}
 		}
 
-		return Stylecow::propertyWalk($array_code, function ($property) {
-			if (!preg_match('/([0-9\.]+)rem/', implode($property['value']))) {
-				return $property;
+		if ($key !== false) {
+			$value = Stylecow::getValue($array_code[$key]['properties'], 'font-size', 0);
+
+			if (strpos($value, 'px') !== false) {
+				$this->rem = intval($value);
+			} else if (strpos($value, 'em') !== false) {
+				$this->rem = floatval($value) * 16;
+			} else if (strpos($value, 'pt') !== false) {
+				$this->rem = floatval($value) * 14;
 			}
+		}
 
-			$new_values = array();
+		$self = $this;
 
-			foreach ($property['value'] as $k_value => $value) {
-				if (strpos($value, 'rem') === false) {
-					$new_values[] = $value;
+		return Stylecow::propertiesWalk($array_code, function ($properties) use ($self) {
+			$new_properties = array();
+
+			foreach ($properties as $property) {
+				if (!preg_match('/([0-9\.]+)rem/', implode($property['value']))) {
+					$new_properties[] = $property;
+
+					continue;
 				}
 
-				$new_value = preg_replace_callback('/([0-9\.]+)rem/', array($this, 'remCallback'), $value);
+				$new_property = $property;
 
-				if ($new_value !== $value) {
-					$new_values[] = $new_value;
+				foreach ($new_property['value'] as $k_value => $value) {
+					if (strpos($value, 'rem') === false) {
+						continue;
+					}
+
+					$new_property['value'][$k_value] = preg_replace_callback('/([0-9\.]+)rem/', array($self, 'remCallback'), $value);
 				}
+
+				$new_properties[] = $new_property;
+				$new_properties[] = $property;
 			}
 
-			$property['value'] = $new_values;
-
-			return $property;
+			return $new_properties;
 		});
 	}
 
@@ -77,7 +94,7 @@ class Rem extends Plugin implements PluginsInterface {
 	 *
 	 * @return string  The rem value in pixels
 	 */
-	private function remCallback ($matches) {
+	public function remCallback ($matches) {
 		if ($matches[1][0] === '.') {
 			$matches[1] = '0'.$matches[1];
 		}

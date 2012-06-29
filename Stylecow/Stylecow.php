@@ -8,7 +8,7 @@
  *
  * @author Oscar Otero <http://oscarotero.com> <oom@oscarotero.com>
  * @license GNU Affero GPL version 3. http://www.gnu.org/licenses/agpl-3.0.html
- * @version 0.3.3 (2012)
+ * @version 1.0.0 (2012)
  */
 
 namespace Stylecow;
@@ -512,14 +512,14 @@ class Stylecow {
 	 *
 	 * @return array/string/false The value of the property, an array of all values or false if the property is not found
 	 */
-	static public function getProperty ($properties, $name, $key = false) {
+	static public function getValue ($properties, $name, $key = null) {
 		$k = self::searchProperty($properties, $name);
 
 		if ($k === false) {
 			return false;
 		}
 
-		return ($key === false) ? $properties[$k] : $properties[$k][$key];
+		return isset($key) ? $properties[$k]['value'][$key] : $properties[$k]['value'];
 	}
 
 
@@ -767,6 +767,29 @@ class Stylecow {
 
 
 	/**
+	 * Utils: Execute the callback for each group of selectors in the array of the parsed code
+	 *
+	 * @param array $array_code The parsed code
+	 * @param callable $callback The function to execute. It has just one argument with the properties data
+	 *
+	 * @return array  The executed array
+	 */
+	static public function selectorsWalk ($array_code, $callback) {
+		foreach ($array_code as $k_code => $code) {
+			if ($code['selector'] && $code['is_css']) {
+				$array_code[$k_code]['selector'] = $callback($code['selector']);
+			}
+
+			if ($code['content']) {
+				$array_code[$k_code]['content'] = self::selectorsWalk($code['content'], $callback);
+			}
+		}
+
+		return $array_code;
+	}
+
+
+	/**
 	 * Utils: Execute the callback for each properties key in the array of the parsed code
 	 *
 	 * @param array $array_code The parsed code
@@ -790,17 +813,19 @@ class Stylecow {
 
 
 	/**
-	 * Utils: Execute the callback for each individual property the array of the parsed code
+	 * Utils: Execute the callback for each individual value in the array of the parsed code
 	 *
 	 * @param array $array_code The parsed code
-	 * @param callable $callback The function to execute. It has jus one argument with the property name and values
+	 * @param callable $callback The function to execute. It has two arguments, the value and the name
 	 *
 	 * @return array  The executed array
 	 */
-	static public function propertyWalk ($array_code, $callback) {
+	static public function valueWalk ($array_code, $callback) {
 		return Stylecow::propertiesWalk($array_code, function ($properties) use ($callback) {
 			foreach ($properties as $k_property => &$property) {
-				$property = (array)$callback($property);
+				foreach ($property['value'] as &$value) {
+					$value = $callback($value, $property['name']);
+				}
 			}
 
 			return $properties;

@@ -13,7 +13,7 @@
  *
  * @author Oscar Otero <http://oscarotero.com> <oom@oscarotero.com>
  * @license GNU Affero GPL version 3. http://www.gnu.org/licenses/agpl-3.0.html
- * @version 0.1.3 (2012)
+ * @version 1.0.0 (2012)
  */
 
 namespace Stylecow\Plugins;
@@ -36,32 +36,32 @@ class IeFilters extends Plugin implements PluginsInterface {
 			foreach ($properties as $property) {
 				switch ($property['name']) {
 					case 'opacity':
-						$this->addFilter($properties, 'alpha(opacity='.($property['value'][0] * 100).')');
+						IeFilters::addFilter($properties, 'alpha(opacity='.($property['value'][0] * 100).')');
 						break;
-					
+
 					case 'transform':
 						Stylecow::executeFunctions($property['value'][0], null, function ($params, $name) use (&$properties) {
 							switch ($name) {
 								case 'rotate':
-									$this->addFilter($properties, $this->getRotateFilter($params));
+									IeFilters::addFilter($properties, IeFilters::getRotateFilter($params));
 									break;
 								
 								case 'scaleX':
 									if ($params[0] == '-1') {
-										$this->addFilter($properties, 'flipH');
+										IeFilters::addFilter($properties, 'flipH');
 									}
 									break;
 								
 								case 'scaleY':
 									if ($params[0] == '-1') {
-										$this->addFilter($properties, 'flipV');
+										IeFilters::addFilter($properties, 'flipV');
 									}
 									break;
 
 								case 'scale':
 									if ($params[0] == '-1' && $params[1] == '-1') {
-										$this->addFilter($properties, 'flipH');
-										$this->addFilter($properties, 'flipV');
+										IeFilters::addFilter($properties, 'flipH');
+										IeFilters::addFilter($properties, 'flipV');
 									}
 									break;
 							}
@@ -71,11 +71,11 @@ class IeFilters extends Plugin implements PluginsInterface {
 					case 'background':
 					case 'background-image':
 						Stylecow::executeFunctions($property['value'][0], 'rgba', function ($params) use (&$properties) {
-							$this->addFilter($properties, $this->getRGBAFilter($params));
+							IeFilters::addFilter($properties, IeFilters::getRGBAFilter($params));
 						});
 
 						Stylecow::executeFunctions($property['value'][0], 'linear-gradient', function ($params) use (&$properties) {
-							$this->addFilter($properties, $this->getLinearGradientFilter($params));
+							IeFilters::addFilter($properties, IeFilters::getLinearGradientFilter($params));
 						});
 
 						break;
@@ -93,7 +93,7 @@ class IeFilters extends Plugin implements PluginsInterface {
 	 * @param array  &$code   The piece of the parsed code
 	 * @param array  $params  The rotation parameters
 	 */
-	private function getRotateFilter ($params) {
+	static public function getRotateFilter ($params) {
 		$value = intval($params[0]);
 
 		if ($value < 0) {
@@ -117,6 +117,7 @@ class IeFilters extends Plugin implements PluginsInterface {
 				$rad = ($value * pi() * 2) / 360;
 				$cos = cos($rad);
 				$sin = sin($rad);
+
 				return 'progid:DXImageTransform.Microsoft.Matrix(sizingMethod="auto expand", M11 = '.$cos.', M12 = '.(-$sin).', M21 = '.$sin.', M22 = '.$cos.')';
 		}
 	}
@@ -128,7 +129,7 @@ class IeFilters extends Plugin implements PluginsInterface {
 	 * @param array  &$code   The piece of the parsed code
 	 * @param array  $params  The linear gradient parameters
 	 */
-	private function getLinearGradientFilter ($params) {
+	static public function getLinearGradientFilter ($params) {
 		$point = 'top';
 
 		if (preg_match('/(top|bottom|left|right|deg)/', $params[0])) {
@@ -192,7 +193,7 @@ class IeFilters extends Plugin implements PluginsInterface {
 	 * @param array  &$code   The piece of the parsed code
 	 * @param array  $params  The rgba parameters
 	 */
-	private function getRGBAFilter ($params) {
+	static public function getRGBAFilter ($params) {
 		$r = dechex($params[0]);
 		$g = dechex($params[1]);
 		$b = dechex($params[2]);
@@ -222,7 +223,7 @@ class IeFilters extends Plugin implements PluginsInterface {
 	 * @param array   &$array_code  The piece of the parsed code
 	 * @param string  $params       The ie filter code to insert
 	 */
-	private function addFilter (&$properties, $filter) {
+	static public function addFilter (&$properties, $filter) {
 		Stylecow::addProperty($properties, 'filter', $filter, Stylecow::PROPERTY_APPEND, 'ms');
 	}
 }

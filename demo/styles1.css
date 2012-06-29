@@ -4,6 +4,7 @@ body {
 	font-style: italic;
 	opacity: 0.5;
 	background: rgba(0, 0, 0, 0.5);
+	border-top-left-radius: 3px;
 
 	p :matches(a, ul, strong) span {
 		color: color(red, 40);
@@ -11,4 +12,12 @@ body {
 		transform: rotate(90deg);
 		font-size: 1rem;
 	}
+}
+
+strong {
+	background: linear-gradient(top, #444444, #666666);
+}
+
+strong ::selection {
+	color: blue;
 }

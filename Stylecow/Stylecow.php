@@ -504,6 +504,34 @@ class Stylecow {
 
 
 	/**
+	 * Utils: Search for a specific selector and returns an array with the keys of the code.
+	 *
+	 * @param array $array_code The parsed code
+	 * @param array $selectors The exact selectors to search
+	 *
+	 * @return int/false The key of the code or false if the selector had not been found
+	 */
+	static public function searchBySelectors ($array_code, array $selectors) {
+		$keys = array();
+
+		foreach ($array_code as $key => $code) {
+			if ($code['selector']) {
+				foreach ($code['selector'] as $selector) {
+					if (in_array($selector, $selectors)) {
+						$keys[] = $key;
+
+						continue 2;
+					}
+				}
+			}
+		}
+
+		return $keys;
+	}
+
+
+
+	/**
 	 * Utils: Returns the values of a property.
 	 *
 	 * @param array $properties The list of properties. Each property is a subarray with 'name' and 'values' keys.
@@ -767,21 +795,54 @@ class Stylecow {
 
 
 	/**
+	 * Utils: Execute the callback for each level of css code
+	 *
+	 * @param array $array_code The parsed code
+	 * @param callable $callback The function to execute. It has two argument with the code data and the depth
+	 * @param boolean $recursive True to execute recursively
+	 *
+	 * @return array  The executed array
+	 */
+	static public function walk ($array_code, $callback, $depth = 0) {
+		$new_code = $callback($array_code, $depth);
+
+		if (isset($new_code)) {
+			$array_code = $new_code;
+		}
+
+		++$depth;
+
+		foreach ($array_code as &$code) {
+			if ($code['content']) {
+				$code['content'] = self::walk($code['content'], $callback, $depth);
+			}
+		}
+
+		return $array_code;
+	}
+
+
+	/**
 	 * Utils: Execute the callback for each group of selectors in the array of the parsed code
 	 *
 	 * @param array $array_code The parsed code
 	 * @param callable $callback The function to execute. It has just one argument with the properties data
+	 * @param boolean $recursive True to execute recursively
 	 *
 	 * @return array  The executed array
 	 */
-	static public function selectorsWalk ($array_code, $callback) {
-		foreach ($array_code as $k_code => $code) {
+	static public function selectorsWalk ($array_code, $callback, $recursive = true) {
+		foreach ($array_code as &$code) {
 			if ($code['selector'] && $code['is_css']) {
-				$array_code[$k_code]['selector'] = $callback($code['selector']);
+				$new_selector = $callback($code['selector']);
+
+				if (isset($new_selector)) {
+					$code['selector'] = $new_selector;
+				}
 			}
 
-			if ($code['content']) {
-				$array_code[$k_code]['content'] = self::selectorsWalk($code['content'], $callback);
+			if ($recursive === true && $code['content']) {
+				$code['content'] = self::selectorsWalk($code['content'], $callback, $recursive);
 			}
 		}
 
@@ -794,17 +855,22 @@ class Stylecow {
 	 *
 	 * @param array $array_code The parsed code
 	 * @param callable $callback The function to execute. It has just one argument with the properties data
+	 * @param boolean $recursive True to execute recursively
 	 *
 	 * @return array  The executed array
 	 */
-	static public function propertiesWalk ($array_code, $callback) {
-		foreach ($array_code as $k_code => $code) {
+	static public function propertiesWalk ($array_code, $callback, $recursive = true) {
+		foreach ($array_code as &$code) {
 			if ($code['properties']) {
-				$array_code[$k_code]['properties'] = (array)$callback($code['properties']);
+				$new_properties = $callback($code['properties']);
+
+				if (isset($new_properties)) {
+					$code['properties'] = $new_properties;
+				}
 			}
 
-			if ($code['content']) {
-				$array_code[$k_code]['content'] = self::propertiesWalk($code['content'], $callback);
+			if ($recursive === true && $code['content']) {
+				$code['content'] = self::propertiesWalk($code['content'], $callback, $recursive);
 			}
 		}
 
@@ -817,40 +883,22 @@ class Stylecow {
 	 *
 	 * @param array $array_code The parsed code
 	 * @param callable $callback The function to execute. It has two arguments, the value and the name
+	 * @param boolean $recursive True to execute recursively
 	 *
 	 * @return array  The executed array
 	 */
-	static public function valueWalk ($array_code, $callback) {
-		return Stylecow::propertiesWalk($array_code, function ($properties) use ($callback) {
-			foreach ($properties as $k_property => &$property) {
-				foreach ($property['value'] as &$value) {
-					$value = $callback($value, $property['name']);
+	static public function valueWalk ($properties, $callback) {
+		foreach ($properties as &$property) {
+			foreach ($property['value'] as &$value) {
+				$new_value = $callback($value, $property['name']);
+
+				if (isset($new_value)) {
+					$value = $new_value;
 				}
-			}
-
-			return $properties;
-		});
-
-		return $array_code;
-	}
-
-
-	/**
-	 * Utils: Search for a specific selector and returns the key of the code.
-	 *
-	 * @param array $array_code The parsed code
-	 * @param string $selector The exact selector to search
-	 *
-	 * @return int/false The key of the code or false if the selector had not been found
-	 */
-	static public function searchSelector ($array_code, $selector) {
-		foreach ($array_code as $key => $code) {
-			if ($code['is_css'] && $code['properties'] && $code['selector'] && in_array($selector, $code['selector'])) {
-				return $key;
 			}
 		}
 
-		return false;
+		return $properties;
 	}
 }
 ?>

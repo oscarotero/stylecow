@@ -26,7 +26,8 @@ $sc->transform(array(
 	'Stylecow\\Plugins\\Math',
 	'Stylecow\\Plugins\\IeFilters',
 	'Stylecow\\Plugins\\Rem',
-	'Stylecow\\Plugins\\VendorPrefixes'
+	'Stylecow\\Plugins\\VendorPrefixes',
+	'Stylecow\\Plugins\\Variables'
 ));
 
 //Show the result code

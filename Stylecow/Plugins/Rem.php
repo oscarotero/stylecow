@@ -33,25 +33,17 @@ class Rem extends Plugin implements PluginsInterface {
 	 * @return array The transformed code
 	 */
 	public function transform (array $array_code) {
-		$key = Stylecow::searchSelector($array_code, ':root');
-
-		if ($key === false) {
-			$key = Stylecow::searchSelector($array_code, 'html');
-
-			if ($key === false) {
-				$key = Stylecow::searchSelector($array_code, 'body');
-			}
-		}
-
-		if ($key !== false) {
-			$value = Stylecow::getValue($array_code[$key]['properties'], 'font-size', 0);
-
-			if (strpos($value, 'px') !== false) {
-				$this->rem = intval($value);
-			} else if (strpos($value, 'em') !== false) {
-				$this->rem = floatval($value) * 16;
-			} else if (strpos($value, 'pt') !== false) {
-				$this->rem = floatval($value) * 14;
+		if (!($keys = Stylecow::searchBySelectors($array_code, array(':root', 'html', 'body')))) {
+			foreach ($keys as $key) {
+				if (($value = Stylecow::getValue($array_code[$key]['properties'], 'font-size', 0)) !== false) {
+					if (strpos($value, 'px') !== false) {
+						$this->rem = intval($value);
+					} else if (strpos($value, 'em') !== false) {
+						$this->rem = floatval($value) * 16;
+					} else if (strpos($value, 'pt') !== false) {
+						$this->rem = floatval($value) * 14;
+					}
+				}
 			}
 		}
 

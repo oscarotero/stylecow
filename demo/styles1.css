@@ -6,12 +6,15 @@ body {
 	opacity: 0.5;
 	background: rgba(0, 0, 0, 0.5);
 	border-top-left-radius: 3px;
+	var-negro: #000;
+	var-azul: blue;
 
 	p :matches(a, ul, strong) span {
 		color: color(red, 40);
 		font-size: math((3+9)*4)em;
 		transform: rotate(90deg);
 		font-size: 1rem;
+		background: var(azul, red);
 	}
 }
 

@@ -173,6 +173,7 @@ class Color extends Plugin implements PluginsInterface {
 	);
 
 
+
 	/**
 	 * Search for color() function and execute it
 	 *
@@ -183,9 +184,11 @@ class Color extends Plugin implements PluginsInterface {
 	public function transform (array $array_code) {
 		$self = $this;
 
-		return Stylecow::valueWalk($array_code, function ($value) use ($self) {
-			return Stylecow::executeFunctions($value, 'color', function ($arguments) use ($self) {
-				return $self->processColor(array_shift($arguments), $arguments);
+		return Stylecow::propertiesWalk($array_code, function ($properties) use ($self) {
+			return Stylecow::valueWalk($properties, function ($value) use ($self) {
+				return Stylecow::executeFunctions($value, 'color', function ($arguments) use ($self) {
+					return $self->processColor(array_shift($arguments), $arguments);
+				});
 			});
 		});
 	}

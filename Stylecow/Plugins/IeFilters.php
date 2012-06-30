@@ -32,34 +32,40 @@ class IeFilters extends Plugin implements PluginsInterface {
 	 * @return array The transformed code
 	 */
 	public function transform (array $array_code) {
-		return Stylecow::propertiesWalk($array_code, function ($properties) {
+		$fix = isset($this->settings['fix']) ? $this->settings['fix'] : array('opacity', 'rotate', 'flip', 'rgba', 'linear-gradient');
+
+		return Stylecow::propertiesWalk($array_code, function ($properties) use ($fix) {
 			foreach ($properties as $property) {
 				switch ($property['name']) {
 					case 'opacity':
-						IeFilters::addFilter($properties, 'alpha(opacity='.($property['value'][0] * 100).')');
+						if (in_array('opacity', $fix)) {
+							IeFilters::addFilter($properties, 'alpha(opacity='.($property['value'][0] * 100).')');
+						}
 						break;
 
 					case 'transform':
-						Stylecow::executeFunctions($property['value'][0], null, function ($params, $name) use (&$properties) {
+						Stylecow::executeFunctions($property['value'][0], null, function ($params, $name) use (&$properties, $fix) {
 							switch ($name) {
 								case 'rotate':
-									IeFilters::addFilter($properties, IeFilters::getRotateFilter($params));
+									if (in_array('rotate', $fix)) {
+										IeFilters::addFilter($properties, IeFilters::getRotateFilter($params));
+									}
 									break;
 								
 								case 'scaleX':
-									if ($params[0] == '-1') {
+									if ($params[0] == '-1' && in_array('flip', $fix)) {
 										IeFilters::addFilter($properties, 'flipH');
 									}
 									break;
 								
 								case 'scaleY':
-									if ($params[0] == '-1') {
+									if ($params[0] == '-1' && in_array('flip', $fix)) {
 										IeFilters::addFilter($properties, 'flipV');
 									}
 									break;
 
 								case 'scale':
-									if ($params[0] == '-1' && $params[1] == '-1') {
+									if ($params[0] == '-1' && $params[1] == '-1' && in_array('flip', $fix)) {
 										IeFilters::addFilter($properties, 'flipH');
 										IeFilters::addFilter($properties, 'flipV');
 									}
@@ -70,13 +76,17 @@ class IeFilters extends Plugin implements PluginsInterface {
 
 					case 'background':
 					case 'background-image':
-						Stylecow::executeFunctions($property['value'][0], 'rgba', function ($params) use (&$properties) {
-							IeFilters::addFilter($properties, IeFilters::getRGBAFilter($params));
-						});
+						if (in_array('rgba', $fix)) {
+							Stylecow::executeFunctions($property['value'][0], 'rgba', function ($params) use (&$properties) {
+								IeFilters::addFilter($properties, IeFilters::getRGBAFilter($params));
+							});
+						}
 
-						Stylecow::executeFunctions($property['value'][0], 'linear-gradient', function ($params) use (&$properties) {
-							IeFilters::addFilter($properties, IeFilters::getLinearGradientFilter($params));
-						});
+						if (in_array('linear-gradient', $fix)) {
+							Stylecow::executeFunctions($property['value'][0], 'linear-gradient', function ($params) use (&$properties) {
+								IeFilters::addFilter($properties, IeFilters::getLinearGradientFilter($params));
+							});
+						}
 
 						break;
 				}

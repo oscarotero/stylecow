@@ -10,26 +10,37 @@ Stylecow is a php library that allows parsing and manipulating css files. The ma
 Features:
 
 * Written in php 5.3
-* Includes the css files using @import
+* Includes the @import files (only for files with relative path)
 * Extensible with plugins
 * Easy to use
+* Uses the PSR-0 autoloader standard
 
 
-#### How to use
+Why another csss preprocessor?
+------------------------------
+
+The main purpose of Stylecow is to bring more CSS support to all browsers. You write CSS and you get CSS. You don't have to learn another different language such LESS, SASS, etc. Stylecow converts your code to be more compatible with all browsers throught plugins without writing any specific code. There is a plugin to add automatically the vendor prefixes to all selectors, properties and values in need. There is another plugin that allows using rem values with fallback for IE<=8. There is another plugin to use css variables with the same syntax of the w3c standard (http://dev.w3.org/csswg/css-variables/). And other plugins emulate some CSS effects (rotate, opacity, etc) in IE using the property "filter". So you can use Stylecow just to fix your CSS code and make it compatible with more browsers. And if you stop using Stylecow, your CSS code will remain CSS code.
+
+But if you don't mind to write "non pure CSS code", there are more plugins that can help you to write styles faster. For example, Color allows manipulate colors changing some of the values (saturation, light, etc), Math can execute math operations, Grid makes easier to work with columns, etc.
+
+
+How to use
+----------
 
 ```php
-include('Stylecow/Stylecow.php');
-
-//Fist we instance the class (note that we are using namespaces)
+//Instance the class
 $styleCow = new Stylecow\Stylecow;
 
 //Load the file
 $styleCow->load('my-styles.css');
 
-//Transform the css file using one or more plugins (for example Vendor_prefixes or Variables)
+//Transform the css file using one or more plugins. You can define custom settings for some plugins (for example VendorPrefixes):
 $styleCow->transform(array(
-	'Vendor_prefixes',
-	'Variables'
+	'Stylecow\\Plugins\\VendorPrefixes' => array(
+		'vendors' => array('moz', 'webkit')
+	),
+	'Stylecow\\Plugins\\Rem',
+	'Stylecow\\Plugins\\Variables'
 ));
 
 //Print the result css code
@@ -41,7 +52,7 @@ $styleCow->show();
 //Print or show the code with options:
 $styleCow->toString(array(
 	'minify' => true, //Minify the code: remove spaces, linebreaks, etc
-	'browser' => 'moz' //Returns only the css properties with the vendor prefix "-moz-"
+	'vendor' => 'moz' //Returns only the css properties with the vendor prefix "-moz-"
 ));
 ```
 
@@ -49,22 +60,27 @@ $styleCow->toString(array(
 Plugins
 =======
 
-Stylecow provides some plugins (and you can make your owns):
+Stylecow provides some basic plugins (but you can make your owns):
 
-* [Vendor_prefixes](#vendor_prefixes)
-* [Matches](#matches)
-* [Variables](#variables)
-* [Nested_rules](#nested_rules)
-* [Ie_filters](#ie_filters)
-* [Grid](#grid)
-* [Animate](#animate)
-* [Color](#color)
-* [Rem](#rem)
-* [Math](#math)
+Plugins to bring CSS support:
+
+* [VendorPrefixes](#vendorprefixes) Adds automatically the vendor prefixes to all properties in need
+* [Matches](#matches) Support for the CSS4 selector :matches()
+* [Variables](#variables) Support for variables (W3C syntax)
+* [IeFilters](#iefilters) IE support for some CSS effect (some 2d transform, opacity, background gradients, etc)
+* [Rem](#rem) IE<=8 support for rem values
+
+Other plugins with non-standard syntax:
+
+* [NestedRules](#nestedrules) Brings nested rules support
+* [Grid](#grid) Useful to work with one or various grids.
+* [Animate](#animate) 
+* [Color](#color) Provides the function color() to manipulate color values
+* [Math](#math) Provides the function math() to execute math operations
 
 
-Vendor_prefixes
----------------
+VendorPrefixes
+--------------
 
 Adds the vendor prefixes to all properties in need. For example.
 
@@ -148,28 +164,41 @@ div.foo section header h2 {
 Variables
 ---------
 
-You can use variables to recycle code. The variables can contain a simple value or a set of properties-values.
+You can store values in variables to use later. The syntax is the same than the w3c syntax: http://dev.w3.org/csswg/css-variables/. For global variables (available in all properties), you have to define them in the selectors :root, html or body:
 
 #### You write
 
 ```css
-$variables {
-	title-font: Helvetica, Arial, sans-serif;
-
-	title-style: {
-		font-family: $title-font;
-		font-size: 2em;
-		text-shadow: 1px 1px #CCC;
-	}
+:root {
+	var-title-font: Helvetica, Arial, sans-serif;
+	var-title-size: 2em;
+	var-title-color: red;
 }
 
 div.foo h1 {
-	$title-style;
+	font-family: $title-font;
+	font-size: $title-size;
+	color: $title-color;
+	border-bottom: solid 1px $title-color;
 }
 
+/* You can change the values of the variables just for one selector */
 div.foo h2 {
+	var-title-color: blue;
+
 	font-family: $title-font;
-	font-size: 1em;
+	font-size: $title-size;
+	color: $title-color;
+	border-bottom: solid 1px $title-color;
+}
+
+/* And you can use the function var() to provide a fallback if the variable is not defined: */
+div.foo h3 {
+	font-family: $title-font;
+	font-size: $title-size;
+	font-weight: var(title-weight, bold);
+	color: $title-color;
+	border-bottom: solid 1px $title-color;
 }
 ```
 
@@ -180,18 +209,125 @@ div.foo h2 {
 div.foo h1 {
 	font-family: Helvetica, Arial, sans-serif;
 	font-size: 2em;
-	text-shadow: 1px 1px #CCC;
+	color: red;
+	border-bottom: solid 1px red;
 }
 
 div.foo h2 {
 	font-family: Helvetica, Arial, sans-serif;
-	font-size: 1em;
+	font-size: 2em;
+	color: blue;
+	border-bottom: solid 1px blue;
+}
+
+div.foo h3 {
+	font-family: Helvetica, Arial, sans-serif;
+	font-size: 2em;
+	font-weight: bold;
+	color: red;
+	border-bottom: solid 1px red;
+}
+```
+
+You can define global variables in the settings of the plugin:
+
+```php
+$styleCow->transform(array(
+	'Stylecow\\Plugins\\Variables' => array(
+		'variables' => array(
+			'title-color' => '#369',
+			'title-size' => '2em'
+		)
+	)
+));
+```
+
+
+IeFilters
+---------
+
+Adds Internet Explorer filters to emulate some css properties no supported by IE (for example, some 2d transform functions, opacity or linear gradients)
+
+#### You write
+
+```css
+div.foo {
+	background: linear-gradient(#666, #999);
+	transform: rotate(45deg) scaleY(-1);
+	opacity: 0.5;
+}
+```
+
+#### And Stylecow converts to
+
+```css
+div.foo {
+	background: linear-gradient(#666, #999);
+	transform: rotate(45deg) scaleY(-1);
+	opacity: 0.5;
+	filter: progid:DXImageTransform.Microsoft.gradient(startColorStr='#666666', endColorStr='#999999'), progid:DXImageTransform.Microsoft.Matrix(sizingMethod="auto expand", M11 = 0.707106781187, M12 = -0.707106781187, M21 = 0.707106781187, M22 = 0.707106781187), flipV, alpha(opacity=50);
+}
+```
+
+You can configure which properties you want to fix in the settings (by default fix all available properties):
+
+```php
+$styleCow->transform(array(
+	'Stylecow\\Plugins\\IeFilters' => array(
+		'fix' => array('opacity') /* only fix the opacity property */
+	)
+));
+```
+
+The available properties are:
+
+* opacity; Adds the filter to any element with -> opacity: N;
+* rotate: Adds the filter to any element with -> transform: rotate(Ndeg);
+* flip: Adds the filters flipH or flipV to any element with -> transform: scaleY(-1) / scaleX(-1) / scale(-1, -1)
+* rgba: Adds the filter to any element with the background defined as rgba()
+* linear-gradient: Adds the filter to any element with linear-gradient.
+
+
+Rem
+---
+
+Allows use the rem value (http://snook.ca/archives/html_and_css/font-size-with-rem) to define the text size in a safe way for old browsers.
+
+The default rem is 1em (16px) but you can change it with the :root, html or body selector.
+
+#### You write
+
+```css
+body {
+	font-size: 1.2em;
+}
+.foo {
+	font-size: 2em;
+}
+.foo div {
+	font-size: 1rem;
+}
+```
+
+#### And Stylecow converts to
+
+```css
+body {
+	font-size: 1.2em;
+}
+.foo {
+	font-size: 2em;
+}
+.foo div {
+	font-size: 19.2px;
+	font-size: 1rem;
 }
 ```
 
 
-Nested_rules
-------------
+
+NestedRules
+-----------
 
 Resolves the nested rules, allowing to write css in a more legible way:
 
@@ -256,33 +392,7 @@ article.main header p a:hover {
 }
 ```
 
-
-Ie_filters
-----------
-
-Adds Internet Explorer filters to emulate some css properties no supported by IE (for example, some 2d transform functions, opacity or linear gradients)
-
-#### You write
-
-```css
-div.foo {
-	background: linear-gradient(#666, #999);
-	transform: rotate(45deg) scaleY(-1);
-	opacity: 0.5;
-}
-```
-
-#### And Stylecow converts to
-
-```css
-div.foo {
-	background: linear-gradient(#666, #999);
-	transform: rotate(45deg) scaleY(-1);
-	opacity: 0.5;
-	filter: progid:DXImageTransform.Microsoft.gradient(startColorStr='#666666', endColorStr='#999999'), progid:DXImageTransform.Microsoft.Matrix(sizingMethod="auto expand", M11 = 0.707106781187, M12 = -0.707106781187, M21 = 0.707106781187, M22 = 0.707106781187), flipV, alpha(opacity=50);
-	-ms-filter: progid:DXImageTransform.Microsoft.gradient(startColorStr='#666666', endColorStr='#999999'), progid:DXImageTransform.Microsoft.Matrix(sizingMethod="auto expand", M11 = 0.707106781187, M12 = -0.707106781187, M21 = 0.707106781187, M22 = 0.707106781187), flipV, alpha(opacity=50);
-}
-```
+This function can be combined with variables to make scoped changes.
 
 
 Grid
@@ -462,40 +572,6 @@ div.foo {
 }
 ```
 
-Rem
----
-
-Allows use the rem value (http://snook.ca/archives/html_and_css/font-size-with-rem) to define the text size in a safe way for old browsers.
-The default rem is 1em (16px) but you can change it in the body styles:
-
-#### You write
-
-```css
-body {
-	font-size: 1.2em;
-}
-.foo {
-	font-size: 2em;
-}
-.foo div {
-	font-size: 1rem;
-}
-```
-
-#### And Stylecow converts to
-
-```css
-body {
-	font-size: 1.2em;
-}
-.foo {
-	font-size: 2em;
-}
-.foo div {
-	font-size: 19.2px;
-	font-size: 1rem;
-}
-```
 
 Math
 ----
@@ -508,6 +584,7 @@ You can execute math operations (+-*/):
 ```css
 .foo {
 	font-size: math(2+4)em;
+	height: math((30*5)/3)px;
 }
 ```
 
@@ -516,5 +593,6 @@ You can execute math operations (+-*/):
 ```css
 .foo {
 	font-size: 6em;
+	height: 50px;
 }
 ```

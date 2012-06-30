@@ -13,111 +13,81 @@
  *
  * @author Oscar Otero <http://oscarotero.com> <oom@oscarotero.com>
  * @license GNU Affero GPL version 3. http://www.gnu.org/licenses/agpl-3.0.html
- * @version 0.1.3 (2012)
+ * @version 1.0.0 (2012)
  */
 
-namespace Stylecow;
+namespace Stylecow\Plugins;
 
-class Grid implements Plugins_interface {
-	public $position = 1;
+use Stylecow\Stylecow;
+
+class Grid extends Plugin implements PluginsInterface {
+	static protected $position = 1;
 
 	private $grids = array();
-	private $Css;
 
-
-	/**
-	 * Constructor
-	 *
-	 * @param Stylecow  $Css       The Stylecow instance
-	 * @param array     $settings  The settings for this plugin
-	 */
-	public function __construct (Stylecow $Css, array $settings) {
-		$this->Css = $Css;
-	}
 
 	
 	/**
-	 * Transform the parsed css code
-	 */
-	public function transform () {
-		$this->Css->code = $this->_transform($this->Css->code);
-	}
-
-
-	/**
-	 * Private function to transform recursively the parsed css code
+	 * Finds the $grid properties and resolve them
 	 *
 	 * @param array  $array_code  The piece of the parsed css code
 	 *
 	 * @return array  The transformed code
 	 */
-	private function _transform ($array_code) {
-		foreach ($array_code as $k_code => $code) {
-			if ($code['type'] == '$grid' || strpos($code['type'], '$grid-') === 0) {
-				$grid = array();
+	public function transform (array $array_code) {
+		return Stylecow::walk($array_code, function ($code) {
+			$grids = array();
 
-				foreach ($code['properties'] as $property) {
-					$grid[$property['name']] = intval(current($property['value']));
+			foreach ($code as $key => $subcode) {
+				if ($subcode['type'] === '$grid' || strpos($subcode['type'], '$grid-') === 0) {
+					$grids[$subcode['type']][$property['name']] = array();
+
+					foreach ($subcode['properties'] as $property) {
+						$grids[$subcode['type']][$property['name']] = intval(current($property['value']));
+					}
+
+					unset($code[$key]);
 				}
-
-				if (!$this->grids[$code['type']]) {
-					$this->grids[$code['type']] = $grid;
-				} else {
-					$this->grids[$code['type']] = array_merge($this->grids[$code['type']], $grid);
-				}
-
-				unset($array_code[$k_code]);
-
-				continue;
 			}
 
-			if (!$code['is_css']) {
-				continue;
-			}
+			return Stylecow::propertiesWalk($code, function ($properties) use ($grids) {
+				foreach ($properties as $k => $property) {
+					if (($grid = $grids[$property['name']])) {
 
-			if ($code['properties']) {
-				foreach ($code['properties'] as $k_property => $property) {
-					if ($grid = $this->grids[$property['name']]) {
 						$options = array();
-						$new_properties = array();
 
-						foreach ($this->Css->explodeFunctions($property['value'][0]) as $function) {
-							switch ($function[0]) {
+						Stylecow::executeFunctions($property['value'][0], null, function ($params, $name) use (&$grid, &$options) {
+							switch ($name) {
 								case 'cols':
 								case 'right':
 								case 'cols-width':
 								case 'left':
 								case 'in-cols':
 								case 'background':
-									$options[$function[0]] = $function[1];
+									$options[$name] = $params;
 									break;
 
 								case 'columns':
 								case 'width':
 								case 'gutter':
-									$grid[$function[0]] = intval($function[1][0]);
+									$grid = intval($params[0]);
 									break;
 							}
-						}
+						});
 
 						if ($options) {
-							foreach ($this->getStyles($grid, $options) as $property_name => $property_value) {
-								$this->Css->addProperty($array_code[$k_code]['properties'], $property_name, $property_value, 2);
+							foreach (Grid::getStyles($grid, $options) as $name => $value) {
+								Stylecow::addProperty($properties, $name, $value, Stylecow::PROPERTY_IF_FAMILY_UNDEFINED);
 							}
-
 						}
 
-						unset($array_code[$k_code]['properties'][$k_property]);
+						unset($properties[$k]);
 					}
 				}
-			}
 
-			if ($code['content']) {
-				$array_code[$k_code]['content'] = $this->_transform($code['content']);
-			}
-		}
-
-		return $array_code;
+				return $properties;
+			});
+		});
 	}
 
 
@@ -130,11 +100,11 @@ class Grid implements Plugins_interface {
 	 *
 	 * @return array  The css styles
 	 */
-	private function getStyles ($grid, $options) {
+	static public function getStyles ($grid, $options) {
 		$styles = array();
 
 		if (array_key_exists('cols', $options)) {
-			list($width, $left, $right) = $this->calculate($grid, $options);
+			list($width, $left, $right) = self::calculate($grid, $options);
 
 			$styles += array(
 				'width' => $width.'px',
@@ -145,7 +115,7 @@ class Grid implements Plugins_interface {
 			);
 		} else if (array_key_exists('cols-width', $options)) {
 			$options['cols'] = $options['cols-width'];
-			list($width, $left, $right) = $this->calculate($grid, $options);
+			list($width, $left, $right) = self::calculate($grid, $options);
 			$styles['width'] = $width.'px';
 		}
 
@@ -178,7 +148,7 @@ class Grid implements Plugins_interface {
 	 *
 	 * @return array  An array with three elements: width, left and right values
 	 */
-	private function calculate ($grid, $options) {
+	static private function calculate ($grid, $options) {
 		$width = ($grid['width'] - ($grid['gutter'] * ($grid['columns'] - 1))) / $grid['columns'];
 
 		$options['cols'][0] = floatval($options['cols'][0]);

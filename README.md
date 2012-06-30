@@ -74,7 +74,7 @@ Other plugins with non-standard syntax:
 
 * [NestedRules](#nestedrules) Brings nested rules support
 * [Grid](#grid) Useful to work with one or various grids.
-* [Animate](#animate) 
+* [Snippets](#snippets) To insert css snippets in the code
 * [Color](#color) Provides the function color() to manipulate color values
 * [Math](#math) Provides the function math() to execute math operations
 
@@ -461,21 +461,59 @@ $grid {
 }
 ```
 
-Animate
--------
+Snippets
+--------
 
-Inserts the code for the animations availables in http://daneden.me/animate/
+Useful to insert little pieces of css code. Each snippet is a css file saved in snippets folder. For example, let's create a simple snippet with a css animation named "flash".
+
+```css
+#element {
+	animation: 1s ease;
+	animation-name: flash;
+}
+
+@keyframes flash {
+	0%, 50%, 100% {
+		opacity: 1;
+	}
+	25%, 75% {
+		opacity: 0;
+	}
+}
+```
+
+In a css snippet, the code applied to #element selector will be applied to the element with the snippet. The rest of the code will be placed at the end of the css.
+
 
 #### You write
 
 ```css
 div.foo {
-	$animate: flash;
+	snippet: flash;
 }
 ```
 
 
 #### And Stylecow converts to
+
+```css
+div.foo {
+	animation: 1s ease;
+	animation-name: flash;
+}
+
+@keyframes flash {
+	0%, 50%, 100% {
+		opacity: 1;
+	}
+	25%, 75% {
+		opacity: 0;
+	}
+}
+```
+
+You can combine the snippets with VendorPrefixes plugin or NestedRules to build more complex snippets. For example, the previous snippet with VendorPrefixes plugin:
+
 
 ```css
 div.foo {
@@ -545,6 +583,7 @@ div.foo {
 }
 ```
 
+
 Color
 -----
 
@@ -554,12 +593,20 @@ You can use absolute or relative values:
 * saturation:50  Set the saturation value to 50
 * saturation:+10  Increments 10% the current saturation
 
+This function supports all css color formats:
+
+* names (black, red, blue, etc)
+* hexadecimal (#333, #34FC98, etc)
+* rgb / rgba
+* hsl / hsla
+
 #### You write
 
 ```css
 div.foo {
 	background: color(#369, light:50, alpha: 0.5);
 	color: color(#369, blue:-30);
+	border: solid 1px color(black, 20); /* Shortcut for color(black, tint:20) */
 }
 ```
 
@@ -569,6 +616,7 @@ div.foo {
 div.foo {
 	background: rgba(64, 128, 191, 0.5);
 	color: #33667b;
+	border: solid 1px #CCCCCC;
 }
 ```
 

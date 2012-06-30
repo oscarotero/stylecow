@@ -20,14 +20,16 @@ $sc->load(__DIR__.'/'.$_GET['styles']);
 //Execute the plugins
 
 $sc->transform(array(
-	'Stylecow\\Plugins\\Color',
-	'Stylecow\\Plugins\\NestedRules',
-	'Stylecow\\Plugins\\Matches',
-	'Stylecow\\Plugins\\Math',
-	'Stylecow\\Plugins\\IeFilters',
-	'Stylecow\\Plugins\\Rem',
+	//'Stylecow\\Plugins\\Color',
+	//'Stylecow\\Plugins\\NestedRules',
+	//'Stylecow\\Plugins\\Matches',
+	//'Stylecow\\Plugins\\Math',
+	//'Stylecow\\Plugins\\IeFilters',
+	//'Stylecow\\Plugins\\Rem',
 	'Stylecow\\Plugins\\VendorPrefixes',
-	'Stylecow\\Plugins\\Variables'
+	//'Stylecow\\Plugins\\Variables',
+	//'Stylecow\\Plugins\\Grid',
+	'Stylecow\\Plugins\\Snippets'
 ));
 
 //Show the result code

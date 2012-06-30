@@ -197,6 +197,8 @@ class VendorPrefixes extends Plugin implements PluginsInterface {
 			$new_array_code[] = $code;
 		}
 
+
+
 		return $new_array_code;
 	}
 
@@ -259,31 +261,43 @@ class VendorPrefixes extends Plugin implements PluginsInterface {
 	 * @return array  The transformed code
 	 */
 	private function transformProperties ($array_code, $prefix_scope = '') {
-		$self = $this;
+		$new_array_code = array();
 
-		return Stylecow::propertiesWalk($array_code, function ($properties) use ($self) {
-			$new_properties = $properties;
+		foreach ($array_code as $code) {
+			if ($code['content']) {
+				$code['content'] = $this->transformProperties($code['content'], $code['browser']);
+			}
 
-			foreach ($properties as $property) {
-				if (isset(VendorPrefixes::$property_fn_prefixes[$property['name']]) && $fn = VendorPrefixes::$property_fn_prefixes[$property['name']]) {
-					$v = $self->$fn($property['name'], $property['value']);
+			$new_code = $code;
 
-					Stylecow::addProperty($new_properties, $v['name'], $v['value'], Stylecow::PROPERTY_IF_UNDEFINED, $v['browser']);
-				}
+			if (is_array($code['properties'])) {
+				$new_code['properties'] = array();
 
-				if (isset(VendorPrefixes::$property_prefixes[$property['name']])) {
-					foreach (VendorPrefixes::$property_prefixes[$property['name']] as $prefix) {
-						if ((isset($code['browser']) && $code['browser'] !== $prefix) || ($prefix_scope && $prefix !== $prefix_scope)) {
-							continue;
+				foreach ($code['properties'] as $property) {
+					$new_code['properties'][] = $property;
+
+					if (isset(VendorPrefixes::$property_fn_prefixes[$property['name']]) && ($fn = VendorPrefixes::$property_fn_prefixes[$property['name']])) {
+						$v = $this->$fn($property['name'], $property['value']);
+
+						Stylecow::addProperty($new_code['properties'], $v['name'], $v['value'], Stylecow::PROPERTY_IF_UNDEFINED, $v['browser']);
+					}
+
+					if (isset(VendorPrefixes::$property_prefixes[$property['name']])) {
+						foreach (VendorPrefixes::$property_prefixes[$property['name']] as $prefix) {
+							if ((isset($code['browser']) && $code['browser'] !== $prefix) || ($prefix_scope && $prefix !== $prefix_scope)) {
+								continue;
+							}
+
+							Stylecow::addProperty($new_code['properties'], '-'.$prefix.'-'.$property['name'], $property['value'], Stylecow::PROPERTY_IF_UNDEFINED, $prefix);
 						}
-
-						Stylecow::addProperty($new_properties, '-'.$prefix.'-'.$property['name'], $property['value'], Stylecow::PROPERTY_IF_UNDEFINED, $prefix);
 					}
 				}
 			}
 
-			return $new_properties;
-		});
+			$new_array_code[] = $new_code;
+		}
+
+		return $new_array_code;
 	}
 
 
@@ -297,45 +311,57 @@ class VendorPrefixes extends Plugin implements PluginsInterface {
 	 * @return array  The transformed code
 	 */
 	private function transformValues ($array_code, $prefix_scope = '') {
-		$self = $this;
+		$new_array_code = array();
 
-		return Stylecow::propertiesWalk($array_code, function ($properties) use ($self) {
-			$new_properties = $properties;
+		foreach ($array_code as $code) {
+			if ($code['content']) {
+				$code['content'] = $this->transformValues($code['content'], $code['browser']);
+			}
 
-			foreach ($properties as $property) {
-				if (isset(VendorPrefixes::$value_fn_prefixes[$property['name']])) {
-					foreach (VendorPrefixes::$value_fn_prefixes[$property['name']] as $property_value => $fn) {
-						if (preg_match('/(^|[^-])'.preg_quote($property_value, '/').'([^\w]|$)?/', implode($property['value']))) {
-							$v = $self->$fn($property['name'], $property['value']);
+			$new_code = $code;
 
-							Stylecow::addProperty($new_properties, $v['name'], $v['value'], Stylecow::PROPERTY_ADD, $v['browser']);
+			if (is_array($code['properties'])) {
+				$new_code['properties'] = array();
+
+				foreach ($code['properties'] as $property) {
+					$new_code['properties'][] = $property;
+
+					if (isset(VendorPrefixes::$value_fn_prefixes[$property['name']])) {
+						foreach (VendorPrefixes::$value_fn_prefixes[$property['name']] as $property_value => $fn) {
+							if (preg_match('/(^|[^-])'.preg_quote($property_value, '/').'([^\w]|$)?/', implode($property['value']))) {
+								$v = $this->$fn($property['name'], $property['value']);
+
+								Stylecow::addProperty($new_code['properties'], $v['name'], $v['value'], Stylecow::PROPERTY_ADD, $v['browser']);
+							}
 						}
 					}
-				}
 
-				if (isset(VendorPrefixes::$value_prefixes[$property['name']])) {
-					foreach (VendorPrefixes::$value_prefixes[$property['name']] as $property_value => $prefixes) {
-						if (preg_match('/(^|[^-])'.preg_quote($property_value, '/').'([^\w]|$)?/', implode($property['value']))) {
-							foreach ($prefixes as $prefix) {
-								if ((isset($code['browser']) && $code['browser'] !== $prefix) || ($prefix_scope && $prefix !== $prefix_scope)) {
-									continue;
+					if (isset(VendorPrefixes::$value_prefixes[$property['name']])) {
+						foreach (VendorPrefixes::$value_prefixes[$property['name']] as $property_value => $prefixes) {
+							if (preg_match('/(^|[^-])'.preg_quote($property_value, '/').'([^\w]|$)?/', implode($property['value']))) {
+								foreach ($prefixes as $prefix) {
+									if ((isset($code['browser']) && $code['browser'] !== $prefix) || ($prefix_scope && $prefix !== $prefix_scope)) {
+										continue;
+									}
+
+									$new_values = array();
+
+									foreach ($property['value'] as $v) {
+										$new_values[] = str_replace($property_value, '-'.$prefix.'-'.$property_value, $v);
+									}
+
+									Stylecow::addProperty($new_code['properties'], $property['name'], $new_values, Stylecow::PROPERTY_ADD, $prefix);
 								}
-
-								$new_values = array();
-
-								foreach ($property['value'] as $v) {
-									$new_values[] = str_replace($property_value, '-'.$prefix.'-'.$property_value, $v);
-								}
-
-								Stylecow::addProperty($new_properties, $property['name'], $new_values, Stylecow::PROPERTY_ADD, $prefix);
 							}
 						}
 					}
 				}
 			}
 
-			return $new_properties;
-		});
+			$new_array_code[] = $new_code;
+		}
+
+		return $new_array_code;
 	}
 
 

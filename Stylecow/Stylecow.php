@@ -194,149 +194,16 @@ class Stylecow {
 		$code = $this->getParsedCode();
 
 		foreach ($plugins_positions as $plugin => $pos) {
-			$code = $plugins_objects[$plugin]->transform($code);
+			$result = $plugins_objects[$plugin]->transform($code);
+
+			if (isset($result)) {
+				$code = $result;
+			}
 		}
 
 		$this->setParsedCode($code);
 
 		return $this;
-	}
-
-
-
-	/**
-	 * Parses the css code into an multidimensional array with all selectors, properties and values.
-	 *
-	 * @param string  $string_code  The css code to parse
-	 *
-	 * @return array  The parsed css code
-	 */
-	public function parse ($string_code) {
-		$array_code = array();
-
-		while ($string_code) {
-			$pos = strpos($string_code, '{');
-			$pos2 = strpos($string_code, ';');
-
-			if (($pos2 !== false) && $pos2 < $pos) {
-				$selector = trim(substr($string_code, 0, $pos2));
-				$type = '';
-
-				if ($selector[0] == '@' || $selector[0] == '$') {
-					$selector = $this->explodeTrim(' ', $selector, 2);
-				
-					$type = $selector[0];
-					$selector = isset($selector[1]) ? $selector[1] : '';
-				}
-
-				$array_code[] = array(
-					'selector' => array($selector),
-					'type' => $type,
-					'is_css' => ($type[0] === '$') ? false : true,
-					'content' => array()
-				);
-
-				$string_code = trim(substr($string_code, $pos2+1));
-				continue;
-			}
-
-			if ($pos === false) {
-				break;
-			}
-
-			$selector = trim(substr($string_code, 0, $pos));
-			$type = '';
-
-			if ($selector[0] === '@' || $selector[0] === '$') {
-				$selector = $this->explodeTrim(' ', $selector, 2);
-				
-				$type = $selector[0];
-				$selector = isset($selector[1]) ? $selector[1] : '';
-			}
-
-			if ($selector !== '' && $selector[0] === '\\') {
-				$selector = substr($selector, 1);
-			}
-
-			$selector = $this->explodeTrim(',', $selector);
-
-			$string_code = trim(substr($string_code, $pos + 1));
-			$length = strlen($string_code);
-			$in = 1;
-
-			for ($n = 0; $n <= $length; $n++) {
-				$letter = $string_code[$n];
-
-				if ($letter === '{') {
-					$in++;
-					continue;
-				}
-
-				if ($letter !== '}') {
-					continue;
-				}
-
-				$in--;
-
-				if ($in) {
-					continue;
-				}
-
-				$string_piece = $n ? trim(substr($string_code, 0, $n-1)) : '';
-				$string_code = trim(substr($string_code, $n+1));
-
-				$code = array(
-					'selector' => $selector,
-					'type' => $type,
-					'is_css' => true,
-					'properties' => array(),
-					'content' => array()
-				);
-
-				$pos = strpos($string_piece, '{');
-
-				if ($pos === false) {
-					$properties_string = $string_piece;
-					$content_string = '';
-				} else {
-					$pos = strrpos(substr($string_piece, 0, $pos), ';');
-
-					if ($pos !== false) {
-						$properties_string = trim(substr($string_piece, 0, $pos + 1));
-						$content_string = trim(substr($string_piece, $pos + 1));
-					} else {
-						$properties_string = '';
-						$content_string = $string_piece;
-					}
-				}
-
-				if ($properties_string) {
-					foreach ($this->explodeTrim(';', $properties_string) as $property) {
-						list($n, $v) = $this->explodeTrim(':', $property, 2);
-
-						$code['properties'][] = array(
-							'name' => $n,
-							'value' => $v === '' ? array() : array($v),
-							'settings' => $settings
-						);
-					}
-
-					if ($code['type'] && $code['type'][0] === '$') {
-						$code['is_css'] = false;
-					}
-				}
-
-				if ($content_string) {
-					$code['content'] = $this->parse($content_string);
-				}
-
-				$array_code[] = $code;
-
-				break;
-			}
-		}
-
-		return $array_code;
 	}
 
 
@@ -460,6 +327,143 @@ class Stylecow {
 		}
 
 		return $text;
+	}
+
+
+
+	/**
+	 * Utils: Parses the css code into an multidimensional array with all selectors, properties and values.
+	 *
+	 * @param string  $string_code  The css code to parse
+	 *
+	 * @return array  The parsed css code
+	 */
+	static public function parse ($string_code) {
+		$array_code = array();
+
+		while ($string_code) {
+			$pos = strpos($string_code, '{');
+			$pos2 = strpos($string_code, ';');
+
+			if (($pos2 !== false) && $pos2 < $pos) {
+				$selector = trim(substr($string_code, 0, $pos2));
+				$type = '';
+
+				if ($selector[0] == '@' || $selector[0] == '$') {
+					$selector = self::explodeTrim(' ', $selector, 2);
+				
+					$type = $selector[0];
+					$selector = isset($selector[1]) ? $selector[1] : '';
+				}
+
+				$array_code[] = array(
+					'selector' => array($selector),
+					'type' => $type,
+					'is_css' => ($type[0] === '$') ? false : true,
+					'content' => array()
+				);
+
+				$string_code = trim(substr($string_code, $pos2+1));
+				continue;
+			}
+
+			if ($pos === false) {
+				break;
+			}
+
+			$selector = trim(substr($string_code, 0, $pos));
+			$type = '';
+
+			if ($selector[0] === '@' || $selector[0] === '$') {
+				$selector = self::explodeTrim(' ', $selector, 2);
+				
+				$type = $selector[0];
+				$selector = isset($selector[1]) ? $selector[1] : '';
+			}
+
+			if ($selector !== '' && $selector[0] === '\\') {
+				$selector = substr($selector, 1);
+			}
+
+			$selector = self::explodeTrim(',', $selector);
+
+			$string_code = trim(substr($string_code, $pos + 1));
+			$length = strlen($string_code);
+			$in = 1;
+
+			for ($n = 0; $n <= $length; $n++) {
+				$letter = $string_code[$n];
+
+				if ($letter === '{') {
+					$in++;
+					continue;
+				}
+
+				if ($letter !== '}') {
+					continue;
+				}
+
+				$in--;
+
+				if ($in) {
+					continue;
+				}
+
+				$string_piece = $n ? trim(substr($string_code, 0, $n-1)) : '';
+				$string_code = trim(substr($string_code, $n+1));
+
+				$code = array(
+					'selector' => $selector,
+					'type' => $type,
+					'is_css' => true,
+					'properties' => array(),
+					'content' => array()
+				);
+
+				$pos = strpos($string_piece, '{');
+
+				if ($pos === false) {
+					$properties_string = $string_piece;
+					$content_string = '';
+				} else {
+					$pos = strrpos(substr($string_piece, 0, $pos), ';');
+
+					if ($pos !== false) {
+						$properties_string = trim(substr($string_piece, 0, $pos + 1));
+						$content_string = trim(substr($string_piece, $pos + 1));
+					} else {
+						$properties_string = '';
+						$content_string = $string_piece;
+					}
+				}
+
+				if ($properties_string) {
+					foreach (self::explodeTrim(';', $properties_string) as $property) {
+						list($n, $v) = self::explodeTrim(':', $property, 2);
+
+						$code['properties'][] = array(
+							'name' => $n,
+							'value' => $v === '' ? array() : array($v),
+							'settings' => $settings
+						);
+					}
+
+					if ($code['type'] && $code['type'][0] === '$') {
+						$code['is_css'] = false;
+					}
+				}
+
+				if ($content_string) {
+					$code['content'] = self::parse($content_string);
+				}
+
+				$array_code[] = $code;
+
+				break;
+			}
+		}
+
+		return $array_code;
 	}
 
 

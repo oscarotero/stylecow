@@ -1,3 +1,9 @@
+$grid {
+	width: 900px;
+	columns: 4;
+	gutter: 20px;
+}
+
 body {
 	background: color(black, 10);
 	font-family: Arial;
@@ -24,4 +30,8 @@ strong {
 
 strong ::selection {
 	color: blue;
+	$grid: cols(2);
+
+	snippet: animate-bounce;
+	background: linear-gradient(top, red, blue);
 }

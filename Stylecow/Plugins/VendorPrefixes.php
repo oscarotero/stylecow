@@ -222,25 +222,23 @@ class VendorPrefixes extends Plugin implements PluginsInterface {
 
 			$new_array_code[] = $code;
 
-			if ($code['is_css']) {
-				foreach ($code['selector'] as $selector) {
-					foreach (VendorPrefixes::$selector_prefixes as $selector_prefix => $prefixes) {
-						if (strpos($selector, $selector_prefix) !== false) {
-							foreach ($prefixes as $prefix => $new_selector_prefix) {
-								if ((isset($code['browser']) && $code['browser'] !== $prefix) || ($prefix_scope && $prefix !== $prefix_scope)) {
-									continue;
-								}
-
-								$new_code = $code;
-								$new_code['selector'] = array(str_replace($selector_prefix, $new_selector_prefix, $selector));
-								$new_code['browser'] = $prefix;
-
-								if ($new_code['content']) {
-									$new_code['content'] = $this->transformSelector($new_code['content'], $prefix);
-								}
-
-								$new_array_code[] = $new_code;
+			foreach ($code['selector'] as $selector) {
+				foreach (VendorPrefixes::$selector_prefixes as $selector_prefix => $prefixes) {
+					if (strpos($selector, $selector_prefix) !== false) {
+						foreach ($prefixes as $prefix => $new_selector_prefix) {
+							if ((isset($code['browser']) && $code['browser'] !== $prefix) || ($prefix_scope && $prefix !== $prefix_scope)) {
+								continue;
 							}
+
+							$new_code = $code;
+							$new_code['selector'] = array(str_replace($selector_prefix, $new_selector_prefix, $selector));
+							$new_code['browser'] = $prefix;
+
+							if ($new_code['content']) {
+								$new_code['content'] = $this->transformSelector($new_code['content'], $prefix);
+							}
+
+							$new_array_code[] = $new_code;
 						}
 					}
 				}

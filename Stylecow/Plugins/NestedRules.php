@@ -50,7 +50,7 @@ class NestedRules extends Plugin implements PluginsInterface {
 		$new_array_code = array();
 
 		foreach ($array_code as $k_code => $code) {
-			if ($parent_selectors && $code['is_css']) {
+			if ($parent_selectors) {
 				$selectors = $code['selector'];
 				$code['selector'] = array();
 

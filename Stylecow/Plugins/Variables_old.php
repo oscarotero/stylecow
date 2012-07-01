@@ -76,10 +76,6 @@ class Variables implements Plugins_interface {
 				continue;
 			}
 
-			if (!$code['is_css']) {
-				continue;
-			}
-
 			if ($code['properties']) {
 				$unset = array();
 

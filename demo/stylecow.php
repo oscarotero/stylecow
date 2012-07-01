@@ -26,12 +26,15 @@ $sc->transform(array(
 	//'Stylecow\\Plugins\\Math',
 	//'Stylecow\\Plugins\\IeFilters',
 	//'Stylecow\\Plugins\\Rem',
-	'Stylecow\\Plugins\\VendorPrefixes',
+	//'Stylecow\\Plugins\\VendorPrefixes',
 	//'Stylecow\\Plugins\\Variables',
 	//'Stylecow\\Plugins\\Grid',
-	'Stylecow\\Plugins\\Snippets'
+	//'Stylecow\\Plugins\\Snippets'
 ));
-
+echo '<pre>';
+print_r($sc->getParsedCode());
+echo '</pre>';
+die();
 //Show the result code
 $sc->show();
 ?>

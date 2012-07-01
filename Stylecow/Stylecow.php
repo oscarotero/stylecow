@@ -291,7 +291,7 @@ class Stylecow {
 				$text .= $tab_selector.'/* '.$code['comment'].' */';
 			}
 
-			if (!$code['is_css'] || ($browser === '' && isset($code['browser']) && $code['browser'])) {
+			if (($browser === '') && isset($code['browser']) && $code['browser']) {
 				continue;
 			}
 
@@ -349,17 +349,18 @@ class Stylecow {
 				$selector = trim(substr($string_code, 0, $pos2));
 				$type = '';
 
-				if ($selector[0] == '@' || $selector[0] == '$') {
+				if ($selector[0] === '@') {
 					$selector = self::explodeTrim(' ', $selector, 2);
 				
 					$type = $selector[0];
 					$selector = isset($selector[1]) ? $selector[1] : '';
 				}
 
+				$selector = self::explodeTrim(',', $selector);
+
 				$array_code[] = array(
-					'selector' => array($selector),
+					'selector' => $selector,
 					'type' => $type,
-					'is_css' => ($type[0] === '$') ? false : true,
 					'content' => array()
 				);
 
@@ -374,15 +375,11 @@ class Stylecow {
 			$selector = trim(substr($string_code, 0, $pos));
 			$type = '';
 
-			if ($selector[0] === '@' || $selector[0] === '$') {
+			if ($selector[0] === '@') {
 				$selector = self::explodeTrim(' ', $selector, 2);
-				
+
 				$type = $selector[0];
 				$selector = isset($selector[1]) ? $selector[1] : '';
-			}
-
-			if ($selector !== '' && $selector[0] === '\\') {
-				$selector = substr($selector, 1);
 			}
 
 			$selector = self::explodeTrim(',', $selector);
@@ -415,7 +412,6 @@ class Stylecow {
 				$code = array(
 					'selector' => $selector,
 					'type' => $type,
-					'is_css' => true,
 					'properties' => array(),
 					'content' => array()
 				);
@@ -444,12 +440,7 @@ class Stylecow {
 						$code['properties'][] = array(
 							'name' => $n,
 							'value' => $v === '' ? array() : array($v),
-							'settings' => $settings
 						);
-					}
-
-					if ($code['type'] && $code['type'][0] === '$') {
-						$code['is_css'] = false;
 					}
 				}
 
@@ -837,7 +828,7 @@ class Stylecow {
 	 */
 	static public function selectorsWalk ($array_code, $callback, $recursive = true) {
 		foreach ($array_code as &$code) {
-			if ($code['selector'] && $code['is_css']) {
+			if ($code['selector']) {
 				$new_selector = $callback($code['selector']);
 
 				if (isset($new_selector)) {

@@ -19,8 +19,9 @@
 namespace Stylecow\Plugins;
 
 use Stylecow\Stylecow;
+use Stylecow\Css;
 
-class Color extends Plugin implements PluginsInterface {
+class Color extends Plugin {
 	static protected $position = 4;
 	static protected $color_names = array(
 		'aliceblue' => '#F0F8FF',
@@ -181,71 +182,48 @@ class Color extends Plugin implements PluginsInterface {
 	 *
 	 * @return array The transformed code
 	 */
-	public function transform (array $array_code) {
-		$self = $this;
+	public function transform (Css $Css) {
+		$Css->foreachFunction('color', function ($parameters) {
+			$rgba = Color::toRGBA(array_shift($parameters));
 
-		return Stylecow::propertiesWalk($array_code, function ($properties) use ($self) {
-			return Stylecow::valueWalk($properties, function ($value) use ($self) {
-				return Stylecow::executeFunctions($value, 'color', function ($arguments) use ($self) {
-					return $self->processColor(array_shift($arguments), $arguments);
-				});
-			});
-		});
-	}
-
-
-
-	/**
-	 * The internal callback to replace each color() function with the css color syntax
-	 *
-	 * @param array $matches The matches found in the preg_replace_callback
-	 *
-	 * @return array The transformed color
-	 */
-	public function processColor ($color, $operations) {
-		$rgba = self::toRGBA($color);
-
-		foreach ($operations as $operation) {
-			if (strpos($operation, ':') === false) {
-				if (preg_match('/^[0-9]+$/', $operation)) {
-					$function = 'tint';
-					$value = $operation;
+			foreach ($parameters as $operation) {
+				if (strpos($operation, ':') === false) {
+					if (preg_match('/^[0-9]+$/', $operation)) {
+						$function = 'tint';
+						$value = $operation;
+					} else {
+						continue;
+					}
 				} else {
-					continue;
+					list($function, $value) = Stylecow::explodeTrim(':', $operation, 2);
 				}
-			} else {
-				list($function, $value) = Stylecow::explodeTrim(':', $operation, 2);
+
+				switch ($function) {
+					case 'hue':
+					case 'saturation':
+					case 'light':
+						$rgba = Color::HSLA_RGBA(Color::editChannel(Color::RGBA_HSLA($rgba), $function, $value));
+						break;
+					
+					case 'red':
+					case 'green':
+					case 'blue':
+					case 'alpha':
+						$rgba = Color::editChannel($rgba, $function, $value);
+						break;
+					
+					case 'tint':
+						$rgba = Color::editTint($rgba, $value);
+						break;
+				}
 			}
 
-			switch ($function) {
-				case 'hue':
-				case 'saturation':
-				case 'light':
-					$hsla = self::RGBA_HSLA($rgba);
-					$this->editChannel($hsla, $function, $value);
-					$rgba = self::HSLA_RGBA($hsla);
-					break;
-				
-				case 'red':
-				case 'green':
-				case 'blue':
-				case 'alpha':
-					$this->editChannel($rgba, $function, $value);
-					break;
-				
-				case 'tint':
-					$rgba[0] += round(((255 - $rgba[0]) * (100 - floatval($value))) / 100);
-					$rgba[1] += round(((255 - $rgba[1]) * (100 - floatval($value))) / 100);
-					$rgba[2] += round(((255 - $rgba[2]) * (100 - floatval($value))) / 100);
-					break;
+			if ($rgba[3] < 1) {
+				return 'rgba('.implode(', ', $rgba).')';
 			}
-		}
 
-		if ($rgba[3] < 1) {
-			return 'rgba('.implode(', ', $rgba).')';
-		}
-
-		return '#'.self::RGBA_HEX($rgba);
+			return '#'.self::RGBA_HEX($rgba);
+		});
 	}
 
 
@@ -253,12 +231,12 @@ class Color extends Plugin implements PluginsInterface {
 	/**
 	 * Edit one of the color channel (red, green, blue, alpha, hue, saturation and light)
 	 *
-	 * @param array       &$channels     The array with all channels of the color
-	 * @param array       $channel_name  The name of the channel to edit
-	 * @param string/int  $new_value     The new value of the channel
+	 * @param array $color The array with all channels of the color
+	 * @param array $channel The name of the channel to edit
+	 * @param string/int $value The new value of the channel
 	 */
-	private function editChannel (&$channels, $channel_name, $new_value) {
-		static $channels_info = array(
+	static public function editChannel ($color, $channel, $value) {
+		static $channels = array(
 			'hue' => array(0, 255),
 			'saturation' => array(1, 100),
 			'light' => array(2, 100),
@@ -268,23 +246,40 @@ class Color extends Plugin implements PluginsInterface {
 			'alpha' => array(3, 1)
 		);
 
-		$channel_info = $channels_info[$channel_name];
+		$channel = $channels[$channel];
 
-		if (!$channel_info) {
-			return false;
+		if (!$channel) {
+			return $color;
 		}
 
-		if ($new_value[0] === '+' || $new_value[0] === '-') {
-			$new_value = floatval($channels[$channel_info[0]]) + floatval($new_value);
+		if ($value[0] === '+' || $value[0] === '-') {
+			$value = floatval($color[$channel[0]]) + floatval($value);
 		}
 
-		if ($new_value > $channel_info[1]) {
-			$new_value = $channel_info[1];
-		} else if ($new_value < 0) {
-			$new_value = 0;
+		if ($value > $channel[1]) {
+			$value = $channel[1];
+		} else if ($value < 0) {
+			$value = 0;
 		}
 
-		$channels[$channel_info[0]] = $new_value;
+		$color[$channel[0]] = $value;
+
+		return $color;
+	}
+
+
+
+	/**
+	 * Edit the tint of a color
+	 *
+	 * @param array $rgba The array with all channels of the color in rgba
+	 */
+	static public function editTint ($rgba, $tint) {
+		$rgba[0] += round(((255 - $rgba[0]) * (100 - floatval($tint))) / 100);
+		$rgba[1] += round(((255 - $rgba[1]) * (100 - floatval($tint))) / 100);
+		$rgba[2] += round(((255 - $rgba[2]) * (100 - floatval($tint))) / 100);
+
+		return $rgba;
 	}
 
 

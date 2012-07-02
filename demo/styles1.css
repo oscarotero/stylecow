@@ -1,7 +1,11 @@
-$grid {
-	width: 900px;
-	columns: 4;
-	gutter: 20px;
+strong ::selection {
+	color: blue;
+	opacity: 0.5;
+	font-size: math((3+9)*4)em;
+
+	snippet: animate-bounce;
+	background: linear-gradient(top, red, blue);
+	-moz-transform: rotate(2deg);
 }
 
 body {
@@ -30,7 +34,6 @@ strong {
 
 strong ::selection {
 	color: blue;
-	$grid: cols(2);
 
 	snippet: animate-bounce;
 	background: linear-gradient(top, red, blue);

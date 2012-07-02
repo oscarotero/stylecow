@@ -18,7 +18,7 @@ $sc = new Stylecow\Stylecow;
 $sc->load(__DIR__.'/'.$_GET['styles']);
 
 //Execute the plugins
-
+/*
 $sc->transform(array(
 	//'Stylecow\\Plugins\\Color',
 	//'Stylecow\\Plugins\\NestedRules',
@@ -31,6 +31,19 @@ $sc->transform(array(
 	//'Stylecow\\Plugins\\Grid',
 	//'Stylecow\\Plugins\\Snippets'
 ));
+*/
+$Css = $sc->getParsedCode();
+
+$Math = new Stylecow\Plugins\Math();
+$Math->transform($Css);
+
+$Color = new Stylecow\Plugins\Color();
+$Color->transform($Css);
+
+$IeFilters = new Stylecow\Plugins\IeFilters();
+$IeFilters->transform($Css);
+
+
 echo '<pre>';
 print_r($sc->getParsedCode());
 echo '</pre>';

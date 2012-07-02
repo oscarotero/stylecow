@@ -20,7 +20,7 @@ namespace Stylecow\Plugins;
 
 use Stylecow\Stylecow;
 
-class Variables extends Plugin implements PluginsInterface {
+class Variables extends Plugin {
 	static protected $position = 1;
 
 	private $variables = array();

@@ -19,8 +19,10 @@
 namespace Stylecow\Plugins;
 
 use Stylecow\Stylecow;
+use Stylecow\Css;
+use Stylecow\Property;
 
-class IeFilters extends Plugin implements PluginsInterface {
+class IeFilters extends Plugin {
 	static protected $position = 5;
 
 
@@ -31,69 +33,93 @@ class IeFilters extends Plugin implements PluginsInterface {
 	 *
 	 * @return array The transformed code
 	 */
-	public function transform (array $array_code) {
+	public function transform (Css $Css) {
 		$fix = isset($this->settings['fix']) ? $this->settings['fix'] : array('opacity', 'rotate', 'flip', 'rgba', 'linear-gradient');
 
-		return Stylecow::propertiesWalk($array_code, function ($properties) use ($fix) {
-			foreach ($properties as $property) {
-				switch ($property['name']) {
-					case 'opacity':
-						if (in_array('opacity', $fix)) {
-							IeFilters::addFilter($properties, 'alpha(opacity='.($property['value'][0] * 100).')');
-						}
-						break;
+		$Css->foreachProperty(null, function ($Property) use ($fix) {
+			switch ($Property->name) {
+				case 'opacity':
+					if (in_array('opacity', $fix)) {
+						IeFilters::addFilter($Property, IeFilters::getOpacityFilter($Property->value));
+					}
 
-					case 'transform':
-						Stylecow::executeFunctions($property['value'][0], null, function ($params, $name) use (&$properties, $fix) {
-							switch ($name) {
-								case 'rotate':
-									if (in_array('rotate', $fix)) {
-										IeFilters::addFilter($properties, IeFilters::getRotateFilter($params));
-									}
-									break;
-								
-								case 'scaleX':
-									if ($params[0] == '-1' && in_array('flip', $fix)) {
-										IeFilters::addFilter($properties, 'flipH');
-									}
-									break;
-								
-								case 'scaleY':
-									if ($params[0] == '-1' && in_array('flip', $fix)) {
-										IeFilters::addFilter($properties, 'flipV');
-									}
-									break;
+					break;
 
-								case 'scale':
-									if ($params[0] == '-1' && $params[1] == '-1' && in_array('flip', $fix)) {
-										IeFilters::addFilter($properties, 'flipH');
-										IeFilters::addFilter($properties, 'flipV');
-									}
-									break;
+				case 'transform':
+					$Property->executeFunction(null, function ($params, $name, $Property) use ($fix) {
+						switch ($name) {
+							case 'rotate':
+								if (in_array('rotate', $fix)) {
+									IeFilters::addFilter($Property, IeFilters::getRotateFilter($params));
+								}
+								break;
+								
+							case 'scaleX':
+								if ($params[0] == '-1' && in_array('flip', $fix)) {
+									IeFilters::addFilter($Property, 'flipH');
+								}
+								break;
+							
+							case 'scaleY':
+								if ($params[0] == '-1' && in_array('flip', $fix)) {
+									IeFilters::addFilter($Property, 'flipV');
+								}
+								break;
+
+							case 'scale':
+								if ($params[0] == '-1' && $params[1] == '-1' && in_array('flip', $fix)) {
+									IeFilters::addFilter($Property, 'flipH');
+									IeFilters::addFilter($Property, 'flipV');
+								}
+								break;
 							}
+					});
+
+					break;
+
+				case 'background':
+				case 'background-image':
+					if (in_array('rgba', $fix)) {
+						$Property->executeFunction('rgba', function ($params, $name, $Property) {
+							IeFilters::addFilter($Property, IeFilters::getRGBAFilter($params));
 						});
-						break;
+					}
 
-					case 'background':
-					case 'background-image':
-						if (in_array('rgba', $fix)) {
-							Stylecow::executeFunctions($property['value'][0], 'rgba', function ($params) use (&$properties) {
-								IeFilters::addFilter($properties, IeFilters::getRGBAFilter($params));
-							});
-						}
+					if (in_array('linear-gradient', $fix)) {
+						$Property->executeFunction('linear-gradient', function ($params, $name, $Property) {
+							IeFilters::addFilter($Property, IeFilters::getLinearGradientFilter($params));
+						});
+					}
 
-						if (in_array('linear-gradient', $fix)) {
-							Stylecow::executeFunctions($property['value'][0], 'linear-gradient', function ($params) use (&$properties) {
-								IeFilters::addFilter($properties, IeFilters::getLinearGradientFilter($params));
-							});
-						}
-
-						break;
-				}
+					break;
 			}
-
-			return $properties;
 		});
+	}
+
+
+	/**
+	 * Add an ie filter to the parsed code
+	 *
+	 * @param array   &$array_code  The piece of the parsed code
+	 * @param string  $params       The ie filter code to insert
+	 */
+	static public function addFilter ($Property, $filter) {
+		if (($Filter = $Property->Parent->getProperty('filter'))) {
+			$Filter->addValue($filter);
+		} else {
+			$Property->Parent->addProperty(new Property('filter', $filter));
+		}
+	}
+
+
+	
+	/**
+	 * Generate the Ie filter to emulate the opacity of an element
+	 *
+	 * @param array  $params  The opacity parameter
+	 */
+	static public function getOpacityFilter ($opacity) {
+		return 'alpha(opacity='.($opacity * 100).')';
 	}
 
 
@@ -223,17 +249,5 @@ class IeFilters extends Plugin implements PluginsInterface {
 		$color = '#'.$a.$r.$g.$b;
 
 		return 'progid:DXImageTransform.Microsoft.gradient(startColorStr=\''.$color.'\', endColorStr=\''.$color.'\')';
-	}
-
-
-	
-	/**
-	 * Add an ie filter to the parsed code
-	 *
-	 * @param array   &$array_code  The piece of the parsed code
-	 * @param string  $params       The ie filter code to insert
-	 */
-	static public function addFilter (&$properties, $filter) {
-		Stylecow::addProperty($properties, 'filter', $filter, Stylecow::PROPERTY_APPEND, 'ms');
 	}
 }

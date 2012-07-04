@@ -17,7 +17,7 @@
 
 namespace Stylecow\Plugins;
 
-use Stylecow\Stylecow;
+use Stylecow\Parser;
 use Stylecow\Css;
 
 class Matches {
@@ -36,7 +36,7 @@ class Matches {
 					if (preg_match('/:matches\(([^\)]*)\)/', $selector, $match)) {
 						$code->selector->delete($key);
 
-						foreach (Stylecow::explodeTrim(',', $match[1]) as $matchSelector) {
+						foreach (Parser::explodeTrim(',', $match[1]) as $matchSelector) {
 							$code->selector->add(str_replace($match[0], $matchSelector, $selector));
 						}
 					}

@@ -13,6 +13,8 @@
 
 namespace Stylecow;
 
+use Stylecow\Parser;
+
 class Property {
 	public $parent;
 
@@ -75,6 +77,6 @@ class Property {
 	}
 
 	public function executeFunction ($function, $callback) {
-		$this->value = Stylecow::executeFunctions($this->value, $function, $callback, $this);
+		$this->value = Parser::executeFunctions($this->value, $function, $callback, $this);
 	}
 }

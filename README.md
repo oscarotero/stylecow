@@ -28,32 +28,17 @@ How to use
 ----------
 
 ```php
-//Instance the class
-$styleCow = new Stylecow\Stylecow;
+//Load and parse the code
+$css = Stylecow\Parser::parseFile('my-styles.css');
 
-//Load the file
-$styleCow->load('my-styles.css');
 
-//Transform the css file using one or more plugins. You can define custom settings for some plugins (for example VendorPrefixes):
-$styleCow->transform(array(
-	'Stylecow\\Plugins\\VendorPrefixes' => array(
-		'vendors' => array('moz', 'webkit')
-	),
-	'Stylecow\\Plugins\\Rem',
-	'Stylecow\\Plugins\\Variables'
-));
+//Transform the css code using the plugins.
+Stylecow\Plugins\Rem::aply($css);
+Stylecow\Plugins\Variables::aply($css);
+Stylecow\Plugins\VendorPrefixes::aply($css);
 
 //Print the result css code
-echo $styleCow->toString();
-
-//You can use also the function show() to print the code with http headers and die
-$styleCow->show();
-
-//Print or show the code with options:
-$styleCow->toString(array(
-	'minify' => true, //Minify the code: remove spaces, linebreaks, etc
-	'vendor' => 'moz' //Returns only the css properties with the vendor prefix "-moz-"
-));
+echo $css->toString();
 ```
 
 

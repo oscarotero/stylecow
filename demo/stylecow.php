@@ -11,44 +11,22 @@ Loader::register();
 
 //Initialize stylecow
 
-$sc = new Stylecow\Stylecow;
+$css = Stylecow\Parser::parseFile(__DIR__.'/'.$_GET['styles']);
 
 //Load the css file
 
-$sc->load(__DIR__.'/'.$_GET['styles']);
-
-//Execute the plugins
-/*
-$sc->transform(array(
-	//'Stylecow\\Plugins\\Color',
-	//'Stylecow\\Plugins\\NestedRules',
-	//'Stylecow\\Plugins\\Matches',
-	//'Stylecow\\Plugins\\Math',
-	//'Stylecow\\Plugins\\IeFilters',
-	//'Stylecow\\Plugins\\Rem',
-	//'Stylecow\\Plugins\\VendorPrefixes',
-	//'Stylecow\\Plugins\\Variables',
-	//'Stylecow\\Plugins\\Grid',
-	//'Stylecow\\Plugins\\Snippets'
-));
-*/
-$Css = $sc->getParsedCode();
-
-Stylecow\Plugins\Math::apply($Css);
-Stylecow\Plugins\Color::apply($Css);
-Stylecow\Plugins\IeFilters::apply($Css);
-Stylecow\Plugins\Matches::apply($Css);
-Stylecow\Plugins\NestedRules::apply($Css);
-Stylecow\Plugins\Rem::apply($Css);
-Stylecow\Plugins\Variables::apply($Css);
+Stylecow\Plugins\Math::apply($css);
+Stylecow\Plugins\Color::apply($css);
+Stylecow\Plugins\IeFilters::apply($css);
+Stylecow\Plugins\Matches::apply($css);
+Stylecow\Plugins\NestedRules::apply($css);
+Stylecow\Plugins\Rem::apply($css);
+Stylecow\Plugins\Variables::apply($css);
 
 
 echo '<pre>';
-//print_r($sc->getParsedCode());
-print_r($sc->getParsedCode()->toString());
-//print_r($sc->getParsedCode()->toArray());
+//print_r($css->getParsedCode());
+print_r($css->toString());
+//print_r($css->toArray());
 echo '</pre>';
-die();
-//Show the result code
-$sc->show();
 ?>

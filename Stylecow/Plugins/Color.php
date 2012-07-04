@@ -21,8 +21,9 @@ namespace Stylecow\Plugins;
 use Stylecow\Stylecow;
 use Stylecow\Css;
 
-class Color extends Plugin {
-	static protected $position = 4;
+class Color {
+	const POSITION = 4;
+
 	static protected $color_names = array(
 		'aliceblue' => '#F0F8FF',
 		'antiquewhite' => '#FAEBD7',
@@ -174,55 +175,56 @@ class Color extends Plugin {
 	);
 
 
-
 	/**
-	 * Search for color() function and execute it
+	 * Apply the plugin to Css object
 	 *
-	 * @param array $array_code The piece of the parsed css code
-	 *
-	 * @return array The transformed code
+	 * @param Stylecow\Css $css The css object
 	 */
-	public function transform (Css $Css) {
-		$Css->foreachFunction('color', function ($parameters) {
-			$rgba = Color::toRGBA(array_shift($parameters));
+	static public function apply (Css $css) {
+		$css->executeRecursive(function ($code) {
+			foreach ($code->getProperties() as $property) {
+				$property->executeFunction('color', function ($parameters) {
+					$rgba = Color::toRGBA(array_shift($parameters));
 
-			foreach ($parameters as $operation) {
-				if (strpos($operation, ':') === false) {
-					if (preg_match('/^[0-9]+$/', $operation)) {
-						$function = 'tint';
-						$value = $operation;
-					} else {
-						continue;
+					foreach ($parameters as $operation) {
+						if (strpos($operation, ':') === false) {
+							if (preg_match('/^[0-9]+$/', $operation)) {
+								$function = 'tint';
+								$value = $operation;
+							} else {
+								continue;
+							}
+						} else {
+							list($function, $value) = Stylecow::explodeTrim(':', $operation, 2);
+						}
+
+						switch ($function) {
+							case 'hue':
+							case 'saturation':
+							case 'light':
+								$rgba = Color::HSLA_RGBA(Color::editChannel(Color::RGBA_HSLA($rgba), $function, $value));
+								break;
+							
+							case 'red':
+							case 'green':
+							case 'blue':
+							case 'alpha':
+								$rgba = Color::editChannel($rgba, $function, $value);
+								break;
+							
+							case 'tint':
+								$rgba = Color::editTint($rgba, $value);
+								break;
+						}
 					}
-				} else {
-					list($function, $value) = Stylecow::explodeTrim(':', $operation, 2);
-				}
 
-				switch ($function) {
-					case 'hue':
-					case 'saturation':
-					case 'light':
-						$rgba = Color::HSLA_RGBA(Color::editChannel(Color::RGBA_HSLA($rgba), $function, $value));
-						break;
-					
-					case 'red':
-					case 'green':
-					case 'blue':
-					case 'alpha':
-						$rgba = Color::editChannel($rgba, $function, $value);
-						break;
-					
-					case 'tint':
-						$rgba = Color::editTint($rgba, $value);
-						break;
-				}
+					if ($rgba[3] < 1) {
+						return 'rgba('.implode(', ', $rgba).')';
+					}
+
+					return '#'.self::RGBA_HEX($rgba);
+				});
 			}
-
-			if ($rgba[3] < 1) {
-				return 'rgba('.implode(', ', $rgba).')';
-			}
-
-			return '#'.self::RGBA_HEX($rgba);
 		});
 	}
 

@@ -18,34 +18,30 @@
 namespace Stylecow\Plugins;
 
 use Stylecow\Stylecow;
+use Stylecow\Css;
 
-class Matches extends Plugin implements PluginsInterface {
-	static protected $position = 2;
+class Matches {
+	const POSITION = 2;
 
 
 	/**
-	 * Resolve all matches in the selectors
+	 * Apply the plugin to Css object
 	 *
-	 * @param array $array_code The piece of the parsed css code
-	 *
-	 * @return array The transformed code
+	 * @param Stylecow\Css $css The css object
 	 */
-	public function transform (array $array_code) {
-		return Stylecow::selectorsWalk($array_code, function ($selectors) {
-
-			while (strpos(implode($selectors), ':matches(') !== false) {
-				foreach ($selectors as $k_selector => $selector) {
+	static public function apply (Css $css) {
+		$css->executeRecursive(function ($code) {
+			while (strpos((string)$code->selector, ':matches(') !== false) {
+				foreach ($code->selector->get() as $key => $selector) {
 					if (preg_match('/:matches\(([^\)]*)\)/', $selector, $match)) {
-						unset($selectors[$k_selector]);
+						$code->selector->delete($key);
 
-						foreach (Stylecow::explodeTrim(',', $match[1]) as $sub_selector) {
-							$selectors[] = str_replace($match[0], $sub_selector, $selector);
+						foreach (Stylecow::explodeTrim(',', $match[1]) as $matchSelector) {
+							$code->selector->add(str_replace($match[0], $matchSelector, $selector));
 						}
 					}
 				}
 			}
-
-			return $selectors;
 		});
 	}
 }

@@ -34,18 +34,19 @@ $sc->transform(array(
 */
 $Css = $sc->getParsedCode();
 
-$Math = new Stylecow\Plugins\Math();
-$Math->transform($Css);
-
-$Color = new Stylecow\Plugins\Color();
-$Color->transform($Css);
-
-$IeFilters = new Stylecow\Plugins\IeFilters();
-$IeFilters->transform($Css);
+Stylecow\Plugins\Math::apply($Css);
+Stylecow\Plugins\Color::apply($Css);
+Stylecow\Plugins\IeFilters::apply($Css);
+Stylecow\Plugins\Matches::apply($Css);
+Stylecow\Plugins\NestedRules::apply($Css);
+Stylecow\Plugins\Rem::apply($Css);
+Stylecow\Plugins\Variables::apply($Css);
 
 
 echo '<pre>';
-print_r($sc->getParsedCode());
+//print_r($sc->getParsedCode());
+print_r($sc->getParsedCode()->toString());
+//print_r($sc->getParsedCode()->toArray());
 echo '</pre>';
 die();
 //Show the result code

@@ -406,7 +406,9 @@ class Stylecow {
 				}
 
 				if ($content_string) {
-					$Child->addChild(self::parse($content_string));
+					foreach (self::parse($content_string) as $child) {
+						$Child->addChild($child);
+					}
 				}
 
 				break;

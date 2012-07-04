@@ -17,23 +17,21 @@
 
 namespace Stylecow\Plugins;
 
-use Stylecow\Stylecow;
+use Stylecow\Css;
 
-class Math extends Plugin implements PluginsInterface {
-	static protected $position = 4;
+class Math {
+	const POSITION = 4;
 
 
 	/**
-	 * Resolve all math functions
+	 * Apply the plugin to Css object
 	 *
-	 * @param array $array_code The piece of the parsed css code
-	 *
-	 * @return array The transformed code
+	 * @param Stylecow\Css $css The css object
 	 */
-	public function transform (array $array_code) {
-		return Stylecow::propertiesWalk($array_code, function ($properties) {
-			return Stylecow::valueWalk($properties, function ($value) {
-				return Stylecow::executeFunctions($value, 'math', function ($parameters) {
+	static public function apply (Css $css) {
+		$css->executeRecursive(function ($code) {
+			foreach ($code->getProperties() as $property) {
+				$property->executeFunction('math', function ($parameters) {
 					$units = '';
 					$operations = $parameters[0];
 
@@ -60,7 +58,7 @@ class Math extends Plugin implements PluginsInterface {
 						return round($calculate(), 2).$units;
 					}
 				});
-			});
+			}
 		});
 	}
 }

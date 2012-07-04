@@ -18,58 +18,49 @@
 
 namespace Stylecow\Plugins;
 
-use Stylecow\Stylecow;
+use Stylecow\Css;
+use Stylecow\Property;
 
-class Variables extends Plugin implements PluginsInterface {
-	static protected $position = 1;
-
-	private $variables = array();
-
+class Variables {
+	const POSITION = 1;
 
 
 	/**
-	 * Search for variables and replace with the value
+	 * Apply the plugin to Css object
 	 *
-	 * @param array $array_code The piece of the parsed css code
-	 *
-	 * @return array The transformed code
+	 * @param Stylecow\Css $css The css object
 	 */
-	public function transform (array $array_code) {
-		$rootVariables = isset($this->settings['variables']) ? $this->settings['variables'] : array();
+	static public function apply (Css $css) {
+		$rootVariables = array();
 
-		if (($keys = Stylecow::searchBySelectors($array_code, array(':root', 'html', 'body')))) {
-			foreach ($keys as $key) {
-				$rootVariables = array_replace($rootVariables, self::getVariables($array_code[$key]['properties']));
-			}
+		foreach ($css->getChildren(array(':root', 'html', 'body')) as $child) {
+			$rootVariables = array_replace($rootVariables, Variables::getVariables($child));
 		}
 
-		return Stylecow::walk($array_code, function ($code, $depth) use ($rootVariables) {
-			$depthVariables = $rootVariables;
+		$css->executeRecursive(function ($code, $contextVariables) {
+			$contextVariables = array_replace($contextVariables, Variables::getVariables($code));
 
-			return Stylecow::propertiesWalk($code, function ($properties) use ($depthVariables) {
-				$propertiesVariables = array_replace($depthVariables, Variables::getVariables($properties));
+			foreach ($code->properties as $property) {
+				if (strpos($property->value, '$')) {
+					$property->value = preg_replace_callback('/\$([\w-]+)/', function ($matches) use ($contextVariables) {
+						return isset($contextVariables[$matches[1]]) ? $contextVariables[$matches[1]] : $matches[0];
+					}, $property->value);
+				}
 
-				return Stylecow::valueWalk($properties, function ($value) use ($propertiesVariables) {
-					$value = preg_replace_callback('/\$([\w-]+)/', function ($matches) use ($propertiesVariables) {
-						return isset($propertiesVariables[$matches[1]]) ? $propertiesVariables[$matches[1]] : $matches[0];
-					}, $value);
+				$property->executeFunction('var', function ($params) use ($contextVariables) {
+					if (!isset($params[0])) {
+						return 'var()';
+					}
 
-					return Stylecow::executeFunctions($value, 'var', function ($params) use ($propertiesVariables) {
-						if (!isset($params[0])) {
-							return 'var()';
-						}
+					if (isset($contextVariables[$params[0]])) {
+						return $contextVariables[$params[0]];
+					}
 
-						if (isset($propertiesVariables[$params[0]])) {
-							return $propertiesVariables[$params[0]];
-						}
-
-						return isset($params[1]) ? $params[1] : 'var('.$params[0].')';
-					});
+					return isset($params[1]) ? $params[1] : 'var('.$params[0].')';
 				});
-			});
-		});
+			}
 
-		return $array_code;
+		}, $rootVariables);
 	}
 
 
@@ -81,14 +72,14 @@ class Variables extends Plugin implements PluginsInterface {
 	 *
 	 * @return array The transformed code
 	 */
-	static public function getVariables (array &$properties) {
+	static public function getVariables (Css $css) {
 		$variables = array();
 
-		foreach ($properties as $k => $property) {
-			if (strpos($property['name'], 'var-') === 0) {
-				$variables[substr($property['name'], 4)] = $property['value'][0];
+		foreach ($css->properties as $k => $property) {
+			if (strpos($property->name, 'var-') === 0) {
+				$variables[substr($property->name, 4)] = $property->value;
 
-				unset($properties[$k]);
+				unset($css->properties[$k]);
 			}
 		}
 

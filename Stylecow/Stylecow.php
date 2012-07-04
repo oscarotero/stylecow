@@ -291,7 +291,7 @@ class Stylecow {
 				$text .= $tab_selector.'/* '.$code['comment'].' */';
 			}
 
-			if (!$code['is_css'] || ($browser === '' && isset($code['browser']) && $code['browser'])) {
+			if (($browser === '') && isset($code['browser']) && $code['browser']) {
 				continue;
 			}
 
@@ -339,29 +339,16 @@ class Stylecow {
 	 * @return array  The parsed css code
 	 */
 	static public function parse ($string_code) {
-		$array_code = array();
+		$Css = new Css();
 
 		while ($string_code) {
 			$pos = strpos($string_code, '{');
 			$pos2 = strpos($string_code, ';');
 
 			if (($pos2 !== false) && $pos2 < $pos) {
-				$selector = trim(substr($string_code, 0, $pos2));
-				$type = '';
+				list($selector, $type) = self::parseSelector(trim(substr($string_code, 0, $pos2)));
 
-				if ($selector[0] == '@' || $selector[0] == '$') {
-					$selector = self::explodeTrim(' ', $selector, 2);
-				
-					$type = $selector[0];
-					$selector = isset($selector[1]) ? $selector[1] : '';
-				}
-
-				$array_code[] = array(
-					'selector' => array($selector),
-					'type' => $type,
-					'is_css' => ($type[0] === '$') ? false : true,
-					'content' => array()
-				);
+				$Child = $Css->addChild(new Css($selector, $type));
 
 				$string_code = trim(substr($string_code, $pos2+1));
 				continue;
@@ -371,21 +358,7 @@ class Stylecow {
 				break;
 			}
 
-			$selector = trim(substr($string_code, 0, $pos));
-			$type = '';
-
-			if ($selector[0] === '@' || $selector[0] === '$') {
-				$selector = self::explodeTrim(' ', $selector, 2);
-				
-				$type = $selector[0];
-				$selector = isset($selector[1]) ? $selector[1] : '';
-			}
-
-			if ($selector !== '' && $selector[0] === '\\') {
-				$selector = substr($selector, 1);
-			}
-
-			$selector = self::explodeTrim(',', $selector);
+			list($selector, $type) = self::parseSelector(trim(substr($string_code, 0, $pos)));
 
 			$string_code = trim(substr($string_code, $pos + 1));
 			$length = strlen($string_code);
@@ -399,27 +372,14 @@ class Stylecow {
 					continue;
 				}
 
-				if ($letter !== '}') {
+				if (($letter !== '}') || (--$in)) {
 					continue;
 				}
 
-				$in--;
+				$Child = $Css->addChild(new Css($selector, $type));
 
-				if ($in) {
-					continue;
-				}
-
-				$string_piece = $n ? trim(substr($string_code, 0, $n-1)) : '';
+				$string_piece = ($n === 0) ? '' : trim(substr($string_code, 0, $n-1));
 				$string_code = trim(substr($string_code, $n+1));
-
-				$code = array(
-					'selector' => $selector,
-					'type' => $type,
-					'is_css' => true,
-					'properties' => array(),
-					'content' => array()
-				);
-
 				$pos = strpos($string_piece, '{');
 
 				if ($pos === false) {
@@ -439,31 +399,46 @@ class Stylecow {
 
 				if ($properties_string) {
 					foreach (self::explodeTrim(';', $properties_string) as $property) {
-						list($n, $v) = self::explodeTrim(':', $property, 2);
+						list($name, $value) = self::explodeTrim(':', $property, 2);
 
-						$code['properties'][] = array(
-							'name' => $n,
-							'value' => $v === '' ? array() : array($v),
-							'settings' => $settings
-						);
-					}
-
-					if ($code['type'] && $code['type'][0] === '$') {
-						$code['is_css'] = false;
+						$Child->addProperty(new Property($name, $value));
 					}
 				}
 
 				if ($content_string) {
-					$code['content'] = self::parse($content_string);
+					foreach (self::parse($content_string) as $child) {
+						$Child->addChild($child);
+					}
 				}
-
-				$array_code[] = $code;
 
 				break;
 			}
 		}
 
-		return $array_code;
+		return $Css;
+	}
+
+
+	/**
+	 * Utils: Parses the css code of a selector
+	 *
+	 * @param string  $selector  The css code to parse
+	 *
+	 * @return array  The parsed css code
+	 */
+	static private function parseSelector ($selector) {
+		$type = '';
+
+		if ($selector[0] === '@') {
+			$selector = self::explodeTrim(' ', $selector, 2);
+
+			$type = $selector[0];
+			$selector = isset($selector[1]) ? self::explodeTrim(',', $selector[1]) : array();
+		} else {
+			$selector = self::explodeTrim(',', $selector);
+		}
+
+		return array($selector, $type);
 	}
 
 
@@ -737,7 +712,7 @@ class Stylecow {
 	 *
 	 * @return array  List of all functions found. Each function is an array with the name and all parameters.
 	 */
-	static public function executeFunctions ($string, $function, $callback) {
+	static public function executeFunctions ($string, $function, $callback, $argument = null) {
 		if ((strpos($string, '(') === false) || (isset($function) && strpos($string, $function.'(') === false)) {
 			return $string;
 		}
@@ -778,7 +753,7 @@ class Stylecow {
 			}
 
 			$parameters = substr($string, $index + 1, $end - $index - 1);
-			$result = $callback(empty($parameters) ? array() : self::explodeTrim(',', $parameters), $name);
+			$result = $callback(empty($parameters) ? array() : self::explodeTrim(',', $parameters), $name, $argument);
 
 			if (isset($result)) {
 				$string = substr_replace($string, $result, $start, ($end - $start + 1));
@@ -837,7 +812,7 @@ class Stylecow {
 	 */
 	static public function selectorsWalk ($array_code, $callback, $recursive = true) {
 		foreach ($array_code as &$code) {
-			if ($code['selector'] && $code['is_css']) {
+			if ($code['selector']) {
 				$new_selector = $callback($code['selector']);
 
 				if (isset($new_selector)) {

@@ -15,7 +15,7 @@ namespace Stylecow;
 
 class Css extends \ArrayObject {
 	public $parent;
-	public $selector = array();
+	public $selector;
 	public $properties = array();
 
 
@@ -28,6 +28,22 @@ class Css extends \ArrayObject {
 				$this->selector->add($selector);
 			}
 		}
+	}
+
+	public function __clone () {
+		$this->selector = clone $this->selector;
+
+		foreach ($this->properties as $k => $property) {
+			$this->properties[$k] = clone $property;
+		}
+
+		$children = array();
+
+		foreach ($this as $key => $child) {
+			$children[$key] = clone $child;
+		}
+
+		$this->exchangeArray($children);
 	}
 
 
@@ -120,10 +136,25 @@ class Css extends \ArrayObject {
 	public function executeRecursive ($callback, $contextData = null) {
 		$callback($this, $contextData);
 
-		foreach ($this as $child) {
+		foreach ($this->getArrayCopy() as $child) {
 			$childData = $contextData;
 
 			$child->executeRecursive($callback, $childData);
+		}
+	}
+
+
+	public function filterVendor ($vendor) {
+		if ($this->properties) {
+			foreach ($this->properties as $k => $property) {
+				if (!empty($property->vendor) && ($property->vendor !== $vendor)) {
+					unset($this->properties[$k]);
+				}
+			}
+		}
+
+		foreach ($this as $child) {
+			$child->filterVendor($vendor);
 		}
 	}
 
@@ -166,12 +197,17 @@ class Css extends \ArrayObject {
 
 	public function toArray () {
 		$array = array(
+			'type' => $this->selector->type,
 			'selector' => $this->selector->get(),
 			'properties' => array()
 		);
 
 		foreach ($this->properties as $property) {
-			$array['properties'][$property->name] = $property->value;
+			$array['properties'][] = array(
+				'name' => $property->name,
+				'value' => $property->value,
+				'vendor' => $property->vendor
+			);
 		}
 
 		foreach ($this as $child) {

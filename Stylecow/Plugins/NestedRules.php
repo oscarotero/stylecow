@@ -33,7 +33,7 @@ class NestedRules {
 	 */
 	static public function apply (Css $css) {
 		$css->executeRecursive(function ($code) {
-			if ($code->parent && $code->parent->parent && ($parentSelectors = $code->parent->selector->get())) {
+			if ($code->parent && $code->parent->parent && !$code->parent->selector->type && ($parentSelectors = $code->parent->selector->get())) {
 				$selectors = $code->selector->get();
 				$code->selector->delete();
 

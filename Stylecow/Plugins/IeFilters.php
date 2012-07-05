@@ -100,8 +100,9 @@ class IeFilters {
 	static public function addFilter ($property, $filter) {
 		if (($filterProperty = $property->parent->getProperties('filter'))) {
 			$filterProperty[0]->addValue($filter);
+			$filterProperty[0]->vendor = 'ms';
 		} else {
-			$property->parent->addProperty(new Property('filter', $filter));
+			$property->parent->addProperty(new Property('filter', $filter))->vendor = 'ms';
 		}
 	}
 

@@ -28,6 +28,9 @@ body {
 	}
 }
 
-strong {
-	background: linear-gradient(top, #444444, #666666);
+@document url(http://www.w3.org/), url-prefix(http://www.w3.org/Style/), domain(mozilla.org), regexp("https:.*") {
+	strong {
+		background: linear-gradient(top, #444444, #666666);
+		-webkit-border-radius: 5px;
+	}
 }

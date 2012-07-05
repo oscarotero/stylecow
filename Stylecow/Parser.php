@@ -48,7 +48,12 @@ class Parser {
 	 * @return Stylecow\Css The css object
 	 */
 	static public function parseString ($string) {
-		return self::parse(self::resolve($string));
+		$string = self::resolve($string);
+
+		//Remove comments
+		$string = preg_replace('|/\*.*\*/|Us', '', $string);
+
+		return self::parse($string);
 	}
 
 
@@ -61,10 +66,6 @@ class Parser {
 	 * @return string The resolved code
 	 */
 	static private function resolve ($code) {
-
-		//Remove comments
-		$code = preg_replace('|/\*.*\*/|Us', '', $code);
-
 		//Resolve imported images
 		if (strpos($code, 'url(') !== false) {
 			$code = preg_replace_callback('#url\(["\']?([^\)\'"]*)["\']?\)#', array(self, 'urlCallback'), $code);
@@ -333,6 +334,12 @@ class Parser {
 		$array = array();
 
 		while ($string) {
+			if (isset($limit) && count($array) === ($limit - 1)) {
+				$array[] = $string;
+
+				break;
+			}
+
 			if (strpos($string,$delimiter) === false) {
 				$array[] = trim($string);
 				break;
@@ -385,9 +392,7 @@ class Parser {
 	static public function explodeTrim ($delimiter, $text, $limit = null, $str_in = '(', $str_out = ')') {
 		$return = array();
 
-		$explode = self::explode($delimiter, $text, $limit, $str_in, $str_out);
-
-		foreach ($explode as $text_value) {
+		foreach (self::explode($delimiter, $text, $limit, $str_in, $str_out) as $text_value) {
 			$text_value = trim($text_value);
 
 			if ($text_value !== '') {

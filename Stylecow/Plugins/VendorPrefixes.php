@@ -17,10 +17,11 @@
 
 namespace Stylecow\Plugins;
 
-use Stylecow\Stylecow;
+use Stylecow\Css;
+use Stylecow\Property;
 
-class VendorPrefixes extends Plugin implements PluginsInterface {
-	static protected $position = 3;
+class VendorPrefixes {
+	const POSITION = 3;
 
 	static $property_prefixes = array(
 		'animation' => array('moz', 'webkit', 'o', 'ms'),
@@ -136,7 +137,7 @@ class VendorPrefixes extends Plugin implements PluginsInterface {
 		'::selection' => array('moz' => '::-moz-selection')
 	);
 
-	static $type_prefixes = array(
+	static $types = array(
 		'@keyframes' => array(
 			'moz' => '@-moz-keyframes',
 			'webkit' => '@-webkit-keyframes',
@@ -147,6 +148,28 @@ class VendorPrefixes extends Plugin implements PluginsInterface {
 			'moz' => '@-moz-document',
 		)
 	);
+
+
+	/**
+	 * Apply the plugin to Css object
+	 *
+	 * @param Stylecow\Css $css The css object
+	 */
+	static public function apply (Css $css) {
+		//Type
+		$css->executeRecursive(function ($code) {
+			if (!isset($code->selector->type) || !isset(VendorPrefixes::$types[$code->selector->type])) {
+				return;
+			}
+
+			foreach (VendorPrefixes::$types[$code->selector->type] as $prefix => $type) {
+				$newCode = clone $code;
+				$newCode->selector->type = $type;
+				$newCode->filterVendor($prefix);
+				$code->parent->addChild($newCode, $code->getParentPosition() + 1);
+			}
+		});
+	}
 
 
 
@@ -162,48 +185,6 @@ class VendorPrefixes extends Plugin implements PluginsInterface {
 
 
 
-	/**
-	 * Private function to add the type prefixes
-	 *
-	 * @param array  $array_code    The piece of the parsed css code
-	 * @param array  $prefix_scope  The browser prefix
-	 *
-	 * @return array  The transformed code
-	 */
-	private function transformType ($array_code, $prefix_scope = '') {
-		$new_array_code = array();
-
-		foreach ($array_code as $code) {
-			if ($code['type'] && isset(VendorPrefixes::$type_prefixes[$code['type']])) {
-				foreach (VendorPrefixes::$type_prefixes[$code['type']] as $prefix => $new_type_prefix) {
-					if ((isset($code['browser']) && $code['browser'] !== $prefix) || ($prefix_scope && $prefix !== $prefix_scope)) {
-						continue;
-					}
-
-					$new_code = $code;
-					$new_code['type'] = $new_type_prefix;
-					$new_code['browser'] = $prefix;
-
-					if ($new_code['content']) {
-						$new_code['content'] = $this->transformType($new_code['content'], $prefix);
-					}
-
-					$new_array_code[] = $new_code;
-				}
-			} else if ($code['content']) {
-				$code['content'] = $this->transformType($code['content'], isset($code['browser']) ? $code['browser'] : null);
-			}
-
-			$new_array_code[] = $code;
-		}
-
-
-
-		return $new_array_code;
-	}
-
-
-	
 	/**
 	 * Private function to add the selector prefixes
 	 *

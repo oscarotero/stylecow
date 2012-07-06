@@ -32,9 +32,9 @@ How to use
 $css = Stylecow\Parser::parseFile('my-styles.css');
 
 //Transform the css code using the plugins.
-Stylecow\Plugins\Rem::aply($css);
-Stylecow\Plugins\Variables::aply($css);
-Stylecow\Plugins\VendorPrefixes::aply($css);
+Stylecow\Plugins\Rem::apply($css);
+Stylecow\Plugins\Variables::apply($css);
+Stylecow\Plugins\VendorPrefixes::apply($css);
 
 //You also can apply plugins in this way:
 $css->applyPlugins(array(

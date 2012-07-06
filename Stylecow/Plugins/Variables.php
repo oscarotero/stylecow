@@ -37,7 +37,7 @@ class Variables {
 			$rootVariables = array_replace($rootVariables, Variables::getVariables($child));
 		}
 
-		$css->executeRecursive(function ($code, $contextVariables) {
+		$css->executeRecursive(function ($code, &$contextVariables) {
 			$contextVariables = array_replace($contextVariables, Variables::getVariables($code));
 
 			foreach ($code->properties as $property) {

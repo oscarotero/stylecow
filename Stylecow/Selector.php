@@ -57,6 +57,14 @@ class Selector {
 		}
 	}
 
+	public function set ($selectors) {
+		if (is_array($selectors)) {
+			$this->selectors = $selectors;
+		} else {
+			$this->selectors = array($selectors);
+		}
+	}
+
 	public function delete ($key = null) {
 		if (isset($key)) {
 			if (isset($this->selectors[$key])) {

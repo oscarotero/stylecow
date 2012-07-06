@@ -18,76 +18,53 @@
 
 namespace Stylecow\Plugins;
 
-use Stylecow\Stylecow;
+use Stylecow\Css;
+use Stylecow\Property;
 
-class Grid extends Plugin implements PluginsInterface {
-	static protected $position = 1;
+class Grid {
+	const POSITION = 1;
 
-	private $grids = array();
-
-
-	
 	/**
-	 * Finds the $grid properties and resolve them
+	 * Apply the plugin to Css object
 	 *
-	 * @param array  $array_code  The piece of the parsed css code
-	 *
-	 * @return array  The transformed code
+	 * @param Stylecow\Css $css The css object
 	 */
-	public function transform (array $array_code) {
-		return Stylecow::walk($array_code, function ($code) {
-			$grids = array();
+	static public function apply (Css $css) {
+		$css->executeRecursive(function ($code, &$contextGrid) {
+			$contextGrid = array_replace($contextGrid, Grid::getGrid($code));
 
-			foreach ($code as $key => $subcode) {
-				if ($subcode['type'] === '$grid' || strpos($subcode['type'], '$grid-') === 0) {
-					$grids[$subcode['type']][$property['name']] = array();
+			$arguments = array();
+			$grid = $contextGrid;
 
-					foreach ($subcode['properties'] as $property) {
-						$grids[$subcode['type']][$property['name']] = intval(current($property['value']));
+			foreach ($code->getProperties('$grid') as $property) {
+				$property->executeAllFunctions(function ($params, $name) use (&$grid, &$arguments) {
+					switch ($name) {
+						case 'cols':
+						case 'right':
+						case 'cols-width':
+						case 'left':
+						case 'in-cols':
+						case 'background':
+							$arguments[$name] = $params;
+							break;
+
+						case 'columns':
+						case 'width':
+						case 'gutter':
+							$grid = intval($params[0]);
+							break;
 					}
+				});
 
-					unset($code[$key]);
+				if ($arguments) {
+					foreach (Grid::getStyles($grid, $arguments) as $name => $value) {
+						if (!$code->hasProperty($name)) {
+							$code->addProperty(new Property($name, $value));
+						}
+					}
 				}
 			}
-
-			return Stylecow::propertiesWalk($code, function ($properties) use ($grids) {
-				foreach ($properties as $k => $property) {
-					if (($grid = $grids[$property['name']])) {
-
-						$options = array();
-
-						Stylecow::executeFunctions($property['value'][0], null, function ($params, $name) use (&$grid, &$options) {
-							switch ($name) {
-								case 'cols':
-								case 'right':
-								case 'cols-width':
-								case 'left':
-								case 'in-cols':
-								case 'background':
-									$options[$name] = $params;
-									break;
-
-								case 'columns':
-								case 'width':
-								case 'gutter':
-									$grid = intval($params[0]);
-									break;
-							}
-						});
-
-						if ($options) {
-							foreach (Grid::getStyles($grid, $options) as $name => $value) {
-								Stylecow::addProperty($properties, $name, $value, Stylecow::PROPERTY_IF_FAMILY_UNDEFINED);
-							}
-						}
-
-						unset($properties[$k]);
-					}
-				}
-
-				return $properties;
-			});
-		});
+		}, array());
 	}
 
 
@@ -173,5 +150,28 @@ class Grid extends Plugin implements PluginsInterface {
 		$width = floor(($width * $options['cols'][0]) + ($grid['gutter'] * ($options['cols'][0] - 1)) + $options['cols'][1]);
 
 		return array($width, floor($left), floor($right));
+	}
+
+
+	/**
+	 * Search and return the css variables in an array. Removes also the css property
+	 *
+	 * @param array $properties The piece of the parsed css code with the properties
+	 *
+	 * @return array The transformed code
+	 */
+	static public function getGrid (Css $css) {
+		$grid = array();
+		$gridChild = $css->getChildren('$grid');
+
+		if (isset($gridChild[0])) {
+			$gridChild[0]->removeFromParent();
+
+			foreach ($gridChild[0]->getProperties(array('width', 'columns', 'gutter')) as $property) {
+				$grid[$property->name] = $property->value;
+			}
+		}
+
+		return $grid;
 	}
 }

@@ -1,7 +1,14 @@
+$grid {
+	columns: 12;
+	width: 900;
+	gutter: 20;
+}
+
 strong ::selection {
 	color: blue;
 	opacity: 0.5;
 	font-size: math((3+9)*4)em;
+	$grid: cols(6);
 
 	snippet: animate-bounce;
 	background: linear-gradient(top, red, blue);

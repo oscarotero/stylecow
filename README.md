@@ -31,11 +31,17 @@ How to use
 //Load and parse the code
 $css = Stylecow\Parser::parseFile('my-styles.css');
 
-
 //Transform the css code using the plugins.
 Stylecow\Plugins\Rem::aply($css);
 Stylecow\Plugins\Variables::aply($css);
 Stylecow\Plugins\VendorPrefixes::aply($css);
+
+//You also can apply plugins in this way:
+$css->applyPlugins(array(
+	'Rem',
+	'Variables',
+	'VendorPrefixes'
+));
 
 //Print the result css code
 echo $css->toString();
@@ -59,7 +65,6 @@ Other plugins with non-standard syntax:
 
 * [NestedRules](#nestedrules) Brings nested rules support
 * [Grid](#grid) Useful to work with one or various grids.
-* [Snippets](#snippets) To insert css snippets in the code
 * [Color](#color) Provides the function color() to manipulate color values
 * [Math](#math) Provides the function math() to execute math operations
 
@@ -445,129 +450,6 @@ $grid {
 	display: inline;
 }
 ```
-
-Snippets
---------
-
-Useful to insert little pieces of css code. Each snippet is a css file saved in snippets folder. For example, let's create a simple snippet with a css animation named "flash".
-
-```css
-#element {
-	animation: 1s ease;
-	animation-name: flash;
-}
-
-@keyframes flash {
-	0%, 50%, 100% {
-		opacity: 1;
-	}
-	25%, 75% {
-		opacity: 0;
-	}
-}
-```
-
-In a css snippet, the code applied to #element selector will be applied to the element with the snippet. The rest of the code will be placed at the end of the css.
-
-
-#### You write
-
-```css
-div.foo {
-	snippet: flash;
-}
-```
-
-
-#### And Stylecow converts to
-
-```css
-div.foo {
-	animation: 1s ease;
-	animation-name: flash;
-}
-
-@keyframes flash {
-	0%, 50%, 100% {
-		opacity: 1;
-	}
-	25%, 75% {
-		opacity: 0;
-	}
-}
-```
-
-You can combine the snippets with VendorPrefixes plugin or NestedRules to build more complex snippets. For example, the previous snippet with VendorPrefixes plugin:
-
-
-```css
-div.foo {
-	animation: 1s ease;
-	-moz-animation: 1s ease;
-	-webkit-animation: 1s ease;
-	-o-animation: 1s ease;
-	-ms-animation: 1s ease;
-	animation-name: flash;
-	-moz-animation-name: flash;
-	-webkit-animation-name: flash;
-	-o-animation-name: flash;
-	-ms-animation-name: flash;
-}
-
-@-moz-keyframes flash {
-	0%, 50%, 100% {
-		opacity: 1;
-		-moz-opacity: 1;
-	}
-	25%, 75% {
-		opacity: 0;
-		-moz-opacity: 0;
-	}
-}
-
-@-webkit-keyframes flash {
-	0%, 50%, 100% {
-		opacity: 1;
-		-webkit-opacity: 1;
-	}
-	25%, 75% {
-		opacity: 0;
-		-webkit-opacity: 0;
-	}
-}
-
-@-ms-keyframes flash {
-	0%, 50%, 100% {
-		opacity: 1;
-	}
-	25%, 75% {
-		opacity: 0;
-	}
-}
-
-@-o-keyframes flash {
-	0%, 50%, 100% {
-		opacity: 1;
-	}
-	25%, 75% {
-		opacity: 0;
-	}
-}
-
-@keyframes flash {
-	0%, 50%, 100% {
-		opacity: 1;
-		-moz-opacity: 1;
-		-webkit-opacity: 1;
-	}
-	25%, 75% {
-		opacity: 0;
-		-moz-opacity: 0;
-		-webkit-opacity: 0;
-	}
-}
-```
-
 
 Color
 -----

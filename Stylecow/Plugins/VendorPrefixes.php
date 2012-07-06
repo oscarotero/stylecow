@@ -17,13 +17,14 @@
 
 namespace Stylecow\Plugins;
 
+use Stylecow\Parser;
 use Stylecow\Css;
 use Stylecow\Property;
 
 class VendorPrefixes {
 	const POSITION = 3;
 
-	static $property_prefixes = array(
+	static $properties = array(
 		'animation' => array('moz', 'webkit', 'o', 'ms'),
 		'animation-delay' => array('moz', 'webkit', 'o', 'ms'),
 		'animation-direction' => array('moz', 'webkit', 'o', 'ms'),
@@ -104,14 +105,22 @@ class VendorPrefixes {
 		'user-select' => array('moz', 'webkit')
 	);
 
-	static $property_fn_prefixes = array(
-		'border-top-left-radius' => 'borderRadius',
-		'border-top-right-radius' => 'borderRadius',
-		'border-bottom-left-radius' => 'borderRadius',
-		'border-bottom-right-radius' => 'borderRadius'
+	static $non_standard_properties = array(
+		'border-top-left-radius' => array(
+			'moz' => '-moz-border-radius-topleft'
+		),
+		'border-top-right-radius' => array(
+			'moz' => '-moz-border-radius-topright'
+		),
+		'border-bottom-left-radius' => array(
+			'moz' => '-moz-border-radius-bottomleft'
+		),
+		'border-bottom-right-radius' => array(
+			'moz' => '-moz-border-radius-bottomright'
+		)
 	);
 
-	static $value_prefixes = array(
+	static $values = array(
 		'display' => array(
 			'box' => array('moz', 'webkit'),
 			'inline-block' => array('moz')
@@ -124,16 +133,16 @@ class VendorPrefixes {
 		)
 	);
 
-	static $value_fn_prefixes = array(
+	static $non_standard_values = array(
 		'background' => array(
-			'linear-gradient' => 'linearGradient'
+			'linear-gradient' => array('webkit' => 'webkitLinearGradient')
 		),
 		'background-image' => array(
-			'linear-gradient' => 'linearGradient'
+			'linear-gradient' => array('webkit' => 'webkitLinearGradient')
 		)
 	);
 
-	static $selector_prefixes = array(
+	static $selectors = array(
 		'::selection' => array('moz' => '::-moz-selection')
 	);
 
@@ -156,16 +165,111 @@ class VendorPrefixes {
 	 * @param Stylecow\Css $css The css object
 	 */
 	static public function apply (Css $css) {
+
+		//Properties names
+		$css->executeRecursive(function ($code) {
+			foreach ($code->getProperties() as $property) {
+				if (isset(VendorPrefixes::$properties[$property->name])) {
+					foreach (VendorPrefixes::$properties[$property->name] as $vendor) {
+						$name = '-'.$vendor.'-'.$property->name;
+
+						if (!$code->hasProperty($name)) {
+							$newProperty = clone $property;
+							$newProperty->name = $name;
+							$newProperty->vendor = $vendor;
+
+							$code->addProperty($newProperty, $property->getParentPosition() + 1);
+						}
+					}
+				}
+
+				if (isset(VendorPrefixes::$non_standard_properties[$property->name])) {
+					foreach (VendorPrefixes::$non_standard_properties[$property->name] as $vendor => $name) {
+						if (!$code->hasProperty($name)) {
+							$newProperty = clone $property;
+							$newProperty->name = $name;
+							$newProperty->vendor = $vendor;
+
+							$code->addProperty($newProperty, $property->getParentPosition() + 1);
+						}
+					}
+				}
+			}
+		});
+
+		//Properties values
+		$css->executeRecursive(function ($code) {
+			foreach ($code->getProperties() as $property) {
+				if (isset(VendorPrefixes::$values[$property->name])) {
+					foreach (VendorPrefixes::$values[$property->name] as $value => $vendors) {
+						if (strpos($property->value, $value) !== false) {
+							foreach ($vendors as $vendor) {
+								$newValue = str_replace($value, '-'.$vendor.'-'.$value, $property->value);
+
+								if (!$code->hasProperty($property->name, $newValue)) {
+									$newProperty = clone $property;
+									$newProperty->value = $newValue;
+									$newProperty->vendor = $vendor;
+
+									$code->addProperty($newProperty, $property->getParentPosition() + 1);
+								}
+							}
+						}
+					}
+				}
+
+				if (isset(VendorPrefixes::$non_standard_values[$property->name])) {
+					foreach (VendorPrefixes::$non_standard_values[$property->name] as $value => $prefixes) {
+						if (strpos($property->value, $value) !== false) {
+							foreach ($prefixes as $vendor => $fn) {
+								$newValue = call_user_func(__NAMESPACE__.'\\VendorPrefixes::'.$fn, $property->value);
+
+								if (!$code->hasProperty($property->name, $newValue)) {
+									$newProperty = clone $property;
+									$newProperty->value = $newValue;
+									$newProperty->vendor = $vendor;
+
+									$code->addProperty($newProperty, $property->getParentPosition() + 1);
+								}
+							}
+						}
+					}
+				}
+			}
+		});
+
+
+		//Selector
+		$css->executeRecursive(function ($code) {
+			foreach (VendorPrefixes::$selectors as $selector => $prefixes) {
+				if (strpos((string)$code->selector, $selector) === false) {
+					return;
+				}
+
+				foreach ($prefixes as $vendor => $vendor_selector) {
+					$newCode = clone $code;
+					$newCode->selector->set(str_replace($selector, $vendor_selector, $code->selector->get()));
+					$newCode->selector->vendor = $vendor;
+					$newCode->filterVendor($vendor);
+
+					$code->parent->addChild($newCode, $code->getParentPosition() + 1);
+				}
+			}
+		});
+
+
 		//Type
 		$css->executeRecursive(function ($code) {
 			if (!isset($code->selector->type) || !isset(VendorPrefixes::$types[$code->selector->type])) {
 				return;
 			}
 
-			foreach (VendorPrefixes::$types[$code->selector->type] as $prefix => $type) {
+			foreach (VendorPrefixes::$types[$code->selector->type] as $vendor => $type) {
 				$newCode = clone $code;
+				$newCode->selector->vendor = $vendor;
 				$newCode->selector->type = $type;
-				$newCode->filterVendor($prefix);
+				$newCode->filterVendor($vendor);
+
 				$code->parent->addChild($newCode, $code->getParentPosition() + 1);
 			}
 		});
@@ -174,305 +278,81 @@ class VendorPrefixes {
 
 
 	/**
-	 * Transform the parsed css code
-	 */
-	public function transform (array $array_code) {
-		$array_code = $this->transformType($array_code);
-		$array_code = $this->transformSelector($array_code);
-		$array_code = $this->transformProperties($array_code);
-		return $this->transformValues($array_code);
-	}
-
-
-
-	/**
-	 * Private function to add the selector prefixes
-	 *
-	 * @param array  $array_code    The piece of the parsed css code
-	 * @param array  $prefix_scope  The browser prefix
-	 *
-	 * @return array  The transformed code
-	 */
-	private function transformSelector ($array_code, $prefix_scope = '') {
-		$new_array_code = array();
-
-		foreach ($array_code as $code) {
-			if ($code['content']) {
-				$code['content'] = $this->transformSelector($code['content'], isset($code['browser']) ? $code['browser'] : null);
-			}
-
-			$new_array_code[] = $code;
-
-			foreach ($code['selector'] as $selector) {
-				foreach (VendorPrefixes::$selector_prefixes as $selector_prefix => $prefixes) {
-					if (strpos($selector, $selector_prefix) !== false) {
-						foreach ($prefixes as $prefix => $new_selector_prefix) {
-							if ((isset($code['browser']) && $code['browser'] !== $prefix) || ($prefix_scope && $prefix !== $prefix_scope)) {
-								continue;
-							}
-
-							$new_code = $code;
-							$new_code['selector'] = array(str_replace($selector_prefix, $new_selector_prefix, $selector));
-							$new_code['browser'] = $prefix;
-
-							if ($new_code['content']) {
-								$new_code['content'] = $this->transformSelector($new_code['content'], $prefix);
-							}
-
-							$new_array_code[] = $new_code;
-						}
-					}
-				}
-			}
-		}
-
-		return $new_array_code;
-	}
-
-
-
-	/**
-	 * Private function to add the properties prefixes
-	 *
-	 * @param array  $array_code    The piece of the parsed css code
-	 * @param array  $prefix_scope  The browser prefix
-	 *
-	 * @return array  The transformed code
-	 */
-	private function transformProperties ($array_code, $prefix_scope = '') {
-		$new_array_code = array();
-
-		foreach ($array_code as $code) {
-			if ($code['content']) {
-				$code['content'] = $this->transformProperties($code['content'], $code['browser']);
-			}
-
-			$new_code = $code;
-
-			if (is_array($code['properties'])) {
-				$new_code['properties'] = array();
-
-				foreach ($code['properties'] as $property) {
-					$new_code['properties'][] = $property;
-
-					if (isset(VendorPrefixes::$property_fn_prefixes[$property['name']]) && ($fn = VendorPrefixes::$property_fn_prefixes[$property['name']])) {
-						$v = $this->$fn($property['name'], $property['value']);
-
-						Stylecow::addProperty($new_code['properties'], $v['name'], $v['value'], Stylecow::PROPERTY_IF_UNDEFINED, $v['browser']);
-					}
-
-					if (isset(VendorPrefixes::$property_prefixes[$property['name']])) {
-						foreach (VendorPrefixes::$property_prefixes[$property['name']] as $prefix) {
-							if ((isset($code['browser']) && $code['browser'] !== $prefix) || ($prefix_scope && $prefix !== $prefix_scope)) {
-								continue;
-							}
-
-							Stylecow::addProperty($new_code['properties'], '-'.$prefix.'-'.$property['name'], $property['value'], Stylecow::PROPERTY_IF_UNDEFINED, $prefix);
-						}
-					}
-				}
-			}
-
-			$new_array_code[] = $new_code;
-		}
-
-		return $new_array_code;
-	}
-
-
-
-	/**
-	 * Private function to add the value prefixes
-	 *
-	 * @param array  $array_code    The piece of the parsed css code
-	 * @param array  $prefix_scope  The browser prefix
-	 *
-	 * @return array  The transformed code
-	 */
-	private function transformValues ($array_code, $prefix_scope = '') {
-		$new_array_code = array();
-
-		foreach ($array_code as $code) {
-			if ($code['content']) {
-				$code['content'] = $this->transformValues($code['content'], $code['browser']);
-			}
-
-			$new_code = $code;
-
-			if (is_array($code['properties'])) {
-				$new_code['properties'] = array();
-
-				foreach ($code['properties'] as $property) {
-					$new_code['properties'][] = $property;
-
-					if (isset(VendorPrefixes::$value_fn_prefixes[$property['name']])) {
-						foreach (VendorPrefixes::$value_fn_prefixes[$property['name']] as $property_value => $fn) {
-							if (preg_match('/(^|[^-])'.preg_quote($property_value, '/').'([^\w]|$)?/', implode($property['value']))) {
-								$v = $this->$fn($property['name'], $property['value']);
-
-								Stylecow::addProperty($new_code['properties'], $v['name'], $v['value'], Stylecow::PROPERTY_ADD, $v['browser']);
-							}
-						}
-					}
-
-					if (isset(VendorPrefixes::$value_prefixes[$property['name']])) {
-						foreach (VendorPrefixes::$value_prefixes[$property['name']] as $property_value => $prefixes) {
-							if (preg_match('/(^|[^-])'.preg_quote($property_value, '/').'([^\w]|$)?/', implode($property['value']))) {
-								foreach ($prefixes as $prefix) {
-									if ((isset($code['browser']) && $code['browser'] !== $prefix) || ($prefix_scope && $prefix !== $prefix_scope)) {
-										continue;
-									}
-
-									$new_values = array();
-
-									foreach ($property['value'] as $v) {
-										$new_values[] = str_replace($property_value, '-'.$prefix.'-'.$property_value, $v);
-									}
-
-									Stylecow::addProperty($new_code['properties'], $property['name'], $new_values, Stylecow::PROPERTY_ADD, $prefix);
-								}
-							}
-						}
-					}
-				}
-			}
-
-			$new_array_code[] = $new_code;
-		}
-
-		return $new_array_code;
-	}
-
-
-
-	/**
-	 * Fix the different syntaxis for the border-radius
-	 *
-	 * @param array   $code    The piece of the parsed css code
-	 * @param string  $name    The name of the border-radius property
-	 * @param array   $values  The values of the property
-	 *
-	 * @return array  The border-radius code
-	 */
-	public function borderRadius ($name, $values) {
-		switch ($name) {
-			case 'border-top-right-radius':
-				return array(
-					'name' => '-moz-border-radius-topright',
-					'value' => $values,
-					'browser' => 'moz'
-				);
-
-			case 'border-top-left-radius':
-				return array(
-					'name' => '-moz-border-radius-topleft',
-					'value' => $values,
-					'browser' => 'moz'
-				);
-
-			case 'border-bottom-right-radius':
-				return array(
-					'name' => '-moz-border-radius-bottomright',
-					'value' => $values,
-					'browser' => 'moz'
-				);
-
-			case 'border-bottom-left-radius':
-				return array(
-					'name' => '-moz-border-radius-bottomleft',
-					'value' => $values,
-					'browser' => 'moz'
-				);
-		}
-	}
-
-
-
-	/**
 	 * Fix the different syntaxis for the linear-gradient
 	 *
-	 * @param string  $name    The name of the linear-gradient property
-	 * @param array   $values  The values of the property
+	 * @param string  $value  The value of the property
 	 *
 	 * @return array  The linear-gradient code
 	 */
-	public function linearGradient ($name, $values) {
-		foreach ($values as &$value) {
-			$value = Stylecow::executeFunctions($value, 'linear-gradient', function ($params) {
-				$point = 'top';
+	static public function webkitLinearGradient ($value) {
+		return Parser::executeFunctions($value, 'linear-gradient', function ($params) {
+			$point = 'top';
 
-				if (preg_match('/(top|bottom|left|right|deg)/', $params[0])) {
-					$point = array_shift($params);
+			if (preg_match('/(top|bottom|left|right|deg)/', $params[0])) {
+				$point = array_shift($params);
+			}
+
+			switch ($point) {
+				case 'center top':
+				case 'top':
+				case '90deg':
+					$start = 'left top';
+					$end = 'left bottom';
+					break;
+
+				case 'center bottom':
+				case 'bottom':
+				case '-90deg':
+					$start = 'left bottom';
+					$end = 'left top';
+					break;
+
+				case 'left top':
+				case 'left':
+				case '180deg':
+				case '-180deg':
+					$start = 'left top';
+					$end = 'right top';
+					break;
+
+				case 'right top':
+				case 'right':
+				case '0deg':
+				case '360deg':
+					$start = 'right top';
+					$end = 'left top';
+					break;
+			}
+
+			$color_stops = array();
+			$tk = count($params)-1;
+
+			foreach ($params as $k => $param) {
+				$param = Parser::explode(' ', trim($param));
+
+				$color = $param[0];
+				$stop = isset($param[1]) ? $param[1] : null;
+
+			 	if ($k === 0) {
+			 		$text = 'from';
+				} else if ($k === $tk) {
+					$text = 'to';
+				} else {
+					$text = 'color-stop';
 				}
 
-				switch ($point) {
-					case 'center top':
-					case 'top':
-					case '90deg':
-						$start = 'left top';
-						$end = 'left bottom';
-						break;
-
-					case 'center bottom':
-					case 'bottom':
-					case '-90deg':
-						$start = 'left bottom';
-						$end = 'left top';
-						break;
-
-					case 'left top':
-					case 'left':
-					case '180deg':
-					case '-180deg':
-						$start = 'left top';
-						$end = 'right top';
-						break;
-
-					case 'right top':
-					case 'right':
-					case '0deg':
-					case '360deg':
-						$start = 'right top';
-						$end = 'left top';
-						break;
-				}
-
-				$color_stops = array();
-				$tk = count($params)-1;
-
-				foreach ($params as $k => $param) {
-					$param = Stylecow::explode(' ', trim($param));
-
-					$color = $param[0];
-					$stop = isset($param[1]) ? $param[1] : null;
-
-				 	if ($k === 0) {
-				 		$text = 'from';
-					} else if ($k === $tk) {
-						$text = 'to';
-					} else {
-						$text = 'color-stop';
+				if ($stop) {
+					if (preg_match('/%$/', $stop)) {
+						$stop = intval($top) / 100;
 					}
 
-					if ($stop) {
-						if (preg_match('/%$/', $stop)) {
-							$stop = intval($top) / 100;
-						}
-
-						$color_stops[] = $text.'('.$stop.', '.$color.')';
-					} else {
-						$color_stops[] = $text.'('.$color.')';
-					}
+					$color_stops[] = $text.'('.$stop.', '.$color.')';
+				} else {
+					$color_stops[] = $text.'('.$color.')';
 				}
+			}
 
-				return '-webkit-gradient(linear, '.$start.', '.$end.', '.implode(', ', $color_stops).')';
-			});
-		}
-
-		return array(
-			'name' => $name,
-			'value' => $values,
-			'browser' => 'webkit'
-		);
+			return '-webkit-gradient(linear, '.$start.', '.$end.', '.implode(', ', $color_stops).')';
+		});
 	}
 }

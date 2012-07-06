@@ -46,6 +46,10 @@ class Css extends \ArrayObject {
 		$this->exchangeArray($children);
 	}
 
+	public function __toString () {
+		return $this->toString();
+	}
+
 
 	public function setParent (Css $parent) {
 		$this->parent = $parent;
@@ -64,8 +68,10 @@ class Css extends \ArrayObject {
 	}
 
 	public function removeFromParent () {
-		if (($key = $this->getParentPosition()) !== false) {
-			unset($this->parent[$key]);
+		if (($position = $this->getParentPosition()) !== false) {
+			$siblings = $this->parent->getArrayCopy();
+			array_splice($siblings, $position, 1);
+			$this->parent->exchangeArray($siblings);
 			$this->parent = null;
 		}
 	}
@@ -130,6 +136,17 @@ class Css extends \ArrayObject {
 		}
 
 		return $properties;
+	}
+
+
+	public function hasProperty ($name, $value = null) {
+		foreach ($this->properties as $property) {
+			if ($property->is($name, $value)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 
@@ -215,5 +232,41 @@ class Css extends \ArrayObject {
 		}
 
 		return $array;
+	}
+
+
+	/**
+	 * Transform the css code using the plugins
+	 *
+	 * @param array  $plugins  The list of the plugins to execute
+	 *
+	 * @return $this
+	 */
+	public function applyPlugins (array $plugins) {
+		$pluginPositions = array();
+		$pluginSettings = array();
+
+		foreach ($plugins as $plugin => $settings) {
+			if (is_int($plugin)) {
+				$plugin = $settings;
+				$settings = array();
+			}
+
+			$plugin = __NAMESPACE__.'\\Plugins\\'.$plugin;
+
+			if (!class_exists($plugin)) {
+				echo "'$plugin' does not exists!";
+				die();
+			}
+
+			$pluginPositions[$plugin] = $plugin::POSITION;
+			$pluginSettings[$plugin] = $settings;
+		}
+
+		asort($pluginPositions);
+
+		foreach (array_keys($pluginPositions) as $plugin) {
+			$plugin::apply($this, $pluginSettings[$plugin]);
+		}
 	}
 }

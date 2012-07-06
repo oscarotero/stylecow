@@ -138,51 +138,6 @@ class Parser {
 
 
 	
-	/*
-	 * Transform the css code using the plugins
-	 *
-	 * @param array  $plugins  The list of the plugins to execute
-	 *
-	 * @return $this
-	public function transform ($plugins) {
-		$plugins_objects = array();
-		$plugins_positions = array();
-
-		foreach ((array)$plugins as $plugin => $settings) {
-			if (is_int($plugin)) {
-				$plugin = $settings;
-				$settings = array();
-			}
-
-			if (!class_exists($plugin)) {
-				echo "'$plugin' does not exists!";
-				die();
-			}
-
-			$plugins_objects[$plugin] = new $plugin($settings);
-			$plugins_positions[$plugin] = $plugins_objects[$plugin]->getPosition();
-		}
-
-		asort($plugins_positions);
-
-		$code = $this->getParsedCode();
-
-		foreach ($plugins_positions as $plugin => $pos) {
-			$result = $plugins_objects[$plugin]->transform($code);
-
-			if (isset($result)) {
-				$code = $result;
-			}
-		}
-
-		$this->setParsedCode($code);
-
-		return $this;
-	}
-	*/
-
-
-
 
 	/**
 	 * Utils: Parses the css code into an multidimensional array with all selectors, properties and values.

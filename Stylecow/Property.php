@@ -48,12 +48,20 @@ class Property {
 		return false;
 	}
 
-	public function is ($name) {
+	public function is ($name, $value = null) {
 		if (is_array($name)) {
 			return in_array($this->name, $name);
 		}
 
-		return ($this->name === $name) ? true : false;
+		if ($this->name !== $name) {
+			return false;
+		}
+
+		if (isset($value) && $this->value !== $value) {
+			return false;
+		}
+
+		return true;
 	}
 
 
@@ -78,5 +86,9 @@ class Property {
 
 	public function executeFunction ($function, $callback) {
 		$this->value = Parser::executeFunctions($this->value, $function, $callback, $this);
+	}
+
+	public function executeAllFunctions ($callback) {
+		$this->value = Parser::executeFunctions($this->value, null, $callback, $this);
 	}
 }

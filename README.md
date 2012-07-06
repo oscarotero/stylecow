@@ -219,18 +219,6 @@ div.foo h3 {
 }
 ```
 
-You can define global variables in the settings of the plugin:
-
-```php
-$styleCow->transform(array(
-	'Stylecow\\Plugins\\Variables' => array(
-		'variables' => array(
-			'title-color' => '#369',
-			'title-size' => '2em'
-		)
-	)
-));
-```
 
 
 IeFilters
@@ -257,16 +245,6 @@ div.foo {
 	opacity: 0.5;
 	filter: progid:DXImageTransform.Microsoft.gradient(startColorStr='#666666', endColorStr='#999999'), progid:DXImageTransform.Microsoft.Matrix(sizingMethod="auto expand", M11 = 0.707106781187, M12 = -0.707106781187, M21 = 0.707106781187, M22 = 0.707106781187), flipV, alpha(opacity=50);
 }
-```
-
-You can configure which properties you want to fix in the settings (by default fix all available properties):
-
-```php
-$styleCow->transform(array(
-	'Stylecow\\Plugins\\IeFilters' => array(
-		'fix' => array('opacity') /* only fix the opacity property */
-	)
-));
 ```
 
 The available properties are:

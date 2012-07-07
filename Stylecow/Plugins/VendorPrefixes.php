@@ -178,7 +178,7 @@ class VendorPrefixes {
 							$newProperty->name = $name;
 							$newProperty->vendor = $vendor;
 
-							$code->addProperty($newProperty, $property->getParentPosition() + 1);
+							$code->addProperty($newProperty, $property->getPositionInParent() + 1);
 						}
 					}
 				}
@@ -190,7 +190,7 @@ class VendorPrefixes {
 							$newProperty->name = $name;
 							$newProperty->vendor = $vendor;
 
-							$code->addProperty($newProperty, $property->getParentPosition() + 1);
+							$code->addProperty($newProperty, $property->getPositionInParent() + 1);
 						}
 					}
 				}
@@ -211,7 +211,7 @@ class VendorPrefixes {
 									$newProperty->value = $newValue;
 									$newProperty->vendor = $vendor;
 
-									$code->addProperty($newProperty, $property->getParentPosition() + 1);
+									$code->addProperty($newProperty, $property->getPositionInParent() + 1);
 								}
 							}
 						}
@@ -229,7 +229,7 @@ class VendorPrefixes {
 									$newProperty->value = $newValue;
 									$newProperty->vendor = $vendor;
 
-									$code->addProperty($newProperty, $property->getParentPosition() + 1);
+									$code->addProperty($newProperty, $property->getPositionInParent() + 1);
 								}
 							}
 						}
@@ -252,7 +252,7 @@ class VendorPrefixes {
 					$newCode->selector->vendor = $vendor;
 					$newCode->filterVendor($vendor);
 
-					$code->parent->addChild($newCode, $code->getParentPosition() + 1);
+					$code->parent->addChild($newCode, $code->getPositionInParent() + 1);
 				}
 			}
 		});
@@ -270,7 +270,7 @@ class VendorPrefixes {
 				$newCode->selector->type = $type;
 				$newCode->filterVendor($vendor);
 
-				$code->parent->addChild($newCode, $code->getParentPosition() + 1);
+				$code->parent->addChild($newCode, $code->getPositionInParent() + 1);
 			}
 		});
 	}

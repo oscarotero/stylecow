@@ -47,7 +47,7 @@ class NestedRules {
 
 				$parent = $code->parent;
 				$code->removeFromParent();
-				$parent->parent->addChild($code, $parent->getParentPosition() + 1);
+				$parent->parent->addChild($code, $parent->getPositionInParent() + 1);
 			}
 		});
 	}

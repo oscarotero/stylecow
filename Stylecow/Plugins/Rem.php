@@ -49,7 +49,7 @@ class Rem {
 				}, $property->value);
 
 				if ($property->value !== $value) {
-					$code->addProperty(new Property($property->name, $value), $property->getParentPosition());
+					$code->addProperty(new Property($property->name, $value), $property->getPositionInParent());
 				}
 			}
 		});

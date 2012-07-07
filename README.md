@@ -24,6 +24,12 @@ The main purpose of Stylecow is to bring more CSS support to all browsers. You w
 But if you don't mind to write "non pure CSS code", there are more plugins that can help you to write styles faster. For example, Color allows manipulate colors changing some of the values (saturation, light, etc), Math can execute math operations, Grid makes easier to work with columns, etc.
 
 
+Want to check?
+--------------
+
+Here you can: http://oscarotero.com/stylecow/
+
+
 How to use
 ----------
 

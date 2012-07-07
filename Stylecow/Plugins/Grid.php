@@ -129,19 +129,19 @@ class Grid {
 		$width = ($grid['width'] - ($grid['gutter'] * ($grid['columns'] - 1))) / $grid['columns'];
 
 		$options['cols'][0] = floatval($options['cols'][0]);
-		$options['cols'][1] = intval($options['cols'][1]);
+		$options['cols'][1] = isset($options['cols'][1]) ? intval($options['cols'][1]) : 0;
 
-		if ($options['in-cols']) {
+		if (isset($options['in-cols'])) {
 			$options['cols'][1] += ($options['cols'][0] / floatval($options['in-cols'][0])) * intval($options['in-cols'][1]);
 		}
 
-		if ($options['right']) {
+		if (isset($options['right'])) {
 			$right = (($width + $grid['gutter']) * floatval($options['right'][0])) + intval($options['right'][1]) + $grid['gutter'];
 		} else {
 			$right = $grid['gutter'];
 		}
 
-		if ($options['left']) {
+		if (isset($options['left'])) {
 			$left = (($width + $grid['gutter']) * floatval($options['left'][0])) + intval($options['left'][1]);
 		} else {
 			$left = '0';

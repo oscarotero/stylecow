@@ -2,7 +2,7 @@
 /**
  * Stylecow PHP library
  *
- * Core class
+ * Parser class. To convert any css string code to css objects/selectors/properties
  *
  * PHP version 5.3
  *
@@ -20,11 +20,11 @@ class Parser {
 
 
 	/**
-	 * Loads a css file and resolves its included css files
+	 * Loads a css file gets its content and parse it
 	 *
-	 * @param string $file The file to load
+	 * @param string $file The path to file to load
 	 *
-	 * @return Stylecow\Css The css object
+	 * @return Stylecow\Css The css object with the code parsed
 	 */
 	static public function parseFile ($file) {
 		self::$basePath = (strpos($file, '/') === false) ? '' : dirname($file);
@@ -68,12 +68,12 @@ class Parser {
 	static private function resolve ($code) {
 		//Resolve imported images
 		if (strpos($code, 'url(') !== false) {
-			$code = preg_replace_callback('#url\(["\']?([^\)\'"]*)["\']?\)#', array(self, 'urlCallback'), $code);
+			$code = preg_replace_callback('#url\(["\']?([^\)\'"]*)["\']?\)#', __NAMESPACE__.'\\Parser::urlCallback', $code);
 		}
 
 		//Resolve importes styles
 		if (!empty(self::$basePath) && (strpos($code, '@import') !== false)) {
-			$code = preg_replace_callback('/\@import([^;]*);/', array(self, 'importCallback'), $code);
+			$code = preg_replace_callback('/\@import([^;]*);/', __NAMESPACE__.'\\Parser::importCallback', $code);
 		}
 
 		return $code;
@@ -102,11 +102,11 @@ class Parser {
 
 	/**
 	 * The callback used in the function resolve() to replace the @import for the imported file code.
-	 * If the url file is absolute (start by http://) doesn't replace anything
+	 * If the url file is absolute (start by http:// or by "/") doesn't replace anything
 	 *
-	 * @param string  $matches  The matches of the preg_replace_callback
+	 * @param string $matches The matches of the preg_replace_callback
 	 *
-	 * @return string  The new code
+	 * @return string The new code
 	 */
 	static private function importCallback ($matches) {
 		$file = trim(str_replace(array('\'', '"', 'url(', ')'), '', $matches[1]));
@@ -140,11 +140,11 @@ class Parser {
 	
 
 	/**
-	 * Utils: Parses the css code into an multidimensional array with all selectors, properties and values.
+	 * Parses the css code converting to a Css object with all selectors, properties and values.
 	 *
-	 * @param string  $string_code  The css code to parse
+	 * @param string $string_code The css code to parse
 	 *
-	 * @return array  The parsed css code
+	 * @return Stylecow\Css The parsed css code
 	 */
 	static private function parse ($string_code) {
 		$Css = new Css();
@@ -228,11 +228,11 @@ class Parser {
 
 
 	/**
-	 * Utils: Parses the css code of a selector
+	 * Parses the css code of a selector
 	 *
-	 * @param string  $selector  The css code to parse
+	 * @param string $selector The css code to parse
 	 *
-	 * @return array  The parsed css code
+	 * @return array The parsed css code
 	 */
 	static private function parseSelector ($selector) {
 		$type = '';
@@ -252,9 +252,9 @@ class Parser {
 
 
 	/**
-	 * Utils: resolve '//' or '/./' or '/foo/../' in a path
+	 * Resolve '//' or '/./' or '/foo/../' in a path
 	 *
-	 * @var string $path The path to fix
+	 * @param string $path The path to fix
 	 *
 	 * @return string The fixed path
 	 */
@@ -271,7 +271,7 @@ class Parser {
 
 
 	/**
-	 * Utils: Explode a string in an array using a delimiter. Ignore the delimiter placed between parenthesis or other characters
+	 * Explode a string in an array using a delimiter. Ignore the delimiter placed between parenthesis or other characters
 	 *
 	 * @param string $delimiter The delimiter used.
 	 * @param string $string The string to explode
@@ -334,7 +334,7 @@ class Parser {
 
 
 	/**
-	 * Utils: Explode a string into an array and trim its value. All empty values will be ignored
+	 * Explode a string into an array and trim its value. All empty values will be ignored
 	 *
 	 * @param string $delimiter The delimiter used.
 	 * @param string $text The string to explode
@@ -361,11 +361,12 @@ class Parser {
 
 
 	/**
-	 * Utils: Search for all the css functions in a css code, for example scale(1, 1.2) and execute a callback
+	 * Search for all the css functions in a css code, for example scale(1, 1.2) and execute a callback
 	 *
 	 * @param string $string The css code to parse
 	 * @param string $function If it's defined, only apply the callback to the function specified
-	 * @param callable $callback The function to execute
+	 * @param callable $callback The function to execute. Will have three arguments: The css function parameters, the name and an optional argument passed
+	 * @param mixed $argument An optional third argument to pass to the callback
 	 *
 	 * @return array  List of all functions found. Each function is an array with the name and all parameters.
 	 */

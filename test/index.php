@@ -57,6 +57,16 @@ if (isset($_POST['send'])) {
 			body {
 				font-family: Helvetica, Arial;
 			}
+			body > h1 {
+				padding-top: 20px;
+				margin: 0;
+			}
+			body > p {
+				margin: 0 0 20px 0;
+			}
+			body {
+				font-family: Helvetica, Arial;
+			}
 			body .input {
 				margin-bottom: 20px;
 			}
@@ -103,6 +113,9 @@ if (isset($_POST['send'])) {
 	</head>
 
 	<body>
+		<h1>Stylecow demo</h1>
+		<p>Code and documentation in <a href="https://github.com/oscarotero/stylecow">github</a></p>
+
 		<form class="input" action="index.php" method="post">
 			<input type="hidden" name="send" value="1">
 			<fieldset>

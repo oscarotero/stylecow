@@ -19,6 +19,12 @@ class Css extends \ArrayObject {
 	public $properties = array();
 
 
+	/**
+	 * Constructor class
+	 * 
+	 * @param array $selectors
+	 * @param string $type
+	 */
 	public function __construct (array $selectors = null, $type = null) {
 		$this->selector = new Selector($type);
 		$this->selector->setParent($this);

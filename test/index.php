@@ -4,7 +4,7 @@ use Stylecow\Parser;
 $plugins = array(
 	'Color' => true,
 	'Grid' => true,
-	'IeFilters' => true,
+	'IeFixes' => true,
 	'Matches' => true,
 	'Math' => true,
 	'NestedRules' => true,

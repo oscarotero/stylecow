@@ -64,7 +64,7 @@ Plugins to bring CSS support:
 * [VendorPrefixes](#vendorprefixes) Adds automatically the vendor prefixes to all properties in need
 * [Matches](#matches) Support for the CSS4 selector :matches()
 * [Variables](#variables) Support for variables (W3C syntax)
-* [IeFilters](#iefilters) IE support for some CSS effect (some 2d transform, opacity, background gradients, etc)
+* [IeFixes](#iefixes) IE support for some CSS effect (some 2d transform, opacity, background gradients, etc)
 * [Rem](#rem) IE<=8 support for rem values
 
 Other plugins with non-standard syntax:
@@ -225,12 +225,20 @@ div.foo h3 {
 }
 ```
 
+You can define some predefined variables on apply the plugin:
+
+```php
+Stylecow\Plugins\Variables:apply($css, array(
+	'myColor' => '#456',
+	'myFont' => 'Helvetica, Arial, sans-serif'
+));
+```
 
 
-IeFilters
+IeFixed
 ---------
 
-Adds Internet Explorer filters to emulate some css properties no supported by IE (for example, some 2d transform functions, opacity or linear gradients)
+Adds Internet Explorer fixes to emulate some css properties no supported by IE (for example, some 2d transform functions, opacity or linear gradients)
 
 #### You write
 
@@ -256,23 +264,27 @@ div.foo {
 The available properties are:
 
 * opacity; Adds the filter to any element with -> opacity: N;
-* rotate: Adds the filter to any element with -> transform: rotate(Ndeg);
-* flip: Adds the filters flipH or flipV to any element with -> transform: scaleY(-1) / scaleX(-1) / scale(-1, -1)
-* rgba: Adds the filter to any element with the background defined as rgba()
-* linear-gradient: Adds the filter to any element with linear-gradient.
+* transform: Adds the filter to some elements with 2d transform that can be emulated in ie (rotate, flip, etc);
+* background-alpha: Adds the filter to any element with the background defined as rgba() or hsla()
+* background-gradient: Adds the filter to any element with a linear-gradient as background.
 
+You can define which properties will be fixed:
+
+```php
+Stylecow\Plugins\IeFixes::apply($css, array('opacity', 'transform')); //Only fix opacity and 2d transform properties
+```
 
 Rem
 ---
 
 Allows use the rem value (http://snook.ca/archives/html_and_css/font-size-with-rem) to define the text size in a safe way for old browsers.
 
-The default rem is 1em (16px) but you can change it with the :root, html or body selector.
+The default rem is 1em (16px) but you can change it with the :root or html selector.
 
 #### You write
 
 ```css
-body {
+html {
 	font-size: 1.2em;
 }
 .foo {
@@ -286,7 +298,7 @@ body {
 #### And Stylecow converts to
 
 ```css
-body {
+html {
 	font-size: 1.2em;
 }
 .foo {
@@ -298,6 +310,11 @@ body {
 }
 ```
 
+If you want change the default rem value (16px), use the second parameter of apply() function. Take note this value will be overwritten if font-face is found in :root or html selectors.
+
+```php
+Stylecow\Plugins\Rem::apply($css, 14); //The default value of rem is 14px
+```
 
 
 NestedRules
@@ -450,6 +467,8 @@ This function supports all css color formats:
 * hexadecimal (#333, #34FC98, etc)
 * rgb / rgba
 * hsl / hsla
+
+This function may change in a future due to the possible implementation a color() function in CSS4 color module: http://www.xanthir.com/blog/b4Jp0
 
 #### You write
 

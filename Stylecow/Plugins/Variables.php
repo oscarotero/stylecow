@@ -29,10 +29,9 @@ class Variables {
 	 * Apply the plugin to Css object
 	 *
 	 * @param Stylecow\Css $css The css object
+	 * @param array $rootVariables Optional variables not defined in css code
 	 */
-	static public function apply (Css $css) {
-		$rootVariables = array();
-
+	static public function apply (Css $css, array $rootVariables = array()) {
 		foreach ($css->getChildren(array(':root', 'html', 'body')) as $child) {
 			$rootVariables = array_replace($rootVariables, Variables::getVariables($child));
 		}

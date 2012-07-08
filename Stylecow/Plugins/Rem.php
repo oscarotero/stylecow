@@ -28,10 +28,9 @@ class Rem {
 	 * Apply the plugin to Css object
 	 *
 	 * @param Stylecow\Css $css The css object
+	 * @param int $rem The default value for rem. This value can be overwritten for the font-face property in :root, html or body
 	 */
-	static public function apply (Css $css) {
-		$rem = 16;
-
+	static public function apply (Css $css, $rem = 16) {
 		foreach ($css->getChildren(array(':root', 'html', 'body')) as $child) {
 			foreach ($child->getProperties('font-size') as $property) {
 				$rem = Rem::rootPixels($property->value);

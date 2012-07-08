@@ -204,7 +204,7 @@ class VendorPrefixes {
 					foreach (VendorPrefixes::$values[$property->name] as $value => $vendors) {
 						if (strpos($property->value, $value) !== false) {
 							foreach ($vendors as $vendor) {
-								$newValue = str_replace($value, '-'.$vendor.'-'.$value, $property->value);
+								$newValue = preg_replace('/([^\w-])('.preg_quote($value, '/').')\(/', '\\1-'.$vendor.'-'.$value.'(', $property->value);
 
 								if (!$code->hasProperty($property->name, $newValue)) {
 									$newProperty = clone $property;
@@ -342,10 +342,6 @@ class VendorPrefixes {
 				}
 
 				if ($stop) {
-					if (preg_match('/%$/', $stop)) {
-						$stop = intval($top) / 100;
-					}
-
 					$color_stops[] = $text.'('.$stop.', '.$color.')';
 				} else {
 					$color_stops[] = $text.'('.$color.')';

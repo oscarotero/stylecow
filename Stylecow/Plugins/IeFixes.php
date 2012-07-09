@@ -25,7 +25,15 @@ use Stylecow\Plugins\Color;
 class IeFixes {
 	const POSITION = 5;
 
-	static private $properties = array('opacity', 'transform', 'background-alpha', 'background-gradient');
+	static private $propertiesSupport = array(
+		'opacity' => 9, //Support for opacity
+		'transform' => 9, //Suport for some 2D transforms
+		'background-alpha' => 9, //Support for background rgba/hsla colors
+		'background-gradient' => 10, //Support for linear gradients
+		'inline-block' => 8, //Support for display:inline-block
+		'min-height' => 7, //Support for min-height property
+		'float' => 7 //Fix the double-margin bug in floated elements
+	);
 
 
 	/**
@@ -33,40 +41,65 @@ class IeFixes {
 	 *
 	 * @param Stylecow\Css $css The css object
 	 */
-	static public function apply (Css $css, array $fixedProperties = null) {
-		$css->executeRecursive(function ($code, $fixedProperties) {
-			foreach ($code->getProperties(array('opacity', 'transform', 'background', 'background-image')) as $property) {
+	static public function apply (Css $css, array $settings = array('ie-min-version' => 8)) {
+		$css->executeRecursive(function ($code, $settings) {
+			foreach ($code->getProperties(array('opacity', 'transform', 'background', 'background-image', 'display', 'min-height', 'float', 'overflow')) as $property) {
 				switch ($property->name) {
+					case 'float':
+						if (($property->value !== 'none') && IeFixes::mustFixed('float', $settings)) {
+							$css->addProperty(new Property('display', 'inline'))->vendor = 'ms';
+						}
+						break;
+
+					case 'display':
+						if (($property->value === 'inline-block') && IeFixes::mustFixed('inline-block', $settings)) {
+							if (!$css->hasProperty('zoom')) {
+								$css->addProperty(new Property('zoom', 1))->vendor = 'ms';
+							}
+							if (!$css->hasProperty('*display')) {
+								$css->addProperty(new Property('*display', 'inline'))->vendor = 'ms';
+							}
+						}
+						break;
+
+					case 'min-height':
+						if (IeFixes::mustFixed('min-height', $settings)) {
+							if (!$css->hasProperty('_height')) {
+								$css->addProperty(new Property('_height', $property->value))->vendor = 'ms';
+							}
+						}
+						break;
+
 					case 'opacity':
-						if (in_array('opacity', $fixedProperties)) {
-							IeFilters::addFilter($property, IeFilters::getOpacityFilter($property->value));
+						if (IeFixes::mustFixed('opacity', $settings)) {
+							IeFixes::addFilter($property, IeFixes::getOpacityFilter($property->value));
 						}
 						break;
 
 					case 'transform':
-						if (in_array('transform', $fixedProperties)) {
+						if (IeFixes::mustFixed('transform', $settings)) {
 							$property->executeFunction(null, function ($params, $name, $property) {
 								switch ($name) {
 									case 'rotate':
-										IeFilters::addFilter($property, IeFilters::getRotateFilter($params));
+										IeFixes::addFilter($property, IeFixes::getRotateFilter($params));
 										break;
 
 									case 'scaleX':
 										if ($params[0] == '-1') {
-											IeFilters::addFilter($property, 'flipH');
+											IeFixes::addFilter($property, 'flipH');
 										}
 										break;
 
 									case 'scaleY':
 										if ($params[0] == '-1') {
-											IeFilters::addFilter($property, 'flipV');
+											IeFixes::addFilter($property, 'flipV');
 										}
 										break;
 
 									case 'scale':
 										if ($params[0] == '-1' && $params[1] == '-1') {
-											IeFilters::addFilter($property, 'flipH');
-											IeFilters::addFilter($property, 'flipV');
+											IeFixes::addFilter($property, 'flipH');
+											IeFixes::addFilter($property, 'flipV');
 										}
 										break;
 									}
@@ -76,34 +109,57 @@ class IeFixes {
 
 					case 'background':
 					case 'background-image':
-						if (in_array('background-alpha', $fixedProperties)) {
+						if (IeFixes::mustFixed('background-alpha', $settings)) {
 							$property->executeFunction('rgba', function ($params, $name, $property) {
-								IeFilters::addFilter($property, IeFilters::getRGBAFilter($params));
+								IeFixes::addFilter($property, IeFixes::getRGBAFilter($params));
 							});
 
 							$property->executeFunction('hsla', function ($params, $name, $property) {
-								IeFilters::addFilter($property, IeFilters::getRGBAFilter(Color::HSLA_RGBA($params)));
+								IeFixes::addFilter($property, IeFixes::getRGBAFilter(Color::HSLA_RGBA($params)));
 							});
 						}
-						if (in_array('background-gradient', $fixedProperties)) {
+						if (IeFixes::mustFixed('background-gradient', $settings)) {
 							$property->executeFunction('linear-gradient', function ($params, $name, $property) {
-								IeFilters::addFilter($property, IeFilters::getLinearGradientFilter($params));
+								IeFixes::addFilter($property, IeFixes::getLinearGradientFilter($params));
 							});
 						}
 						break;
 				}
 			}
-		}, isset($fixedProperties) ? $fixedProperties : self::$properties);
+		}, $settings);
+	}
+
+
+	/**
+	 * Check if the bug must fixed
+	 *
+	 * @param string $property The property to fix
+	 * @param array $settings The settings
+	 */
+	static public function mustFixed ($property, array $settings = null) {
+		if (!isset($settings)) {
+			return true;
+		}
+
+		if (isset($settings[$property])) {
+			return $settings[$property];
+		}
+
+		if (isset($settings['ie-min-version']) && $settings['ie-min-version'] >= self::$propertiesSupport[$property]) {
+			return true;
+		}
+
+		return false;
 	}
 
 
 	/**
 	 * Add an ie filter to the parsed code
 	 *
-	 * @param array   &$array_code  The piece of the parsed code
-	 * @param string  $params       The ie filter code to insert
+	 * @param Stylecow\Property $property The property element
+	 * @param string $params The ie filter code to insert
 	 */
-	static public function addFilter ($property, $filter) {
+	static public function addFilter (Property $property, $filter) {
 		if (($filterProperty = $property->parent->getProperties('filter'))) {
 			$filterProperty[0]->addValue($filter);
 			$filterProperty[0]->vendor = 'ms';

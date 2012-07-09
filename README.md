@@ -235,8 +235,8 @@ Stylecow\Plugins\Variables:apply($css, array(
 ```
 
 
-IeFixed
----------
+IeFixes
+-------
 
 Adds Internet Explorer fixes to emulate some css properties no supported by IE (for example, some 2d transform functions, opacity or linear gradients)
 
@@ -264,14 +264,24 @@ div.foo {
 The available properties are:
 
 * opacity; Adds the filter to any element with -> opacity: N;
-* transform: Adds the filter to some elements with 2d transform that can be emulated in ie (rotate, flip, etc);
+* transform: Adds the filter to some elements with 2d transform that can be emulated in ie (rotate, scale, etc);
 * background-alpha: Adds the filter to any element with the background defined as rgba() or hsla()
 * background-gradient: Adds the filter to any element with a linear-gradient as background.
+* inline-block: Adds support for display:inline-block in ie6-7
+* min-height: Adds support for min-height in ie6
+* float: Fixes the double margin bug in floated elements in ie6
+* ie-min-version: Allows select the properties to fix based in the minimal ie version (by default is 8)
 
 You can define which properties will be fixed:
 
 ```php
-Stylecow\Plugins\IeFixes::apply($css, array('opacity', 'transform')); //Only fix opacity and 2d transform properties
+//Fix all properties availables for ie7 and upper but opacity and transform
+
+Stylecow\Plugins\IeFixes::apply($css, array(
+	'opacity' => false,
+	'transform' => false,
+	'ie-min-version' => 7
+));
 ```
 
 Rem

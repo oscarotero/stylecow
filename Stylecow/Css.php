@@ -244,19 +244,27 @@ class Css extends \ArrayObject {
 	/**
 	 * Removes all properties and children with a vendor that don't match with the specified.
 	 *
-	 * @param string $vendor The vendor to filter (all vendors that don't match with this will be removed)
+	 * @param string $keep The vendor to keep (null to keep the first vendor found, empty string to don't keep any vendor.)
 	 */
-	public function filterVendor ($vendor) {
+	public function resolveVendors ($keep = null) {
+		if (($keep === null) && !empty($this->selector->vendor)) {
+			$keep = $this->selector->vendor;
+		}
+
 		if ($this->properties) {
 			foreach ($this->properties as $k => $property) {
-				if (!empty($property->vendor) && ($property->vendor !== $vendor)) {
+				if (($keep !== null) && !empty($property->vendor) && ($property->vendor !== $keep)) {
 					unset($this->properties[$k]);
 				}
 			}
 		}
 
 		foreach ($this as $child) {
-			$child->filterVendor($vendor);
+			if (($keep !== null) && !empty($child->selector->vendor) && ($child->selector->vendor !== $keep)) {
+				$child->removeFromParent();
+			} else {
+				$child->resolveVendors($keep);
+			}
 		}
 	}
 

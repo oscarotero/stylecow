@@ -204,14 +204,14 @@ class VendorPrefixes {
 					foreach (VendorPrefixes::$values[$property->name] as $value => $vendors) {
 						if (strpos($property->value, $value) !== false) {
 							foreach ($vendors as $vendor) {
-								$newValue = preg_replace('/([^\w-])('.preg_quote($value, '/').')\(/', '\\1-'.$vendor.'-'.$value.'(', $property->value);
+								$newValue = preg_replace('/(^|[^\w-])('.preg_quote($value, '/').')([^\w]|$)/', '\\1-'.$vendor.'-'.$value.'\\3', $property->value);
 
 								if (!$code->hasProperty($property->name, $newValue)) {
 									$newProperty = clone $property;
 									$newProperty->value = $newValue;
 									$newProperty->vendor = $vendor;
 
-									$code->addProperty($newProperty, $property->getPositionInParent() + 1);
+									$code->addProperty($newProperty, $property->getPositionInParent() - 1);
 								}
 							}
 						}
@@ -229,7 +229,7 @@ class VendorPrefixes {
 									$newProperty->value = $newValue;
 									$newProperty->vendor = $vendor;
 
-									$code->addProperty($newProperty, $property->getPositionInParent() + 1);
+									$code->addProperty($newProperty, $property->getPositionInParent() - 1);
 								}
 							}
 						}
@@ -250,9 +250,8 @@ class VendorPrefixes {
 					$newCode = clone $code;
 					$newCode->selector->set(str_replace($selector, $vendor_selector, $code->selector->get()));
 					$newCode->selector->vendor = $vendor;
-					$newCode->filterVendor($vendor);
 
-					$code->parent->addChild($newCode, $code->getPositionInParent() + 1);
+					$code->parent->addChild($newCode, $code->getPositionInParent() - 1);
 				}
 			}
 		});
@@ -268,11 +267,13 @@ class VendorPrefixes {
 				$newCode = clone $code;
 				$newCode->selector->vendor = $vendor;
 				$newCode->selector->type = $type;
-				$newCode->filterVendor($vendor);
 
-				$code->parent->addChild($newCode, $code->getPositionInParent() + 1);
+				$code->parent->addChild($newCode, $code->getPositionInParent() - 1);
 			}
 		});
+
+		//Resolve and simplify the vendors
+		$css->resolveVendors();
 	}
 
 

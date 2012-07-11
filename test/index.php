@@ -2,16 +2,60 @@
 use Stylecow\Parser;
 
 $plugins = array(
-	'Color' => true,
-	'Grid' => true,
-	'IeFixes' => true,
-	'Matches' => true,
-	'Math' => true,
-	'NestedRules' => true,
-	'Rem' => true,
-	'Variables' => true,
-	'VendorPrefixes' => true
+	'Color' => array(
+		'checked' => true,
+		'options' => array()
+	),
+	'Grid' => array(
+		'checked' => true,
+		'options' => array()
+	),
+	'IeFixes' => array(
+		'checked' => true,
+		'options' => array(
+			'opacity' => array('bool', true),
+			'transform' => array('bool', true),
+			'background-alpha' => array('bool', true),
+			'background-gradient' => array('bool', true),
+			'inline-block' => array('bool', true),
+			'min-height' => array('bool', true),
+			'float' => array('bool', true)
+		)
+	),
+	'Matches' => array(
+		'checked' => true,
+		'options' => array()
+	),
+	'Math' => array(
+		'checked' => true,
+		'options' => array()
+	),
+	'MediaQuery' => array(
+		'checked' => true,
+		'options' => array(
+			'width' => array('string', ''),
+			'type' => array('string', 'all')
+		)
+	),
+	'NestedRules' => array(
+		'checked' => true,
+		'options' => array()
+	),
+	'Rem' => array(
+		'checked' => true,
+		'options' => array()
+	),
+	'Variables' => array(
+		'checked' => true,
+		'options' => array()
+	),
+	'VendorPrefixes' => array(
+		'checked' => true,
+		'options' => array()
+	)
 );
+
+
 $input_code = $output_code = '';
 
 //If the form has been send
@@ -32,11 +76,33 @@ if (isset($_POST['send'])) {
 	//Load the css file
 	$applyPlugins = array();
 
-	foreach (array_keys($plugins) as $plugin) {
+	foreach ($plugins as $plugin => $settings) {
 		if (isset($_POST['plugin'][$plugin])) {
-			$applyPlugins[] = $plugin;
+			$applyPlugins[$plugin] = array();
+			$plugins[$plugin]['checked'] = true;
+
+			foreach ($settings['options'] as $name => $value) {
+				$valuePost = isset($_POST['pluginOptions'][$plugin][$name]) ? $_POST['pluginOptions'][$plugin][$name] : '';
+
+				if ($valuePost === '') {
+					switch ($value[0]) {
+						case 'bool':
+							$plugins[$plugin]['options'][$name][1] = false;
+							break;
+
+						default:
+							$plugins[$plugin]['options'][$name][1] = null;
+							break;
+					}
+				} else {
+					$plugins[$plugin]['options'][$name][1] = $valuePost;
+				}
+
+				$applyPlugins[$plugin][$name] = $plugins[$plugin]['options'][$name][1];
+			}
+
 		} else {
-			$plugins[$plugin] = false;
+			$plugins[$plugin]['checked'] = false;
 		}
 	}
 
@@ -121,8 +187,23 @@ if (isset($_POST['send'])) {
 			<fieldset>
 				<legend>Plugins to apply</legend>
 
-				<?php foreach ($plugins as $plugin => $checked): ?>
-				<label><input type="checkbox" name="plugin[<?php echo $plugin; ?>]"<?php echo $checked ? ' checked' : ''; ?>> <?php echo $plugin; ?></label><br>
+				<?php foreach ($plugins as $plugin => $settings): ?>
+					<label><input type="checkbox" name="plugin[<?php echo $plugin; ?>]" value="1"<?php echo $settings['checked'] ? ' checked' : ''; ?>> <?php echo $plugin; ?></label><br>
+					<?php if ($settings['options']): ?>
+						<ul>
+							<?php foreach ($settings['options'] as $name => $value): ?>
+								<li>
+									<label><?php echo $name ?>
+										<?php if ($value[0] === 'bool'): ?>
+										<input type="checkbox" name="pluginOptions[<?php echo $plugin; ?>][<?php echo $name; ?>]" value="1"<?php echo empty($value[1]) ? '' : ' checked'; ?>>
+										<?php else: ?>
+										<input type="text" name="pluginOptions[<?php echo $plugin; ?>][<?php echo $name; ?>]" value="<?php echo $value[1]; ?>">
+										<?php endif; ?>
+									</label>
+								</li>
+							<?php endforeach; ?>
+						</ul>
+					<?php endif; ?>
 				<?php endforeach; ?>
 			</fieldset>
 

@@ -287,6 +287,7 @@ class Parser {
 		}
 
 		$array = array();
+		$delimiter_length = strlen($delimiter);
 
 		while ($string) {
 			if (isset($limit) && count($array) === ($limit - 1)) {
@@ -313,9 +314,9 @@ class Parser {
 					continue;
 				}
 
-				if (($l === $delimiter || $l === $str_out || $n === $length) && !$in) {
+				if (($l === $delimiter || $l === $str_out || $n === $length || ($delimiter_length > 1 && strpos(substr($string, $n), $delimiter) === 0)) && !$in) {
 					$array[] = trim(substr($string, 0, $n));
-					$string = trim(substr($string, $n+1));
+					$string = trim(substr($string, $n + $delimiter_length));
 
 					if ($l === $str_out) {
 						break;

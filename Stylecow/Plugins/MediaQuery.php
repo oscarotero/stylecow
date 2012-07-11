@@ -93,9 +93,13 @@ class MediaQuery {
 				continue;
 			}
 
-			if (!self::checkMediaQueries($child->selector->get(), $browser)) {
-				$child->removeFromParent();
+			if (self::checkMediaQueries($child->selector->get(), $browser)) {
+				foreach ($child->getChildren() as $k => $grandChild) {
+					$child->parent->addChild($grandChild, $child->getPositionInParent() + $k);
+				}
 			}
+
+			$child->removeFromParent();
 		}
 	}
 
@@ -104,7 +108,7 @@ class MediaQuery {
 		$selectors = self::parseMediaQueries($selectors);
 
 		foreach ($selectors as $selector) {
-			if (isset($browser['type']) && isset($selector['type']) && ($browser['type'] === 'all' || $selector['type'] === 'all')) {
+			if (isset($browser['type']) && isset($selector['type']) && $browser['type'] !== 'all' && $selector['type'] !== 'all') {
 				if (($browser['type'] !== $selector['type']) && !isset($selector['not'])) {
 					continue;
 				}

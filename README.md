@@ -63,6 +63,7 @@ Plugins to bring CSS support:
 
 * [VendorPrefixes](#vendorprefixes) Adds automatically the vendor prefixes to all properties in need
 * [Matches](#matches) Support for the CSS4 selector :matches()
+* [MediaQuery](#mediaquery) Filter the css code for a specific mediaquery
 * [Variables](#variables) Support for variables (W3C syntax)
 * [IeFixes](#iefixes) IE support for some CSS effect (some 2d transform, opacity, background gradients, etc)
 * [Rem](#rem) IE<=8 support for rem values
@@ -156,6 +157,73 @@ div.foo section header h2 {
 	color: black;
 }
 ```
+
+
+MediaQuery
+----------
+
+Filter all css code for apply to specific mediaquery. This is useful for browser with no support for media queries.
+
+In this example, lets say we want the css code for a browser with a screen of 1024px:
+
+#### You write
+
+```css
+@media screen and (max-width:400px) {
+	.foo {
+		font-size: 1em;
+	}
+}
+@media screen and (max-width:800px) {
+	.foo {
+		font-size: 2em;
+	}
+}
+@media only screen and (max-width:800px) {
+	.foo {
+		font-size: 3em;
+	}
+}
+@media all and (max-width:1200px) {
+	.foo {
+		font-size: 4em;
+	}
+}
+@media print and (max-width:1200px) {
+	.foo {
+		font-size: 5em;
+	}
+}
+@media (min-width:1024px) {
+	.foo {
+		font-size: 6em;
+	}
+}
+```
+
+
+#### And Stylecow converts to
+
+```css
+.foo {
+	font-size: 4em;
+}
+.foo {
+	font-size: 6em;
+}
+```
+
+You have to define the browser capabilities at the second argument
+
+```php
+Stylecow\Plugins\Variables:apply($css, array(
+	'width' => '1024px',
+	'type' => 'screen'
+));
+```
+
+
+
 
 Variables
 ---------

@@ -18,6 +18,7 @@
 
 namespace Stylecow\Plugins;
 
+use Stylecow\Parser;
 use Stylecow\Css;
 use Stylecow\Property;
 
@@ -33,30 +34,14 @@ class Variables {
 	 */
 	static public function apply (Css $css, array $rootVariables = array()) {
 		foreach ($css->getChildren(array(':root', 'html', 'body')) as $child) {
-			$rootVariables = array_replace($rootVariables, Variables::getVariables($child));
+			$rootVariables = self::getVariables($child, $rootVariables);
 		}
 
 		$css->executeRecursive(function ($code, &$contextVariables) {
-			$contextVariables = array_replace($contextVariables, Variables::getVariables($code));
+			$contextVariables = Variables::getVariables($code, $contextVariables);
 
 			foreach ($code->properties as $property) {
-				if (strpos($property->value, '$') !== false) {
-					$property->value = preg_replace_callback('/\$([\w-]+)/', function ($matches) use ($contextVariables) {
-						return isset($contextVariables[$matches[1]]) ? $contextVariables[$matches[1]] : $matches[0];
-					}, $property->value);
-				}
-
-				$property->executeFunction('var', function ($params) use ($contextVariables) {
-					if (!isset($params[0])) {
-						return 'var()';
-					}
-
-					if (isset($contextVariables[$params[0]])) {
-						return $contextVariables[$params[0]];
-					}
-
-					return isset($params[1]) ? $params[1] : 'var('.$params[0].')';
-				});
+				$property->value = Variables::replaceVariables($property->value, $contextVariables);
 			}
 
 		}, $rootVariables);
@@ -67,21 +52,48 @@ class Variables {
 	/**
 	 * Search and return the css variables in an array. Removes also the css property
 	 *
-	 * @param array $properties The piece of the parsed css code with the properties
+	 * @param array $css The piece of the parsed css code with the properties
+	 * @param array $variables An array with the existing variables
 	 *
-	 * @return array The transformed code
+	 * @return array The variables found appended to existing variables
 	 */
-	static public function getVariables (Css $css) {
-		$variables = array();
-
+	static public function getVariables (Css $css, array $variables = array()) {
 		foreach ($css->properties as $k => $property) {
 			if (strpos($property->name, 'var-') === 0) {
-				$variables[substr($property->name, 4)] = $property->value;
+				$variables[substr($property->name, 4)] = self::replaceVariables($property->value, $variables);
 
 				unset($css->properties[$k]);
 			}
 		}
 
 		return $variables;
+	}
+
+	/**
+	 * Search and replace the css variables with the real value
+	 *
+	 * @param string $value The property value where the variable is placed
+	 * @param array $variables The defined variables
+	 */
+	static public function replaceVariables ($value, array $variables) {
+		if (strpos($value, '$') !== false) {
+			$value = preg_replace_callback('/\$([\w-]+)/', function ($matches) use ($variables) {
+				return isset($variables[$matches[1]]) ? $variables[$matches[1]] : $matches[0];
+			}, $value);
+		}
+
+		$value = Parser::executeFunctions($value, 'var', function ($params) use ($variables) {
+			if (!isset($params[0])) {
+				return 'var()';
+			}
+
+			if (isset($variables[$params[0]])) {
+				return $variables[$params[0]];
+			}
+
+			return isset($params[1]) ? $params[1] : 'var('.$params[0].')';
+		});
+
+		return $value;
 	}
 }

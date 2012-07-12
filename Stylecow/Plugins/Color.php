@@ -18,7 +18,7 @@
 
 namespace Stylecow\Plugins;
 
-use Stylecow\Stylecow;
+use Stylecow\Parser;
 use Stylecow\Css;
 
 class Color {
@@ -195,7 +195,7 @@ class Color {
 								continue;
 							}
 						} else {
-							list($function, $value) = Stylecow::explodeTrim(':', $operation, 2);
+							list($function, $value) = Parser::explodeTrim(':', $operation, 2);
 						}
 
 						switch ($function) {
@@ -222,7 +222,7 @@ class Color {
 						return 'rgba('.implode(', ', $rgba).')';
 					}
 
-					return '#'.self::RGBA_HEX($rgba);
+					return '#'.Color::RGBA_HEX($rgba);
 				});
 			}
 		});

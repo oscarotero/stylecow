@@ -296,33 +296,30 @@ class VendorPrefixes {
 			switch ($point) {
 				case 'center top':
 				case 'top':
-				case '90deg':
 					$start = 'left top';
 					$end = 'left bottom';
 					break;
 
 				case 'center bottom':
 				case 'bottom':
-				case '-90deg':
 					$start = 'left bottom';
 					$end = 'left top';
 					break;
 
 				case 'left top':
 				case 'left':
-				case '180deg':
-				case '-180deg':
 					$start = 'left top';
 					$end = 'right top';
 					break;
 
 				case 'right top':
 				case 'right':
-				case '0deg':
-				case '360deg':
 					$start = 'right top';
 					$end = 'left top';
 					break;
+
+				default:
+					$radius = intval($point);
 			}
 
 			$color_stops = array();
@@ -349,7 +346,11 @@ class VendorPrefixes {
 				}
 			}
 
-			return '-webkit-gradient(linear, '.$start.', '.$end.', '.implode(', ', $color_stops).')';
+			if (isset($radius)) {
+				return '-webkit-gradient(linear, '.$radius.'deg, '.implode(', ', $color_stops).')';
+			} else {
+				return '-webkit-gradient(linear, '.$start.', '.$end.', '.implode(', ', $color_stops).')';
+			}
 		});
 	}
 }

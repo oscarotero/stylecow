@@ -384,12 +384,15 @@ class Parser {
 				break;
 			}
 
-			$name = preg_match('/([\w-]+)$/', substr($string, 0, $index), $matches);
-			$name = $matches[1];
-
-			if (isset($function) && ($name !== $function)) {
-				$index++;
-				continue;
+			if (isset($function)) {
+				if (preg_match('/(^|[^\w-])('.preg_quote($function).')$/', substr($string, 0, $index), $matches) !== 1) {
+					$index++;
+					continue;
+				}
+				$name = $matches[2];
+			} else {
+				$name = preg_match('/([\w-]+)$/', substr($string, 0, $index), $matches);
+				$name = $matches[1];
 			}
 
 			$start = $index - strlen($name);

@@ -46,26 +46,26 @@ class IeFixes {
 			foreach ($code->getProperties(array('opacity', 'transform', 'background', 'background-image', 'display', 'min-height', 'float', 'overflow')) as $property) {
 				switch ($property->name) {
 					case 'float':
-						if (($property->value !== 'none') && IeFixes::mustFixed('float', $settings)) {
-							$css->addProperty(new Property('display', 'inline'))->vendor = 'ms';
+						if (($property->value !== 'none') && IeFixes::mustFixed('float', $settings) && !$code->hasProperty(array('display', '_display', '*display'), 'inline')) {
+							$code->addProperty(new Property('_display', 'inline'))->vendor = 'ms';
 						}
 						break;
 
 					case 'display':
 						if (($property->value === 'inline-block') && IeFixes::mustFixed('inline-block', $settings)) {
-							if (!$css->hasProperty('zoom')) {
-								$css->addProperty(new Property('zoom', 1))->vendor = 'ms';
+							if (!$code->hasProperty(array('zoom', '*zoom'))) {
+								$code->addProperty(new Property('*zoom', 1))->vendor = 'ms';
 							}
-							if (!$css->hasProperty('*display')) {
-								$css->addProperty(new Property('*display', 'inline'))->vendor = 'ms';
+							if (!$code->hasProperty('*display')) {
+								$code->addProperty(new Property('*display', 'inline'))->vendor = 'ms';
 							}
 						}
 						break;
 
 					case 'min-height':
 						if (IeFixes::mustFixed('min-height', $settings)) {
-							if (!$css->hasProperty('_height')) {
-								$css->addProperty(new Property('_height', $property->value))->vendor = 'ms';
+							if (!$code->hasProperty(array('_height', '*height', 'height'))) {
+								$code->addProperty(new Property('_height', $property->value))->vendor = 'ms';
 							}
 						}
 						break;
@@ -138,7 +138,7 @@ class IeFixes {
 	 */
 	static public function mustFixed ($property, array $settings = null) {
 		if (!isset($settings)) {
-			return true;
+			return false;
 		}
 
 		if (isset($settings[$property])) {
@@ -146,10 +146,10 @@ class IeFixes {
 		}
 
 		if (isset($settings['ie-min-version']) && $settings['ie-min-version'] >= self::$propertiesSupport[$property]) {
-			return true;
+			return false;
 		}
 
-		return false;
+		return true;
 	}
 
 
@@ -224,6 +224,7 @@ class IeFixes {
 	 */
 	static public function getLinearGradientFilter ($params) {
 		$point = 'top';
+		$direction = null;
 
 		if (preg_match('/(top|bottom|left|right|deg)/', $params[0])) {
 			$point = array_shift($params);
@@ -259,7 +260,7 @@ class IeFixes {
 
 		$colors = $params;
 
-		if ($direction && count($colors) === 2) {
+		if (isset($direction) && count($colors) === 2) {
 			$colors[0] = Color::RGBA_HEX(Color::toRGBA($colors[0]));
 			$colors[1] = Color::RGBA_HEX(Color::toRGBA($colors[1]));
 

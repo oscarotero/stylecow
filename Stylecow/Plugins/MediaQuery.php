@@ -85,7 +85,7 @@ class MediaQuery {
 	 */
 	static public function apply (Css $css, array $browser = null) {
 		if (!$browser) {
-			//return;
+			return;
 		}
 
 		foreach ($css->getArrayCopy() as $child) {

@@ -7,7 +7,7 @@ $plugins = array(
 		'options' => array()
 	),
 	'Grid' => array(
-		'checked' => true,
+		'checked' => false,
 		'options' => array()
 	),
 	'IeFixes' => array(
@@ -16,10 +16,10 @@ $plugins = array(
 			'opacity' => array('bool', true),
 			'transform' => array('bool', true),
 			'background-alpha' => array('bool', true),
-			'background-gradient' => array('bool', true),
+			'background-gradient' => array('bool', false),
 			'inline-block' => array('bool', true),
-			'min-height' => array('bool', true),
-			'float' => array('bool', true)
+			'min-height' => array('bool', false),
+			'float' => array('bool', false)
 		)
 	),
 	'Matches' => array(
@@ -31,7 +31,7 @@ $plugins = array(
 		'options' => array()
 	),
 	'MediaQuery' => array(
-		'checked' => true,
+		'checked' => false,
 		'options' => array(
 			'width' => array('string', ''),
 			'type' => array('string', 'all')
@@ -195,6 +195,8 @@ if (isset($_POST['send'])) {
 								<li>
 									<label><?php echo $name ?>
 										<?php if ($value[0] === 'bool'): ?>
+										<input type="checkbox" name="pluginOptions[<?php echo $plugin; ?>][<?php echo $name; ?>]" value="1"<?php echo empty($value[1]) ? '' : ' checked'; ?>>
+										<?php elseif ($value[0] === 'null'): ?>
 										<input type="checkbox" name="pluginOptions[<?php echo $plugin; ?>][<?php echo $name; ?>]" value="1"<?php echo empty($value[1]) ? '' : ' checked'; ?>>
 										<?php else: ?>
 										<input type="text" name="pluginOptions[<?php echo $plugin; ?>][<?php echo $name; ?>]" value="<?php echo $value[1]; ?>">

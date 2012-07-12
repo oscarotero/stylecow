@@ -80,15 +80,21 @@ class Property {
 	 */
 	public function is ($name, $value = null) {
 		if (is_array($name)) {
-			return in_array($this->name, $name);
-		}
-
-		if ($this->name !== $name) {
+			if (!in_array($this->name, $name)) {
+				return false;
+			}
+		} else if ($this->name !== $name) {
 			return false;
 		}
 
-		if (isset($value) && $this->value !== $value) {
-			return false;
+		if (isset($value)) {
+			if (is_array($value)) {
+				if (!in_array($this->value, $value)) {
+					return false;
+				}
+			} else if ($this->value !== $value) {
+				return false;
+			}
 		}
 
 		return true;

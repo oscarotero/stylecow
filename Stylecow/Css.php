@@ -280,7 +280,6 @@ class Css extends \ArrayObject {
 	public function toString ($indent = 0) {
 		$indentation = str_repeat("\t", $indent);
 
-		$selector = (string)$this->selector;
 		$properties = '';
 
 		if (isset($this->properties)) {
@@ -298,6 +297,12 @@ class Css extends \ArrayObject {
 				$properties .= "\n".$child->toString($indent);
 			}
 		}
+
+		if (empty($properties) && empty($this->selector->type)) {
+			return '';
+		}
+
+		$selector = (string)$this->selector;
 
 		if ($properties && $selector) {
 			return $indentation.$selector." {\n".$properties.$indentation."}\n";

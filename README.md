@@ -66,6 +66,7 @@ Plugins to bring CSS support:
 * [MediaQuery](#mediaquery) Filter the css code for a specific mediaquery
 * [Variables](#variables) Support for variables (W3C syntax)
 * [IeFixes](#iefixes) IE support for some CSS effect (some 2d transform, opacity, background gradients, etc)
+* [Initial](#initial) Add support for "initial" value
 * [Rem](#rem) IE<=8 support for rem values
 
 Other plugins with non-standard syntax:
@@ -339,6 +340,7 @@ The available properties are:
 * min-height: Adds support for min-height in ie6
 * float: Fixes the double margin bug in floated elements in ie6
 * ie-min-version: Allows select the properties to fix based in the minimal ie version (by default is 8)
+* clip: Fixes the clip syntax for ie<8 (comma separation)
 
 You can define which properties will be fixed:
 
@@ -351,6 +353,30 @@ Stylecow\Plugins\IeFixes::apply($css, array(
 	'ie-min-version' => 7
 ));
 ```
+
+Initial
+-------
+
+Replace all "inital" values for the real value
+
+#### You write
+
+```css
+div.foo {
+	background-position: initial;
+	height: initial;
+}
+```
+
+#### And Stylecow converts to
+
+```css
+div.foo {
+	background-position: 0 0;
+	height: auto;
+}
+```
+
 
 Rem
 ---

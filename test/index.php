@@ -19,8 +19,13 @@ $plugins = array(
 			'background-gradient' => array('bool', false),
 			'inline-block' => array('bool', true),
 			'min-height' => array('bool', false),
-			'float' => array('bool', false)
+			'float' => array('bool', false),
+			'clip' => array('bool', true),
 		)
+	),
+	'Initial' => array(
+		'checked' => true,
+		'options' => array()
 	),
 	'Matches' => array(
 		'checked' => true,

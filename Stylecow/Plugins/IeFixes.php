@@ -32,7 +32,8 @@ class IeFixes {
 		'background-gradient' => 10, //Support for linear gradients
 		'inline-block' => 8, //Support for display:inline-block
 		'min-height' => 7, //Support for min-height property
-		'float' => 7 //Fix the double-margin bug in floated elements
+		'float' => 7, //Fix the double-margin bug in floated elements
+		'clip' => 8 //Fix the comma separated properties
 	);
 
 
@@ -43,8 +44,16 @@ class IeFixes {
 	 */
 	static public function apply (Css $css, array $settings = array('ie-min-version' => 8)) {
 		$css->executeRecursive(function ($code, $settings) {
-			foreach ($code->getProperties(array('opacity', 'transform', 'background', 'background-image', 'display', 'min-height', 'float', 'overflow')) as $property) {
+			foreach ($code->getProperties(array('opacity', 'transform', 'background', 'background-image', 'display', 'min-height', 'float', 'overflow', 'clip')) as $property) {
 				switch ($property->name) {
+					case 'clip':
+						$value = str_replace(',', ' ', $property->value);
+
+						if (!$code->hasProperty(array('clip', '*clip'), $value)) {
+							$code->addProperty(new Property('*clip', $value));
+						}
+						break;
+
 					case 'float':
 						if (($property->value !== 'none') && IeFixes::mustFixed('float', $settings) && !$code->hasProperty(array('display', '_display', '*display'), 'inline')) {
 							$code->addProperty(new Property('_display', 'inline'))->vendor = 'ms';

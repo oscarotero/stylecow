@@ -40,7 +40,7 @@ class Variables {
 			$contextVariables = array_replace($contextVariables, Variables::getVariables($code));
 
 			foreach ($code->properties as $property) {
-				if (strpos($property->value, '$')) {
+				if (strpos($property->value, '$') !== false) {
 					$property->value = preg_replace_callback('/\$([\w-]+)/', function ($matches) use ($contextVariables) {
 						return isset($contextVariables[$matches[1]]) ? $contextVariables[$matches[1]] : $matches[0];
 					}, $property->value);

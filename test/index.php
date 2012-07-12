@@ -185,6 +185,13 @@ if (isset($_POST['send'])) {
 		<form class="input" action="index.php" method="post">
 			<input type="hidden" name="send" value="1">
 			<fieldset>
+				<legend>Code to convert</legend>
+
+				<textarea name="code" onkeydown="insertTab(this, event);"><?php echo $input_code; ?></textarea>
+				<button type="submit">Convert code</button>
+			</fieldset>
+
+			<fieldset>
 				<legend>Plugins to apply</legend>
 
 				<?php foreach ($plugins as $plugin => $settings): ?>
@@ -208,14 +215,6 @@ if (isset($_POST['send'])) {
 					<?php endif; ?>
 				<?php endforeach; ?>
 			</fieldset>
-
-			<fieldset>
-				<legend>Code to convert</legend>
-
-				<textarea name="code" onkeydown="insertTab(this, event);"><?php echo $input_code; ?></textarea>
-			</fieldset>
-
-			<button type="submit">Convert code</button>
 		</form>
 
 		<section class="output">

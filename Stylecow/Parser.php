@@ -125,7 +125,7 @@ class Parser {
 			self::$basePath = (strpos($filePath, '/') === false) ? '' : dirname($filePath);
 			self::$baseUrl = (strpos($fileUrl, '/') === false) ? '' : dirname($fileUrl);
 
-			$code = self::$resolve(file_get_contents($filePath));
+			$code = self::resolve(file_get_contents($filePath));
 
 			self::$basePath = $basePath;
 			self::$baseUrl = $baseUrl;

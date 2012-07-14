@@ -24,6 +24,23 @@ class Property {
 
 
 	/**
+	 * Parses a css property code and creates a new Property object
+	 * 
+	 * @param string $string The css code
+	 * @return Stylecow\Property
+	 */
+	static public function createFromString ($string) {
+		$pieces = Parser::explodeTrim(':', $string, 2);
+
+		if (isset($pieces[1])) {
+			return new static($pieces[0], $pieces[1]);
+		}
+
+		return new static($pieces[0], null);
+	}
+
+
+	/**
 	 * Constructor function.
 	 * 
 	 * @param string $name The name of the property

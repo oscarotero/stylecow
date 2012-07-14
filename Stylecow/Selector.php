@@ -13,20 +13,46 @@
 
 namespace Stylecow;
 
+use Stylecow\Parser;
+
 class Selector {
 	public $parent;
 	public $type = null;
 	public $selectors = array();
 	public $vendor;
 
+
+	/**
+	 * Parses a css selector code and creates a new Selector object
+	 * 
+	 * @param string $string The css code
+	 * @return Stylecow\Selector
+	 */
+	static public function createFromString ($string) {
+		$string = trim($string);
+
+		if ($string[0] === '@') {
+			$pieces = Parser::explodeTrim(' ', $string, 2);
+
+			return new static($pieces[0], isset($pieces[1]) ? Parser::explodeTrim(',', $pieces[1]) : null);
+		}
+
+		return new static(null, Parser::explodeTrim(',', $string));
+	}
+
 	
 	/**
 	 * The constructor function
 	 *
 	 * @param string $type The type of the selector (for example, @media, @document, etc)
+	 * @param string/array $selectors The selectors collection
 	 */
-	public function __construct ($type = null) {
+	public function __construct ($type = null, $selectors = null) {
 		$this->type = $type;
+
+		if ($selectors !== null) {
+			$this->set($selectors);
+		}
 	}
 
 	

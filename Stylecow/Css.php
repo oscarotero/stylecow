@@ -22,17 +22,12 @@ class Css extends \ArrayObject {
 	/**
 	 * Constructor class
 	 * 
-	 * @param array $selectors
-	 * @param string $type
+	 * @param Stylecow\Selector $selector
 	 */
-	public function __construct (array $selectors = null, $type = null) {
-		$this->selector = new Selector($type);
-		$this->selector->setParent($this);
-
-		if ($selectors) {
-			foreach ($selectors as $selector) {
-				$this->selector->add($selector);
-			}
+	public function __construct (Selector $selector = null) {
+		if ($selector !== null) {
+			$this->selector = $selector;
+			$this->selector->setParent($this);
 		}
 	}
 

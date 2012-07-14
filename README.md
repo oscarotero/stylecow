@@ -63,10 +63,10 @@ Plugins to bring CSS support:
 
 * [VendorPrefixes](#vendorprefixes) Adds automatically the vendor prefixes to all properties in need
 * [Matches](#matches) Support for the CSS4 selector :matches()
-* [MediaQuery](#mediaquery) Filter the css code for a specific mediaquery
+* [MediaQuery](#mediaquery) Filters the css code for a specific mediaquery
 * [Variables](#variables) Support for variables (W3C syntax)
 * [IeFixes](#iefixes) IE support for some CSS effect (some 2d transform, opacity, background gradients, etc)
-* [Initial](#initial) Add support for "initial" value
+* [Initial](#initial) Adds support for "initial" value
 * [Rem](#rem) IE<=8 support for rem values
 
 Other plugins with non-standard syntax:
@@ -217,7 +217,7 @@ In this example, lets say we want the css code for a browser with a screen of 10
 You have to define the browser capabilities at the second argument
 
 ```php
-Stylecow\Plugins\Variables:apply($css, array(
+Stylecow\Plugins\MediaQuery:apply($css, array(
 	'width' => '1024px',
 	'type' => 'screen'
 ));

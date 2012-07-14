@@ -13,6 +13,7 @@
 
 namespace Stylecow;
 
+
 class Parser {
 	static private $basePath;
 	static private $baseUrl;
@@ -154,9 +155,7 @@ class Parser {
 			$pos2 = strpos($string_code, ';');
 
 			if (($pos2 !== false) && $pos2 < $pos) {
-				list($selector, $type) = self::parseSelector(trim(substr($string_code, 0, $pos2)));
-
-				$Child = $Css->addChild(new Css($selector, $type));
+				$Css->addChild(new Css(Selector::createFromString(substr($string_code, 0, $pos2))));
 
 				$string_code = trim(substr($string_code, $pos2+1));
 				continue;
@@ -166,8 +165,7 @@ class Parser {
 				break;
 			}
 
-			list($selector, $type) = self::parseSelector(trim(substr($string_code, 0, $pos)));
-
+			$selector = substr($string_code, 0, $pos);
 			$string_code = trim(substr($string_code, $pos + 1));
 			$length = strlen($string_code);
 			$in = 1;
@@ -184,7 +182,7 @@ class Parser {
 					continue;
 				}
 
-				$Child = $Css->addChild(new Css($selector, $type));
+				$Child = $Css->addChild(new Css(Selector::createFromString($selector)));
 
 				$string_piece = ($n === 0) ? '' : trim(substr($string_code, 0, $n-1));
 				$string_code = trim(substr($string_code, $n+1));
@@ -207,9 +205,7 @@ class Parser {
 
 				if ($properties_string) {
 					foreach (self::explodeTrim(';', $properties_string) as $property) {
-						list($name, $value) = self::explodeTrim(':', $property, 2);
-
-						$Child->addProperty(new Property($name, $value));
+						$Child->addProperty(Property::createFromString($property));
 					}
 				}
 
@@ -224,29 +220,6 @@ class Parser {
 		}
 
 		return $Css;
-	}
-
-
-	/**
-	 * Parses the css code of a selector
-	 *
-	 * @param string $selector The css code to parse
-	 *
-	 * @return array The parsed css code
-	 */
-	static private function parseSelector ($selector) {
-		$type = '';
-
-		if ($selector[0] === '@') {
-			$selector = self::explodeTrim(' ', $selector, 2);
-
-			$type = $selector[0];
-			$selector = isset($selector[1]) ? self::explodeTrim(',', $selector[1]) : array();
-		} else {
-			$selector = self::explodeTrim(',', $selector);
-		}
-
-		return array($selector, $type);
 	}
 
 

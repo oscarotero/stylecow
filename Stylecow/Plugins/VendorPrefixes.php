@@ -143,7 +143,8 @@ class VendorPrefixes {
 	);
 
 	static $selectors = array(
-		'::selection' => array('moz' => '::-moz-selection')
+		'::selection' => array('moz' => '::-moz-selection'),
+		'::input-placeholder' => array('moz' => ':-moz-placeholder', 'webkit' => '::-webkit-input-placeholder', 'ms' => '::-ms-input-placeholder')
 	);
 
 	static $types = array(
@@ -243,7 +244,7 @@ class VendorPrefixes {
 		$css->executeRecursive(function ($code) {
 			foreach (VendorPrefixes::$selectors as $selector => $prefixes) {
 				if (strpos((string)$code->selector, $selector) === false) {
-					return;
+					continue;
 				}
 
 				foreach ($prefixes as $vendor => $vendor_selector) {

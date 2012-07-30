@@ -10,18 +10,33 @@ $plugins = array(
 		'checked' => false,
 		'options' => array()
 	),
-	'IeFixes' => array(
+	'IeBackgroundAlpha' => array(
 		'checked' => true,
-		'options' => array(
-			'opacity' => array('bool', true),
-			'transform' => array('bool', true),
-			'background-alpha' => array('bool', true),
-			'background-gradient' => array('bool', false),
-			'inline-block' => array('bool', true),
-			'min-height' => array('bool', false),
-			'float' => array('bool', false),
-			'clip' => array('bool', true),
-		)
+		'options' => array()
+	),
+	'IeClip' => array(
+		'checked' => true,
+		'options' => array()
+	),
+	'IeFloat' => array(
+		'checked' => true,
+		'options' => array()
+	),
+	'IeInlineBlock' => array(
+		'checked' => true,
+		'options' => array()
+	),
+	'IeLinearGradient' => array(
+		'checked' => true,
+		'options' => array()
+	),
+	'IeMinHeight' => array(
+		'checked' => true,
+		'options' => array()
+	),
+	'IeOpacity' => array(
+		'checked' => true,
+		'options' => array()
 	),
 	'Initial' => array(
 		'checked' => true,
@@ -47,6 +62,10 @@ $plugins = array(
 		'options' => array()
 	),
 	'Rem' => array(
+		'checked' => true,
+		'options' => array()
+	),
+	'IeTransform' => array(
 		'checked' => true,
 		'options' => array()
 	),

@@ -61,38 +61,39 @@ Stylecow provides some basic plugins (but you can make your owns):
 
 Plugins to bring CSS support:
 
-* [VendorPrefixes](#vendorprefixes) Adds automatically the vendor prefixes to all properties in need
+* [IeBackgroundAlpha](#iebackgroundalpha) IE support for rgba/hsla colors as background
+* [IeClip](#ieclip) Fixes clip css syntax for IE 6-7
+* [IeFloat](#iefloat) Fixes double margin bug in floated elements in IE 6
+* [IeInlineBlock](#ieinlineblock) Emulate the display: inline-block property in IE 6-7
+* [IeLinearGradient](#ielineargradient) Add ie filters to emulate linear-gradients in IE 6-9
+* [IeMinHeight](#ieminheight) Emulate the min-height property in IE 6
+* [IeOpacity](#ieopacity) Emulate the opacity property in IE 6-8
+* [IeTransform](#ietransform) Adds ie filters to emulate some css 2d transform (rotate, reflections, etc)
+* [Initial](#initial) Adds support for "initial" value
 * [Matches](#matches) Support for the CSS4 selector :matches()
 * [MediaQuery](#mediaquery) Filters the css code for a specific mediaquery
-* [Variables](#variables) Support for variables (W3C syntax)
-* [IeFixes](#iefixes) IE support for some CSS effect (some 2d transform, opacity, background gradients, etc)
-* [Initial](#initial) Adds support for "initial" value
 * [Rem](#rem) IE<=8 support for rem values
+* [Variables](#variables) Support for variables (W3C syntax)
+* [VendorPrefixes](#vendorprefixes) Adds automatically the vendor prefixes to all properties in need
 
 Other plugins with non-standard syntax:
 
-* [NestedRules](#nestedrules) Brings nested rules support
-* [Grid](#grid) Useful to work with one or various grids.
 * [Color](#color) Provides the function color() to manipulate color values
+* [Grid](#grid) Useful to work with one or various grids.
 * [Math](#math) Provides the function math() to execute math operations
+* [NestedRules](#nestedrules) Brings nested rules support
 
 
-VendorPrefixes
---------------
+IeBackgroundAlpha
+-----------------
 
-Adds the vendor prefixes to all properties in need. For example.
+Generate Internet Explorer filters to support alpha values as background (rgba/hsla colors)
 
 #### You write
 
 ```css
 div.foo {
-	border-radius: 4px;
-	border-top-left-radius: 0;
-	background: linear-gradient(#333, #999);
-}
-
-div.foo ::selection {
-	background: red;
+	background: rgba(0, 0, 0, 0.5);
 }
 ```
 
@@ -100,25 +101,187 @@ div.foo ::selection {
 
 ```css
 div.foo {
-	border-radius: 4px;
-	-moz-border-radius: 4px;
-	-webkit-border-radius: 4px;
-	-o-border-radius: 4px;
-	border-top-left-radius: 0;
-	-moz-border-radius-topleft: 0;
-	-webkit-border-top-left-radius: 0;
-	background: linear-gradient(#333, #999);
-	background: -webkit-gradient(linear, left top, left bottom, from(#333), to(#999));
-	background: -moz-linear-gradient(#333, #999);
-	background: -webkit-linear-gradient(#333, #999);
+	background: rgba(0, 0, 0, 0.5);
+	filter: progid:DXImageTransform.Microsoft.gradient(startColorStr='#80000000', endColorStr='#80000000');
 }
+```
 
-div.foo ::selection {
-	background: red;
+IeClip
+------
+
+Fix the clip syntax in Internet Explorer 6-7 (http://www.ibloomstudios.com/articles/misunderstood_css_clip/)
+
+#### You write
+
+```css
+div.foo {
+	clip: rect(5px, 40px, 45px, 5px);
 }
+```
 
-div.foo ::-moz-selection {
-	background: red;
+#### And Stylecow converts to
+
+```css
+div.foo {
+	clip: rect(5px, 40px, 45px, 5px);
+	*clip: rect(5px 40px 45px 5px);
+}
+```
+
+IeFloat
+-------
+
+Fix the double margin bug in Internet Explorer 6 in floated elements.
+
+#### You write
+
+```css
+div.foo {
+	float: left;
+}
+```
+
+#### And Stylecow converts to
+
+```css
+div.foo {
+	float: left;
+	_display: inline;
+}
+```
+
+IeInlineBlock
+-------------
+
+Adds css code to emulate display: inline-block property in Internet Explorer 6-7
+
+#### You write
+
+```css
+div.foo {
+	display: inline-block;
+}
+```
+
+#### And Stylecow converts to
+
+```css
+div.foo {
+	display: inline-block;
+	*zoom: 1;
+	*display: inline;
+}
+```
+
+IeLinearGradient
+----------------
+
+Generate ie filters to emulate background linear-gradients
+
+#### You write
+
+```css
+div.foo {
+	background: linear-gradient(top, red, blue);
+}
+```
+
+#### And Stylecow converts to
+
+```css
+div.foo {
+	background: linear-gradient(top, red, blue);
+	filter: progid:DXImageTransform.Microsoft.gradient(startColorStr='#FF0000', endColorStr='#0000FF');
+}
+```
+
+IeMinHeight
+-----------
+
+Add css code to emulate min-height property in Internet Explorer 6
+
+#### You write
+
+```css
+div.foo {
+	min-height: 200px;
+}
+```
+
+#### And Stylecow converts to
+
+```css
+div.foo {
+	min-height: 200px;
+	_height: 200px;
+}
+```
+
+
+IeOpacity
+---------
+
+Generate ie filters to add opacity support in Internet Explorer 6-8
+
+#### You write
+
+```css
+div.foo {
+	opacity: 0.5;
+}
+```
+
+#### And Stylecow converts to
+
+```css
+div.foo {
+	opacity: 0.5;
+	filter: alpha(opacity=50);
+}
+```
+
+IeTransform
+-----------
+
+Generate ie filters to add support for some css 2d transform in Internet Explorer 6-8
+
+#### You write
+
+```css
+div.foo {
+	transform: rotate(45deg);
+}
+```
+
+#### And Stylecow converts to
+
+```css
+div.foo {
+	transform: rotate(45deg);
+	filter: progid:DXImageTransform.Microsoft.Matrix(sizingMethod="auto expand", M11 = 0.70710678118655, M12 = -0.70710678118655, M21 = 0.70710678118655, M22 = 0.70710678118655);
+}
+```
+
+Initial
+-------
+
+Replace all "inital" values for the real value
+
+#### You write
+
+```css
+div.foo {
+	background-position: initial;
+	height: initial;
+}
+```
+
+#### And Stylecow converts to
+
+```css
+div.foo {
+	background-position: 0 0;
+	height: auto;
 }
 ```
 
@@ -142,23 +305,14 @@ div.foo :matches(article, section) header :matches(h1, h2) {
 #### And Stylecow converts to
 
 ```css
-div.foo h1 a,
-div.foo h2 a,
-div.foo h3 a,
-div.foo h4 a,
-div.foo h5 a,
-div.foo h6 a {
+div.foo h1 a, div.foo h2 a, div.foo h3 a, div.foo h4 a, div.foo h5 a, div.foo h6 a {
 	color: blue;
 }
 
-div.foo article header h1,
-div.foo article header h2,
-div.foo section header h1,
-div.foo section header h2 {
+div.foo article header h1, div.foo article header h2, div.foo section header h1, div.foo section header h2 {
 	color: black;
 }
 ```
-
 
 MediaQuery
 ----------
@@ -224,7 +378,47 @@ Stylecow\Plugins\MediaQuery:apply($css, array(
 ```
 
 
+Rem
+---
 
+Allows use the rem value (http://snook.ca/archives/html_and_css/font-size-with-rem) to define the text size in a safe way for old browsers.
+
+The default rem is 1em (16px) but you can change it with the :root or html selector.
+
+#### You write
+
+```css
+html {
+	font-size: 1.2em;
+}
+.foo {
+	font-size: 2em;
+}
+.foo div {
+	font-size: 1rem;
+}
+```
+
+#### And Stylecow converts to
+
+```css
+html {
+	font-size: 1.2em;
+}
+.foo {
+	font-size: 2em;
+}
+.foo div {
+	font-size: 19.2px;
+	font-size: 1rem;
+}
+```
+
+If you want change the default rem value (16px), use the second parameter of apply() function. Take note this value will be overwritten if font-face is found in :root or html selectors.
+
+```php
+Stylecow\Plugins\Rem::apply($css, 14); //The default value of rem is 14px
+```
 
 Variables
 ---------
@@ -304,18 +498,22 @@ Stylecow\Plugins\Variables:apply($css, array(
 ```
 
 
-IeFixes
--------
+VendorPrefixes
+--------------
 
-Adds Internet Explorer fixes to emulate some css properties no supported by IE (for example, some 2d transform functions, opacity or linear gradients)
+Adds the vendor prefixes to all properties in need. For example.
 
 #### You write
 
 ```css
 div.foo {
-	background: linear-gradient(#666, #999);
-	transform: rotate(45deg) scaleY(-1);
-	opacity: 0.5;
+	border-radius: 4px;
+	border-top-left-radius: 0;
+	background: linear-gradient(#333, #999);
+}
+
+div.foo ::selection {
+	background: red;
 }
 ```
 
@@ -323,48 +521,54 @@ div.foo {
 
 ```css
 div.foo {
-	background: linear-gradient(#666, #999);
-	transform: rotate(45deg) scaleY(-1);
-	opacity: 0.5;
-	filter: progid:DXImageTransform.Microsoft.gradient(startColorStr='#666666', endColorStr='#999999'), progid:DXImageTransform.Microsoft.Matrix(sizingMethod="auto expand", M11 = 0.707106781187, M12 = -0.707106781187, M21 = 0.707106781187, M22 = 0.707106781187), flipV, alpha(opacity=50);
+	border-radius: 4px;
+	-moz-border-radius: 4px;
+	-webkit-border-radius: 4px;
+	-o-border-radius: 4px;
+	border-top-left-radius: 0;
+	-moz-border-radius-topleft: 0;
+	-webkit-border-top-left-radius: 0;
+	background: linear-gradient(#333, #999);
+	background: -webkit-gradient(linear, left top, left bottom, from(#333), to(#999));
+	background: -moz-linear-gradient(#333, #999);
+	background: -webkit-linear-gradient(#333, #999);
+}
+
+div.foo ::selection {
+	background: red;
+}
+
+div.foo ::-moz-selection {
+	background: red;
 }
 ```
 
-The available properties are:
 
-* opacity; Adds the filter to any element with -> opacity: N;
-* transform: Adds the filter to some elements with 2d transform that can be emulated in ie (rotate, scale, etc);
-* background-alpha: Adds the filter to any element with the background defined as rgba() or hsla()
-* background-gradient: Adds the filter to any element with a linear-gradient as background.
-* inline-block: Adds support for display:inline-block in ie6-7
-* min-height: Adds support for min-height in ie6
-* float: Fixes the double margin bug in floated elements in ie6
-* ie-min-version: Allows select the properties to fix based in the minimal ie version (by default is 8)
-* clip: Fixes the clip syntax for ie<8 (comma separation)
+Color
+-----
 
-You can define which properties will be fixed:
+Manipulate color dinamically. Changes the hue, saturation, light, red, green, blue, alpha and tint values.
+You can use absolute or relative values:
 
-```php
-//Fix all properties availables for ie7 and upper but opacity and transform
+* saturation:50  Set the saturation value to 50
+* saturation:+10  Increments 10% the current saturation
 
-Stylecow\Plugins\IeFixes::apply($css, array(
-	'opacity' => false,
-	'transform' => false,
-	'ie-min-version' => 7
-));
-```
+This function supports all css color formats:
 
-Initial
--------
+* names (black, red, blue, etc)
+* hexadecimal (#333, #34FC98, etc)
+* rgb / rgba
+* hsl / hsla
 
-Replace all "inital" values for the real value
+This function may change in a future due to the possible implementation a color() function in CSS4 color module: http://www.xanthir.com/blog/b4Jp0
 
 #### You write
 
 ```css
 div.foo {
-	background-position: initial;
-	height: initial;
+	background: color(#369, light:50, alpha: 0.5);
+	color: color(#369, blue:-30);
+	border: solid 1px color(black, 20); /* Shortcut for color(black, tint:20) */
 }
 ```
 
@@ -372,52 +576,98 @@ div.foo {
 
 ```css
 div.foo {
-	background-position: 0 0;
-	height: auto;
+	background: rgba(64, 128, 191, 0.5);
+	color: #33667b;
+	border: solid 1px #CCCCCC;
 }
 ```
 
+Grid
+----
 
-Rem
----
+You can configurate and use one or various grids for the layout. You simply have to define the available width, number of columns and the gutter between.
 
-Allows use the rem value (http://snook.ca/archives/html_and_css/font-size-with-rem) to define the text size in a safe way for old browsers.
+The available function of grid plugin are:
 
-The default rem is 1em (16px) but you can change it with the :root or html selector.
+* cols() Floats the element, define the with in columns and the gutter as margin-right
+* cols-with() With in columns
+* left() Margin left in columns
+* right() Margin right in columns
+* background() Define a background-image with the grid (using griddle.it service)
+* columns() Overwrites the default number of columns
+* width() Overwrites the default width of the grid
+* gutter() Overwrites the default gutter of the grid
+* in-cols() Useful to insert columns inside columns with padding
 
 #### You write
 
 ```css
-html {
-	font-size: 1.2em;
+$grid {
+	width: 950px;
+	columns: 24;
+	gutter: 10px;
 }
+
+.left-column {
+	$grid: cols(8);
+}
+
+.center-column {
+	$grid: cols(12);
+}
+
+.right-column {
+	$grid: cols(4);
+	margin-right: 0;
+}
+```
+
+
+#### And Stylecow converts to
+
+```css
+.left-column {
+	width: 310px;
+	float: left;
+	margin-right: 10px;
+}
+
+.center-column {
+	width: 470px;
+	float: left;
+	margin-right: 10px;
+}
+
+.right-column {
+	margin-right: 0;
+	width: 150px;
+	float: left;
+}
+```
+
+
+Math
+----
+
+You can execute math operations (+-*/):
+
+
+#### You write
+
+```css
 .foo {
-	font-size: 2em;
-}
-.foo div {
-	font-size: 1rem;
+	font-size: math(2+4)em;
+	height: math((30*5)/3)px;
 }
 ```
 
 #### And Stylecow converts to
 
 ```css
-html {
-	font-size: 1.2em;
-}
 .foo {
-	font-size: 2em;
+	font-size: 6em;
+	height: 50px;
 }
-.foo div {
-	font-size: 19.2px;
-	font-size: 1rem;
-}
-```
-
-If you want change the default rem value (16px), use the second parameter of apply() function. Take note this value will be overwritten if font-face is found in :root or html selectors.
-
-```php
-Stylecow\Plugins\Rem::apply($css, 14); //The default value of rem is 14px
 ```
 
 
@@ -488,133 +738,3 @@ article.main header p a:hover {
 ```
 
 This function can be combined with variables to make scoped changes.
-
-
-Grid
-----
-
-You can configurate and use one or various grids for the layout. You simply have to define the available width, number of columns and the gutter between.
-
-The available function of grid plugin are:
-
-* cols() Floats the element, define the with in columns and the gutter as margin-right
-* cols-with() With in columns
-* left() Margin left in columns
-* right() Margin right in columns
-* background() Define a background-image with the grid (using griddle.it service)
-* columns() Overwrites the default number of columns
-* width() Overwrites the default width of the grid
-* gutter() Overwrites the default gutter of the grid
-* in-cols() Useful to insert columns inside columns with padding
-
-#### You write
-
-```css
-$grid {
-	width: 950px;
-	columns: 24;
-	gutter: 10px;
-}
-
-.left-column {
-	$grid: cols(8);
-}
-
-.center-column {
-	$grid: cols(12);
-}
-
-.right-column {
-	$grid: cols(4);
-	margin-right: 0;
-}
-```
-
-
-#### And Stylecow converts to
-
-```css
-.left-column {
-	width: 310px;
-	float: left;
-	display: inline;
-	margin-right: 10px;
-}
-
-.center-column {
-	width: 470px;
-	float: left;
-	display: inline;
-	margin-right: 10px;
-}
-
-.right-column {
-	margin-right: 0;
-	width: 150px;
-	float: left;
-	display: inline;
-}
-```
-
-Color
------
-
-Manipulate color dinamically. Changes the hue, saturation, light, red, green, blue, alpha and tint values.
-You can use absolute or relative values:
-
-* saturation:50  Set the saturation value to 50
-* saturation:+10  Increments 10% the current saturation
-
-This function supports all css color formats:
-
-* names (black, red, blue, etc)
-* hexadecimal (#333, #34FC98, etc)
-* rgb / rgba
-* hsl / hsla
-
-This function may change in a future due to the possible implementation a color() function in CSS4 color module: http://www.xanthir.com/blog/b4Jp0
-
-#### You write
-
-```css
-div.foo {
-	background: color(#369, light:50, alpha: 0.5);
-	color: color(#369, blue:-30);
-	border: solid 1px color(black, 20); /* Shortcut for color(black, tint:20) */
-}
-```
-
-#### And Stylecow converts to
-
-```css
-div.foo {
-	background: rgba(64, 128, 191, 0.5);
-	color: #33667b;
-	border: solid 1px #CCCCCC;
-}
-```
-
-
-Math
-----
-
-You can execute math operations (+-*/):
-
-
-#### You write
-
-```css
-.foo {
-	font-size: math(2+4)em;
-	height: math((30*5)/3)px;
-}
-```
-
-#### And Stylecow converts to
-
-```css
-.foo {
-	font-size: 6em;
-	height: 50px;
-}
-```

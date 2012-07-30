@@ -197,6 +197,21 @@ class Css extends \ArrayObject {
 	}
 
 
+	/**
+	 * Gets the last property of the css object
+	 *
+	 * @param string $name The property name to filter
+	 * @param string $value The optional value to filter
+	 *
+	 * @return Stylecow\Property The property found or false
+	 */
+	public function getLastProperty ($name = null, $value = null) {
+		$properties = $this->getProperties($name, $value);
+
+		return end($properties);
+	}
+
+
 	
 	/**
 	 * Check if the css object has a property with this name and optional value

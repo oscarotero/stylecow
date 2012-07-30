@@ -8,7 +8,7 @@
  *
  * @author Oscar Otero <http://oscarotero.com> <oom@oscarotero.com>
  * @license GNU Affero GPL version 3. http://www.gnu.org/licenses/agpl-3.0.html
- * @version 1.0.0 (2012)
+ * @version 1.0.1 (2012)
  */
 
 namespace Stylecow;
@@ -144,7 +144,16 @@ class Property {
 	 */
 	public function addValue ($value) {
 		if ($this->value) {
-			$this->value .= ', '.$value;
+			if (strpos($this->value, $value) === false) {
+				$this->value .= ', '.$value;
+			} else {
+				$values = Parser::explode(',', $this->value);
+
+				if (!in_array($value, $values)) {
+					$this->value .= ', '.$value;
+				}
+			}
+			
 		} else {
 			$this->value = $value;
 		}

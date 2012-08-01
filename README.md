@@ -81,7 +81,7 @@ Other plugins with non-standard syntax:
 * [Color](#color) Provides the function color() to manipulate color values
 * [Grid](#grid) Useful to work with one or various grids.
 * [Math](#math) Provides the function math() to execute math operations
-* [NestedRules](#nestedrules) Brings nested rules support
+* [NestedRules](#nestedrules) Brings nested rules support. There is a draft spec of CSS Hierarchies Module Level 3 (http://dev.w3.org/csswg/css3-hierarchies/) but have some differences (you can't omit the &)
 
 
 IeBackgroundAlpha

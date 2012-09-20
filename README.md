@@ -61,6 +61,7 @@ Stylecow provides some basic plugins (but you can make your owns):
 
 Plugins to bring CSS support:
 
+* [BaseUrl](#baseurl) Changes the base url in url() functions
 * [IeBackgroundAlpha](#iebackgroundalpha) IE support for rgba/hsla colors as background
 * [IeClip](#ieclip) Fixes clip css syntax for IE 6-7
 * [IeFloat](#iefloat) Fixes double margin bug in floated elements in IE 6
@@ -83,6 +84,33 @@ Other plugins with non-standard syntax:
 * [Math](#math) Provides the function math() to execute math operations
 * [NestedRules](#nestedrules) Brings nested rules support
 
+
+BaseUrl
+-------
+
+Changes the base url in css url() functions. Useful in some cases when the css path is not the same of the assets path (images)
+
+#### You write
+
+```css
+div.foo {
+	background-image: url('img/bg.png');
+}
+```
+
+#### And Stylecow converts to
+
+```css
+div.foo {
+	background-image: url('/my/custom/baseurl/img/bg.png');
+}
+```
+
+You have to define the base url at the second argument
+
+```php
+Stylecow\Plugins\BaseUrl:apply($css, '/my/custom/baseurl/');
+```
 
 IeBackgroundAlpha
 -----------------

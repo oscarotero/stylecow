@@ -368,7 +368,7 @@ class Css extends \ArrayObject {
 		foreach ($plugins as $plugin => $settings) {
 			if (is_int($plugin)) {
 				$plugin = $settings;
-				$settings = array();
+				$settings = null;
 			}
 
 			$plugin = __NAMESPACE__.'\\Plugins\\'.$plugin;
@@ -385,7 +385,11 @@ class Css extends \ArrayObject {
 		asort($pluginPositions);
 
 		foreach (array_keys($pluginPositions) as $plugin) {
-			$plugin::apply($this, $pluginSettings[$plugin]);
+			if (isset($pluginSettings[$plugin])) {
+				$plugin::apply($this, $pluginSettings[$plugin]);
+			} else {
+				$plugin::apply($this);
+			}
 		}
 	}
 }

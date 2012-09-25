@@ -328,6 +328,99 @@ class Color {
 	static public function HSLA_RGBA ($hsla) {
 		list($h, $s, $l, $a) = $hsla;
 
+		$s = intval($s)/100;
+		$l = intval($l)/100;
+
+		if ($h > 0) {
+			$h /= 360;
+		}
+
+		if ($s === 0) {
+			$r = $l;
+			$g = $l;
+			$b = $l;
+		} else {
+			if ($l < .5) {
+				$t2 = $l * (1.0 + $s);
+			} else {
+				$t2 = ($l + $s) - ($l * $s);
+			}
+
+			$t1 = 2.0 * $l - $t2;
+
+			$rt3 = $h + 1.0/3.0;
+			$gt3 = $h;
+			$bt3 = $h - 1.0/3.0;
+
+			if ($rt3 < 0) {
+				$rt3 += 1.0;
+			}
+			if ($rt3 > 1) {
+				$rt3 -= 1.0;
+			}
+			if ($gt3 < 0) {
+				$gt3 += 1.0;
+			}
+			if ($gt3 > 1) {
+				$gt3 -= 1.0;
+			}
+			if ($bt3 < 0) {
+				$bt3 += 1.0;
+			}
+			if ($bt3 > 1) {
+				$bt3 -= 1.0;
+			}
+
+			if (6.0 * $rt3 < 1) {
+				$r = $t1 + ($t2 - $t1) * 6.0 * $rt3;
+			} else if (2.0 * $rt3 < 1) {
+				$r = $t2;
+			} else if (3.0 * $rt3 < 2) {
+				$r = $t1 + ($t2 - $t1) * ((2.0/3.0) - $rt3) * 6.0;
+			} else {
+				$r = $t1;
+			}
+
+			if (6.0 * $gt3 < 1) {
+				$g = $t1 + ($t2 - $t1) * 6.0 * $gt3;
+			} else if (2.0 * $gt3 < 1) {
+				$g = $t2;
+			} else if (3.0 * $gt3 < 2) {
+				$g = $t1 + ($t2 - $t1) * ((2.0/3.0) - $gt3) * 6.0;
+			} else {
+				$g = $t1;
+			}
+
+			if (6.0 * $bt3 < 1) {
+				$b = $t1 + ($t2 - $t1) * 6.0 * $bt3;
+			} else if (2.0 * $bt3 < 1) {
+				$b = $t2;
+			} else if (3.0 * $bt3 < 2) {
+				$b = $t1 + ($t2 - $t1) * ((2.0/3.0) - $bt3) * 6.0;
+			} else {
+				$b = $t1;
+			}
+		}
+
+		$r = (int)round(255.0 * $r);
+		$g = (int)round(255.0 * $g);
+		$b = (int)round(255.0 * $b);
+
+		return array($r, $g, $b, $a);
+	}
+
+
+
+	/*
+	 * Convert a HSLA color to RGBA
+	 *
+	 * @param array  $hsla  The hsla color values
+	 *
+	 * @return array  The rgba value
+	 *
+	static public function _HSLA_RGBA ($hsla) {
+		list($h, $s, $l, $a) = $hsla;
+
 		$h = intval($h)/360;
 		$s = intval($s)/100;
 		$l = intval($l)/100;
@@ -360,7 +453,7 @@ class Color {
 
 	/**
 	 * Internal function used by HSLA_RGBA() to convert a Hue value to R, G, and B
-	 */
+	 *
 	static public function Hue_RGB ($v1, $v2, $vH, $k = false) {
 		if ($vH < 0) {
 			$vH += 1;
@@ -382,6 +475,7 @@ class Color {
 
 		return $v1;
 	}
+	*/
 
 
 
@@ -393,6 +487,61 @@ class Color {
 	 * @return array  The hsla value
 	 */
 	static public function RGBA_HSLA ($rgba) {
+		$r = $rgba[0] / 255;
+		$g = $rgba[1] / 255;
+		$b = $rgba[2] / 255;
+		$a = $rgba[3];
+
+		$min = min($r, $g, $b);
+		$max = max($r, $g, $b);
+		$delta = $max - $min;
+
+		$l = ($max + $min) / 2;
+
+		if ($delta == 0) {
+			$h = 0;
+			$s = 0;
+		} else {
+			if ($l < 0.5) {
+				$s = $delta / ($max + $min);
+			} else {
+				$s = $delta / ( 2 - $max - $min );
+			}
+
+			$delta_r = ((($max - $r) / 6) + ($delta / 2)) / $delta;
+			$delta_g = ((($max - $g) / 6) + ($delta / 2)) / $delta;
+			$delta_b = ((($max - $b) / 6) + ($delta / 2)) / $delta;
+
+			if ($r === $max) {
+				$h = $delta_b - $delta_g;
+			} else if ($g === $max) {
+				$h = ( 1 / 3 ) + $delta_r - $delta_b;
+			} else if ($b === $max) {
+				$h = ( 2 / 3 ) + $delta_g - $delta_r;
+			}
+
+			if ($h < 0) {
+				$h += 1;
+			}
+
+			if ($h > 1) {
+				$h -= 1;
+			}
+		}
+
+		return array(round($h * 360), (round($s, 2) * 100).'%', (round($l, 2) * 100).'%', $a);
+	}
+
+
+
+	/*
+	 * Convert RGBA color values to HSLA
+	 *
+	 * @param array  $rgba  The rgba color values
+	 *
+	 * @return array  The hsla value
+	 *
+	static public function _RGBA_HSLA ($rgba) {
 		list($r, $g, $b, $a) = $rgba;
 
 		$min = min($r, $g, $b);
@@ -437,6 +586,7 @@ class Color {
 
 		return array($h, $s.'%', round($l * 100).'%', $a);
 	}
+	*/
 
 
 

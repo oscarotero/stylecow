@@ -10,9 +10,8 @@ Stylecow is a php library that allows parsing and manipulating css files.
 Features:
 
 * Written in php 5.3
-* Includes the @import files (only for files with relative path)
+* Includes the @import files (only files with relative path)
 * Extensible with plugins
-* Easy to use
 * Uses the PSR-0 autoloader standard
 
 
@@ -21,7 +20,7 @@ Why another CSS preprocessor?
 
 The main purpose of Stylecow is to bring more CSS support to all browsers. You write CSS and you get CSS. You don't have to learn another different language such LESS, SASS, etc. Stylecow converts your code to be more compatible with all browsers throught plugins without writing any non-standard code. There is a plugin to add automatically the vendor prefixes to all selectors, properties and values in need. There is another plugin that allows using rem values with fallback for IE<=8. There is another plugin to use css variables with the same syntax of the w3c standard (http://dev.w3.org/csswg/css-variables/). And other plugins emulate some CSS effects (rotate, opacity, etc) in IE using the property "filter". So you can use Stylecow just to fix your CSS code and make it compatible with more browsers. And if you stop using Stylecow, your CSS code will remain CSS code.
 
-But if you don't mind to write "non pure CSS code", there are more plugins that can help you to write styles faster. For example, Color allows manipulate colors changing some of the values (saturation, light, etc), Math can execute math operations, Grid makes easier to work with columns, etc.
+But if you don't mind to write "non pure CSS code", there are more plugins that can help you to write styles faster. For example, Color allows manipulate colors changing some of the values (saturation, light, etc), Math can execute math operations, Grid makes easier to work with fixed columns, etc.
 
 
 Demo
@@ -38,11 +37,6 @@ How to use
 $css = Stylecow\Parser::parseFile('my-styles.css');
 
 //Transform the css code using the plugins.
-Stylecow\Plugins\Rem::apply($css);
-Stylecow\Plugins\Variables::apply($css);
-Stylecow\Plugins\VendorPrefixes::apply($css);
-
-//You also can apply plugins in this way:
 $css->applyPlugins(array(
 	'Rem',
 	'Variables',
@@ -50,7 +44,7 @@ $css->applyPlugins(array(
 ));
 
 //Print the result css code
-echo $css->toString();
+echo $css;
 ```
 
 
@@ -73,8 +67,9 @@ Plugins to bring CSS support:
 * [Initial](#initial) Adds support for "initial" value
 * [Matches](#matches) Support for the CSS4 selector :matches()
 * [MediaQuery](#mediaquery) Filters the css code for a specific mediaquery
+* [NestedRules](#nestedrules) Brings nested rules support. There is a draft spec of CSS Hierarchies Module Level 3 (http://dev.w3.org/csswg/css3-hierarchies/) but have some differences (in w3c standard you must use the & character in all cases)
 * [Rem](#rem) IE<=8 support for rem values
-* [Variables](#variables) Support for variables (W3C syntax)
+* [Variables](#variables) Support for variables (W3C syntax http://dev.w3.org/csswg/css-variables/)
 * [VendorPrefixes](#vendorprefixes) Adds automatically the vendor prefixes to all properties in need
 
 Other plugins with non-standard syntax:
@@ -82,7 +77,6 @@ Other plugins with non-standard syntax:
 * [Color](#color) Provides the function color() to manipulate color values
 * [Grid](#grid) Useful to work with one or various grids.
 * [Math](#math) Provides the function math() to execute math operations
-* [NestedRules](#nestedrules) Brings nested rules support. There is a draft spec of CSS Hierarchies Module Level 3 (http://dev.w3.org/csswg/css3-hierarchies/) but have some differences (you can't omit the &)
 
 
 BaseUrl
@@ -405,6 +399,74 @@ Stylecow\Plugins\MediaQuery:apply($css, array(
 ));
 ```
 
+NestedRules
+-----------
+
+Resolves the nested rules, allowing to write css in a more legible way:
+
+#### You write
+
+```css
+article.main {
+	padding: 4px;
+
+	header {
+		margin-bottom: 20px;
+
+		h1, h2 {
+			font-size: Helvetica, sans-serif;
+			color: #000;
+		}
+
+		p {
+			color: #666;
+
+			a {
+				text-decoration: none;
+				color: green;
+			}
+
+			a:hover {
+				text-decoration: underline;
+			}
+		}
+	}
+}
+```
+
+#### And Stylecow converts to
+
+```css
+article.main {
+	padding: 4px;
+}
+
+article.main header {
+	margin-bottom: 20px;
+}
+
+article.main header h1,
+article.main header h2 {
+	font-size: Helvetica, sans-serif;
+	color: #000;
+}
+
+article.main header p {
+	color: #666;
+}
+
+article.main header p a {
+	text-decoration: none;
+	color: green;
+}
+
+article.main header p a:hover {
+	text-decoration: underline;
+}
+```
+
+This function can be combined with variables to define variables in specific scope.
+
 
 Rem
 ---
@@ -697,72 +759,3 @@ You can execute math operations (+-*/):
 	height: 50px;
 }
 ```
-
-
-NestedRules
------------
-
-Resolves the nested rules, allowing to write css in a more legible way:
-
-#### You write
-
-```css
-article.main {
-	padding: 4px;
-
-	header {
-		margin-bottom: 20px;
-
-		h1, h2 {
-			font-size: Helvetica, sans-serif;
-			color: #000;
-		}
-
-		p {
-			color: #666;
-
-			a {
-				text-decoration: none;
-				color: green;
-			}
-
-			a:hover {
-				text-decoration: underline;
-			}
-		}
-	}
-}
-```
-
-#### And Stylecow converts to
-
-```css
-article.main {
-	padding: 4px;
-}
-
-article.main header {
-	margin-bottom: 20px;
-}
-
-article.main header h1,
-article.main header h2 {
-	font-size: Helvetica, sans-serif;
-	color: #000;
-}
-
-article.main header p {
-	color: #666;
-}
-
-article.main header p a {
-	text-decoration: none;
-	color: green;
-}
-
-article.main header p a:hover {
-	text-decoration: underline;
-}
-```
-
-This function can be combined with variables to make scoped changes.

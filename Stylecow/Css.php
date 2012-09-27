@@ -59,10 +59,6 @@ class Css extends \ArrayObject {
 		return $this->toString();
 	}
 
-	public function isRoot () {
-		return (isset($this->parent) && isset($this->parent->parent)) ? false : true;
-	}
-
 
 	/**
 	 * Stores an alias to access to parent css object

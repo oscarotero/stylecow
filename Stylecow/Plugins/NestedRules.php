@@ -33,7 +33,7 @@ class NestedRules {
 	 */
 	static public function apply (Css $css) {
 		$css->executeRecursive(function ($code) {
-			if ($code->parent && $code->parent->parent && !$code->parent->selector->type && ($parentSelectors = $code->parent->selector->get())) {
+			if (!$code->isRoot() && !$code->parent->selector->type && ($parentSelectors = $code->parent->selector->get())) {
 				$selectors = $code->selector->get();
 				$code->selector->delete();
 
@@ -45,9 +45,10 @@ class NestedRules {
 					}
 				}
 
+				$position = $code->getPositionInParent() - 1;
 				$parent = $code->parent;
 				$code->removeFromParent();
-				$parent->parent->addChild($code, $parent->getPositionInParent() + 1);
+				$parent->parent->addChild($code, $position);
 			}
 		});
 	}

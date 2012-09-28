@@ -411,74 +411,6 @@ class Color {
 
 
 
-	/*
-	 * Convert a HSLA color to RGBA
-	 *
-	 * @param array  $hsla  The hsla color values
-	 *
-	 * @return array  The rgba value
-	 *
-	static public function _HSLA_RGBA ($hsla) {
-		list($h, $s, $l, $a) = $hsla;
-
-		$h = intval($h)/360;
-		$s = intval($s)/100;
-		$l = intval($l)/100;
-
-		if ($s === 0) {
-			return array(
-				round($l * 255),
-				round($l * 255),
-				round($l * 255),
-				$a
-			);
-		}
-
-		if ($l <= 0.5) {
-			$var_2 = $l * (1 + $s);
-		} else {
-			$var_2 = ($l + $s) - ($s * $l);
-		}
-
-		$var_1 = 2 * $l - $var_2;
-
-		return array(
-			round(255 * self::Hue_RGB($var_1, $var_2, $h + (1/3), true)),
-			round(255 * self::Hue_RGB($var_1, $var_2, $h)),
-			round(255 * self::Hue_RGB($var_1, $var_2, $h - (1/3))),
-			$a
-		);
-	}
-
-
-	/**
-	 * Internal function used by HSLA_RGBA() to convert a Hue value to R, G, and B
-	 *
-	static public function Hue_RGB ($v1, $v2, $vH, $k = false) {
-		if ($vH < 0) {
-			$vH += 1;
-		} else if ($vH > 1) {
-			$vH -= 1;
-		}
-
-		if ((6 * $vH) < 1 ) {
-			return $v1 + ($v2 - $v1) * 6 * $vH;
-		}
-
-		if ((2 * $vH) < 1 ) {
-			return ($v2 < 0) ? 0 : $v2;
-		}
-
-		if ((3 * $vH) < 2 ) {
-			return $v1 + ($v2 - $v1) * ((2 / 3) - $vH) * 6;
-		}
-
-		return $v1;
-	}
-	*/
-
-
-
 	/**
 	 * Convert RGBA color values to HSLA
 	 *
@@ -531,62 +463,6 @@ class Color {
 
 		return array(round($h * 360), (round($s, 2) * 100).'%', (round($l, 2) * 100).'%', $a);
 	}
-
-
-
-	/*
-	 * Convert RGBA color values to HSLA
-	 *
-	 * @param array  $rgba  The rgba color values
-	 *
-	 * @return array  The hsla value
-	 *
-	static public function _RGBA_HSLA ($rgba) {
-		list($r, $g, $b, $a) = $rgba;
-
-		$min = min($r, $g, $b);
-		$max = max($r, $g, $b);
-		$delta = $max - $min;
-
-		$l = ($max + $min) / 510;
-
-		if ($delta === 0) {
-			return array(0, '0%', round($l * 100).'%', $a);
-		}
-
-		if ($l < 0.5) {
-			$s = $delta / ($max + $min);
-		} else {
-			$s = $delta / (2 - $max - $min);
-		}
-
-		$s = round($s * 100);
-
-		if ($s < 0) {
-			$s *= -1;
-		}
-
-		if ($s > 100) {
-			$s = 100;
-		}
-
-		if ($r === $max) {
-			$h = ($g - $b ) / $delta;
-		} else if ($g === $max) {
-			$h = 2 + ($b - $r) / $delta;
-		} else if ($b === $max) {
-			$h = 4 + ($r - $g) / $delta;
-		}
-
-		$h = round($h * 60);
-
-		if ($h < 0) {
-			$h += 360;
-		}
-
-		return array($h, $s.'%', round($l * 100).'%', $a);
-	}
-	*/
 
 
 

@@ -17,6 +17,7 @@ class Css extends \ArrayObject {
 	public $parent;
 	public $selector;
 	public $properties = array();
+	public $comments = array();
 
 
 	/**
@@ -98,6 +99,16 @@ class Css extends \ArrayObject {
 		}
 
 		return false;
+	}
+
+
+	/**
+	 * Add a new comment to the css code
+	 *
+	 * @param string $comment The comment to add
+	 */
+	public function addComment ($comment) {
+		$this->comments[] = $comment;
 	}
 
 
@@ -249,6 +260,15 @@ class Css extends \ArrayObject {
 		}
 	}
 
+	public function executeRecursiveInverse ($callback, $contextData = null) {
+		foreach ($this->getArrayCopy() as $child) {
+			$childData = $contextData;
+
+			$child->executeRecursive($callback, $childData);
+		}
+		$callback($this, $contextData);
+	}
+
 
 
 	/**
@@ -292,6 +312,7 @@ class Css extends \ArrayObject {
 
 		$selector = (string)$this->selector;
 		$properties = '';
+		$comments = empty($this->comments) ? '' : ' /*'.implode(', ', $this->comments).'*/';
 
 		if (isset($this->properties)) {
 			$indProp = $selector ? $indentation."\t" : $indentation;
@@ -314,7 +335,7 @@ class Css extends \ArrayObject {
 		}
 
 		if ($properties && $selector) {
-			return $indentation.$selector." {\n".$properties.$indentation."}\n";
+			return $indentation.$selector.' {'.$comments."\n".$properties.$indentation."}\n";
 		}
 
 		if ($properties) {
@@ -322,7 +343,7 @@ class Css extends \ArrayObject {
 		}
 
 		if ($selector) {
-			return $indentation.$selector.";\n";
+			return $indentation.$selector.';'.$comments."\n";
 		}
 	}
 

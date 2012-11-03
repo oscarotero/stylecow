@@ -297,30 +297,39 @@ class VendorPrefixes {
 			switch ($point) {
 				case 'center top':
 				case 'top':
+				case 'to bottom':
 					$start = 'left top';
 					$end = 'left bottom';
 					break;
 
 				case 'center bottom':
 				case 'bottom':
+				case 'to top':
 					$start = 'left bottom';
 					$end = 'left top';
 					break;
 
 				case 'left top':
 				case 'left':
+				case 'to right':
 					$start = 'left top';
 					$end = 'right top';
 					break;
 
 				case 'right top':
 				case 'right':
+				case 'to left':
 					$start = 'right top';
 					$end = 'left top';
 					break;
 
 				default:
-					$radius = intval($point);
+					if (preg_match('/^\ddeg$/', $point)) {
+						$radius = intval($point);
+					} else {
+						$start = 'left top';
+						$end = 'left bottom';
+					}
 			}
 
 			$color_stops = array();

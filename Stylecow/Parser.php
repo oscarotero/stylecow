@@ -210,7 +210,7 @@ class Parser {
 				}
 
 				if ($content_string) {
-					foreach (self::parse($content_string) as $child) {
+					foreach (self::parse($content_string)->getChildren() as $child) {
 						$Child->addChild($child);
 					}
 				}

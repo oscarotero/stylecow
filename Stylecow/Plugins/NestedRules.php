@@ -15,7 +15,7 @@
  *
  * @author Oscar Otero <http://oscarotero.com> <oom@oscarotero.com>
  * @license GNU Affero GPL version 3. http://www.gnu.org/licenses/agpl-3.0.html
- * @version 1.0.0 (2012)
+ * @version 1.0.1 (2012)
  */
 
 namespace Stylecow\Plugins;
@@ -33,7 +33,7 @@ class NestedRules {
 	 */
 	static public function apply (Css $css) {
 		$css->executeRecursive(function ($code) {
-			if (isset($code->parent) && isset($code->parent->parent) && !$code->parent->selector->type && ($parentSelectors = $code->parent->selector->get())) {
+			if (isset($code->parent->parent) && empty($code->parent->selector->type) && ($parentSelectors = $code->parent->selector->get())) {
 				$selectors = $code->selector->get();
 				$code->selector->delete();
 
@@ -44,12 +44,35 @@ class NestedRules {
 						$code->selector->add($parentSelector.$selector);
 					}
 				}
+			}
 
-				$position = $code->getPositionInParent() - 1;
-				$parent = $code->parent;
-				$code->removeFromParent();
-				$parent->parent->addChild($code, $position);
+			$firstParent = self::getRootParent($code);
+
+			if ($firstParent) {
+				$firstParent->addChild($code);
 			}
 		});
+	}
+
+
+	/**
+	 * Returns first valid parent where move the nested rules
+	 *
+	 * @param Stylecow\Css The css object
+	 * 
+	 * @return Stylecow\Css The parent css object or null
+	 */
+	static private function getRootParent (Css $css) {
+		if ($css->parent === null) {
+			return null;
+		}
+
+		$parent = $css->parent;
+
+		while (($parent->parent !== null) && empty($parent->selector->type)) {
+			$parent = $parent->parent;
+		}
+
+		return $parent;
 	}
 }

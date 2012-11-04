@@ -28,8 +28,11 @@ class Css extends \ArrayObject {
 	public function __construct (Selector $selector = null) {
 		if ($selector !== null) {
 			$this->selector = $selector;
-			$this->selector->setParent($this);
+		} else {
+			$this->selector = new Selector();
 		}
+
+		$this->selector->setParent($this);
 	}
 
 	
@@ -37,16 +40,21 @@ class Css extends \ArrayObject {
 	 * Magic function to clone the css object
 	 */
 	public function __clone () {
-		$this->selector = clone $this->selector;
+		if (isset($this->selector)) {
+			$this->selector = clone $this->selector;
+		}
 
 		foreach ($this->properties as $k => $property) {
 			$this->properties[$k] = clone $property;
 		}
 
+		$this->parent = null;
+
 		$children = array();
 
 		foreach ($this as $key => $child) {
 			$children[$key] = clone $child;
+			$children[$key]->parent = $this;
 		}
 
 		$this->exchangeArray($children);
@@ -67,6 +75,7 @@ class Css extends \ArrayObject {
 	 * @param Stylecow\Css $parent The parent css object
 	 */
 	public function setParent (Css $parent) {
+		$this->removeFromParent();
 		$this->parent = $parent;
 	}
 
@@ -157,6 +166,14 @@ class Css extends \ArrayObject {
 		}
 
 		return $children;
+	}
+
+
+	/**
+	 * Removes all childrens of the object
+	 */
+	public function removeChildren () {
+		$this->exchangeArray(array());
 	}
 
 
@@ -260,13 +277,14 @@ class Css extends \ArrayObject {
 		}
 	}
 
-	public function executeRecursiveInverse ($callback, $contextData = null) {
-		foreach ($this->getArrayCopy() as $child) {
+	public function executeRecursiveInverse ($callback, $contextData = null, $key = 0) {
+		foreach ($this->getArrayCopy() as $key => $child) {
 			$childData = $contextData;
 
-			$child->executeRecursive($callback, $childData);
+			$child->executeRecursiveInverse($callback, $childData, $key);
 		}
-		$callback($this, $contextData);
+
+		$callback($this, $contextData, $key);
 	}
 
 

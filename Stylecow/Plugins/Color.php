@@ -297,6 +297,9 @@ class Color {
 		if ($color[0] === '#') {
 			return self::HEX_RGBA(substr($color, 1));
 		}
+		if (strtolower($color) === 'transparent') {
+			return array(0, 0, 0, 0);
+		}
 		if (isset(self::$color_names[strtolower($color)])) {
 			return self::HEX_RGBA(substr(self::$color_names[strtolower($color)], 1));
 		}

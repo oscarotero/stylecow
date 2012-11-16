@@ -15,7 +15,7 @@
  *
  * @author Oscar Otero <http://oscarotero.com> <oom@oscarotero.com>
  * @license GNU Affero GPL version 3. http://www.gnu.org/licenses/agpl-3.0.html
- * @version 1.0.1 (2012)
+ * @version 1.0.2 (2012)
  */
 
 namespace Stylecow\Plugins;
@@ -46,7 +46,7 @@ class NestedRules {
 				}
 			}
 
-			$firstParent = self::getRootParent($code);
+			$firstParent = NestedRules::getRootParent($code);
 
 			if ($firstParent) {
 				$firstParent->addChild($code);
@@ -62,7 +62,7 @@ class NestedRules {
 	 * 
 	 * @return Stylecow\Css The parent css object or null
 	 */
-	static private function getRootParent (Css $css) {
+	static public function getRootParent (Css $css) {
 		if ($css->parent === null) {
 			return null;
 		}

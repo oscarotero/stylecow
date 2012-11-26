@@ -12,7 +12,7 @@
  *
  * @author Oscar Otero <http://oscarotero.com> <oom@oscarotero.com>
  * @license GNU Affero GPL version 3. http://www.gnu.org/licenses/agpl-3.0.html
- * @version 1.0.0 (2012)
+ * @version 1.1.0 (2012)
  */
 
 namespace Stylecow\Plugins;
@@ -24,140 +24,208 @@ use Stylecow\Property;
 class VendorPrefixes {
 	const POSITION = 3;
 
-	static $properties = array(
-		'animation' => array('moz', 'webkit', 'o', 'ms'),
-		'animation-delay' => array('moz', 'webkit', 'o', 'ms'),
-		'animation-direction' => array('moz', 'webkit', 'o', 'ms'),
-		'animation-duration' => array('moz', 'webkit', 'o', 'ms'),
-		'animation-fill-mode' => array('moz', 'webkit', 'o', 'ms'),
-		'animation-iteration-count' => array('moz', 'webkit', 'o', 'ms'),
-		'animation-name' => array('moz', 'webkit', 'o', 'ms'),
-		'animation-play-state' => array('moz', 'webkit', 'o', 'ms'),
-		'animation-timing-function' => array('moz', 'webkit', 'o', 'ms'),
-		'appearance' => array('moz', 'webkit'),
-		'backface-visibility' => array('moz', 'webkit', 'o', 'ms'),
-		'background-clip' => array('moz', 'webkit'),
-		'background-origin' => array('moz', 'webkit'),
-		'background-size' => array('moz', 'webkit', 'o'),
-		'border-after' => array('webkit'),
-		'border-after-color' => array('webkit'),
-		'border-after-style' => array('webkit'),
-		'border-after-width' => array('webkit'),
-		'border-before' => array('webkit'),
-		'border-before-color' => array('webkit'),
-		'border-before-style' => array('webkit'),
-		'border-before-width' => array('webkit'),
-		'border-bottom-image' => array('moz', 'webkit', 'o'),
-		'border-bottom-left-image' => array('moz', 'webkit', 'o'),
-		'border-bottom-left-radius' => array('webkit'),
-		'border-bottom-right-image' => array('moz', 'webkit', 'o'),
-		'border-bottom-right-radius' => array('webkit'),
-		'border-corner-image' => array('moz', 'webkit', 'o'),
-		'border-image' => array('moz', 'webkit', 'o'),
-		'border-left-image' => array('moz', 'webkit', 'o'),
-		'border-top-image' => array('moz', 'webkit', 'o'),
-		'border-top-left-image' => array('moz', 'webkit', 'o'),
-		'border-top-left-radius' => array('webkit'),
-		'border-top-right-image' => array('moz', 'webkit', 'o'),
-		'border-top-right-radius' => array('webkit'),
-		'border-radius' => array('moz', 'webkit', 'o'),
-		'border-right-image' => array('moz', 'webkit', 'o'),
-		'box-align' => array('moz', 'webkit', 'ms'),
-		'box-direction' => array('moz', 'webkit', 'ms'),
-		'box-flex' => array('moz', 'webkit', 'ms'),
-		'box-flex-group' => array('moz', 'webkit', 'ms'),
-		'box-lines' => array('moz', 'webkit', 'ms'),
-		'box-ordinal-group' => array('moz', 'webkit', 'ms'),
-		'box-orient' => array('moz', 'webkit', 'ms'),
-		'box-pack' => array('moz', 'webkit', 'ms'),
-		'box-shadow' => array('moz', 'webkit', 'o'),
-		'box-sizing' => array('moz', 'webkit'),
-		'column-count' => array('moz', 'webkit'),
-		'column-gap' => array('moz', 'webkit'),
-		'column-rule' => array('moz', 'webkit'),
-		'column-rule-color' => array('moz', 'webkit'),
-		'column-rule-style' => array('moz', 'webkit'),
-		'column-rule-width' => array('moz', 'webkit'),
-		'column-span' => array('moz', 'webkit'),
-		'column-width' => array('moz', 'webkit'),
-		'columns' => array('moz', 'webkit'),
-		'filter' => array('ms'),
-		'grid-column' => array('ms'),
-		'grid-column-align' => array('ms'),
-		'grid-column-span' => array('ms'),
-		'grid-columns' => array('ms'),
-		'grid-layer' => array('ms'),
-		'grid-row' => array('ms'),
-		'grid-row-align' => array('ms'),
-		'grid-row-span' => array('ms'),
-		'grid-rows' => array('ms'),
-		'hyphens' => array('moz', 'epub', 'webkit', 'ms'),
-		'opacity' => array('moz', 'webkit'),
-		'text-overflow' => array('o'),
-		'text-size-adjust' => array('moz', 'webkit', 'ms'),
-		'transform' => array('moz', 'webkit', 'o', 'ms'),
-		'transform-origin' => array('moz', 'webkit', 'o', 'ms'),
-		'transition' => array('moz', 'webkit', 'o'),
-		'transition-delay' => array('moz', 'webkit', 'o'),
-		'transition-duration' => array('moz', 'webkit', 'o'),
-		'transition-property' => array('moz', 'webkit', 'o'),
-		'transition-timing-function' => array('moz', 'webkit', 'o'),
-		'user-select' => array('moz', 'webkit')
-	);
-
-	static $non_standard_properties = array(
-		'border-top-left-radius' => array(
-			'moz' => '-moz-border-radius-topleft'
+	static $vendorPrefixesFunctions = array(
+		array(
+			'properties' => array(
+				'animation',
+				'animation-delay',
+				'animation-direction',
+				'animation-duration',
+				'animation-fill-mode',
+				'animation-iteration-count',
+				'animation-name',
+				'animation-play-state',
+				'animation-timing-function',
+				'backface-visibility',
+				'transform',
+				'transform-origin'
+			),
+			'fn' => array(
+				'addPropertiesVendorPrefixes' => array('moz', 'webkit', 'o', 'ms')
+			)
 		),
-		'border-top-right-radius' => array(
-			'moz' => '-moz-border-radius-topright'
+		array(
+			'properties' => array(
+				'appearance',
+				'background-clip',
+				'background-origin',
+				'box-sizing',
+				'column-count',
+				'column-gap',
+				'column-rule',
+				'column-rule-color',
+				'column-rule-style',
+				'column-rule-width',
+				'column-span',
+				'column-width',
+				'columns',
+				'opacity',
+				'user-select'
+			),
+			'fn' => array(
+				'addPropertiesVendorPrefixes' => array('moz', 'webkit')
+			)
 		),
-		'border-bottom-left-radius' => array(
-			'moz' => '-moz-border-radius-bottomleft'
+		array(
+			'properties' => array(
+				'background-size',
+				'border-bottom-image',
+				'border-bottom-left-image',
+				'border-bottom-right-image',
+				'border-corner-image',
+				'border-image',
+				'border-left-image',
+				'border-top-image',
+				'border-top-left-image',
+				'border-top-right-image',
+				'border-radius',
+				'border-right-image',
+				'box-shadow',
+				'transition',
+				'transition-delay',
+				'transition-duration',
+				'transition-property',
+				'transition-timing-function'
+			),
+			'fn' => array(
+				'addPropertiesVendorPrefixes' => array('moz', 'webkit', 'o')
+			)
 		),
-		'border-bottom-right-radius' => array(
-			'moz' => '-moz-border-radius-bottomright'
+		array(
+			'properties' => array(
+				'border-after',
+				'border-after-color',
+				'border-after-style',
+				'border-after-width',
+				'border-before',
+				'border-before-color',
+				'border-before-style',
+				'border-before-width',
+			),
+			'fn' => array(
+				'addPropertiesVendorPrefixes' => array('webkit')
+			)
+		),
+		array(
+			'properties' => array(
+				'filter',
+				'grid-column',
+				'grid-column-align',
+				'grid-column-span',
+				'grid-columns',
+				'grid-layer',
+				'grid-row',
+				'grid-row-align',
+				'grid-row-span',
+				'grid-rows',
+			),
+			'fn' => array(
+				'addPropertiesVendorPrefixes' => array('ms')
+			)
+		),
+		array(
+			'properties' => array('hyphens'),
+			'fn' => array(
+				'addPropertiesVendorPrefixes' => array('moz', 'webkit', 'epub', 'ms')
+			)
+		),
+		array(
+			'properties' => array('text-overflow'),
+			'fn' => array(
+				'addPropertiesVendorPrefixes' => array('o')
+			)
+		),
+		array(
+			'properties' => array('text-size-adjust'),
+			'fn' => array(
+				'addPropertiesVendorPrefixes' => array('moz', 'webkit', 'ms')
+			)
+		),
+		array(
+			'properties' => array('border-top-left-radius'),
+			'fn' => array(
+				'addPropertiesVendorPrefixes' => array('webkit'),
+				'addRenamedProperty' => array('moz' => '-moz-border-radius-topleft')
+			)
+		),
+		array(
+			'properties' => array('border-top-right-radius'),
+			'fn' => array(
+				'addPropertiesVendorPrefixes' => array('webkit'),
+				'addRenamedProperty' => array('moz' => '-moz-border-radius-topright')
+			)
+		),
+		array(
+			'properties' => array('border-bottom-left-radius'),
+			'fn' => array(
+				'addPropertiesVendorPrefixes' => array('webkit'),
+				'addRenamedProperty' => array('moz' => '-moz-border-radius-bottomleft')
+			)
+		),
+		array(
+			'properties' => array('border-bottom-right-radius'),
+			'fn' => array(
+				'addPropertiesVendorPrefixes' => array('webkit'),
+				'addRenamedProperty' => array('moz' => '-moz-border-radius-bottomright')
+			)
+		),
+		array(
+			'selector' => '::selection',
+			'fn' => array(
+				'addRenamedSelector' => array('moz' => '::-moz-selection')
+			)
+		),
+		array(
+			'selector' => '::input-placeholder',
+			'fn' => array(
+				'addRenamedSelector' => array(
+					'moz' => ':-moz-placeholder',
+					'webkit' => '::-webkit-input-placeholder',
+					'ms' => '::-ms-input-placeholder'
+				)
+			)
+		),
+		array(
+			'type' => '@keyframes',
+			'fn' => array(
+				'addRenamedType' => array(
+					'moz' => '@-moz-keyframes',
+					'webkit' => '@-webkit-keyframes',
+					'ms' => '@-ms-keyframes',
+					'o' => '@-o-keyframes'
+				)
+			)
+		),
+		array(
+			'type' => '@document',
+			'fn' => array(
+				'addRenamedType' => array(
+					'moz' => '@-moz-document'
+				)
+			)
+		),
+		array(
+			'value' => 'inline-block',
+			'fn' => array(
+				'addValuesVendorPrefixes' => array('moz')
+			)
+		),
+		array(
+			'value' => 'calc',
+			'fn' => array(
+				'addValuesVendorPrefixes' => array('moz', 'webkit')
+			)
+		),
+		array(
+			'value' => 'linear-gradient',
+			'fn' => array(
+				'normalizeLinearGradient' => null,
+				'webkitLinearGradient' => null,
+				'oldLinearGradient' => array('moz', 'webkit', 'o')
+			)
 		)
 	);
 
-	static $values = array(
-		'display' => array(
-			'box' => array('moz', 'webkit'),
-			'inline-block' => array('moz')
-		),
-		'background' => array(
-			'linear-gradient' => array('moz', 'webkit', 'o')
-		),
-		'background-image' => array(
-			'linear-gradient' => array('moz', 'webkit', 'o')
-		)
-	);
-
-	static $non_standard_values = array(
-		'background' => array(
-			'linear-gradient' => array('webkit' => 'webkitLinearGradient')
-		),
-		'background-image' => array(
-			'linear-gradient' => array('webkit' => 'webkitLinearGradient')
-		)
-	);
-
-	static $selectors = array(
-		'::selection' => array('moz' => '::-moz-selection'),
-		'::input-placeholder' => array('moz' => ':-moz-placeholder', 'webkit' => '::-webkit-input-placeholder', 'ms' => '::-ms-input-placeholder')
-	);
-
-	static $types = array(
-		'@keyframes' => array(
-			'moz' => '@-moz-keyframes',
-			'webkit' => '@-webkit-keyframes',
-			'ms' => '@-ms-keyframes',
-			'o' => '@-o-keyframes'
-		),
-		'@document' => array(
-			'moz' => '@-moz-document',
-		)
-	);
 
 
 	/**
@@ -166,117 +234,110 @@ class VendorPrefixes {
 	 * @param Stylecow\Css $css The css object
 	 */
 	static public function apply (Css $css) {
-
-		//Properties names
-		$css->executeRecursive(function ($code) {
-			foreach ($code->getProperties() as $property) {
-				if (isset(VendorPrefixes::$properties[$property->name])) {
-					foreach (VendorPrefixes::$properties[$property->name] as $vendor) {
-						$name = '-'.$vendor.'-'.$property->name;
-
-						if (!$code->hasProperty($name)) {
-							$newProperty = clone $property;
-							$newProperty->name = $name;
-							$newProperty->vendor = $vendor;
-
-							$code->addProperty($newProperty, $property->getPositionInParent());
-						}
+		foreach (VendorPrefixes::$vendorPrefixesFunctions as $fn) {
+			$css->executeRecursive(function ($code) use ($fn) {
+				if (isset($fn['type']) && ($fn['type'] === $code->selector->type)) {
+					foreach ($fn['fn'] as $func => $args) {
+						static::$func($code->selector, $args);
 					}
 				}
 
-				if (isset(VendorPrefixes::$non_standard_properties[$property->name])) {
-					foreach (VendorPrefixes::$non_standard_properties[$property->name] as $vendor => $name) {
-						if (!$code->hasProperty($name)) {
-							$newProperty = clone $property;
-							$newProperty->name = $name;
-							$newProperty->vendor = $vendor;
-
-							$code->addProperty($newProperty, $property->getPositionInParent());
-						}
+				if (isset($fn['selector']) && (strpos((string)$code->selector, $fn['selector']) !== false)) {
+					foreach ($fn['fn'] as $func => $args) {
+						static::$func($code->selector, $fn['selector'], $args);
 					}
 				}
-			}
-		});
 
-		//Properties values
-		$css->executeRecursive(function ($code) {
-			foreach ($code->getProperties() as $property) {
-				if (isset(VendorPrefixes::$values[$property->name])) {
-					foreach (VendorPrefixes::$values[$property->name] as $value => $vendors) {
-						if (strpos($property->value, $value) !== false) {
-							foreach ($vendors as $vendor) {
-								$newValue = preg_replace('/(^|[^\w-])('.preg_quote($value, '/').')([^\w]|$)/', '\\1-'.$vendor.'-'.$value.'\\3', $property->value);
-
-								if (!$code->hasProperty($property->name, $newValue)) {
-									$newProperty = clone $property;
-									$newProperty->value = $newValue;
-									$newProperty->vendor = $vendor;
-
-									$code->addProperty($newProperty, $property->getPositionInParent());
-								}
+				if (isset($fn['properties'])) {
+					foreach ($code->getProperties() as $property) {
+						if (in_array($property->name, $fn['properties'])) {
+							foreach ($fn['fn'] as $func => $args) {
+								static::$func($property, $args);
 							}
 						}
 					}
 				}
 
-				if (isset(VendorPrefixes::$non_standard_values[$property->name])) {
-					foreach (VendorPrefixes::$non_standard_values[$property->name] as $value => $prefixes) {
-						if (strpos($property->value, $value) !== false) {
-							foreach ($prefixes as $vendor => $fn) {
-								$newValue = call_user_func(__NAMESPACE__.'\\VendorPrefixes::'.$fn, $property->value);
-
-								if (!$code->hasProperty($property->name, $newValue)) {
-									$newProperty = clone $property;
-									$newProperty->value = $newValue;
-									$newProperty->vendor = $vendor;
-
-									$code->addProperty($newProperty, $property->getPositionInParent());
-								}
+				if (isset($fn['value'])) {
+					foreach ($code->getProperties() as $property) {
+						if (strpos($property->value, $fn['value']) !== false) {
+							foreach ($fn['fn'] as $func => $args) {
+								static::$func($property, $fn['value'], $args);
 							}
 						}
 					}
 				}
-			}
-		});
-
-
-		//Selector
-		$css->executeRecursive(function ($code) {
-			foreach (VendorPrefixes::$selectors as $selector => $prefixes) {
-				if (strpos((string)$code->selector, $selector) === false) {
-					continue;
-				}
-
-				foreach ($prefixes as $vendor => $vendor_selector) {
-					$newCode = clone $code;
-					$newCode->selector->set(str_replace($selector, $vendor_selector, $code->selector->get()));
-					$newCode->selector->vendor = $vendor;
-
-					$code->parent->addChild($newCode, $code->getPositionInParent());
-				}
-			}
-		});
-
-
-		//Type
-		$css->executeRecursive(function ($code) {
-			if (!isset($code->selector->type) || !isset(VendorPrefixes::$types[$code->selector->type])) {
-				return;
-			}
-
-			foreach (VendorPrefixes::$types[$code->selector->type] as $vendor => $type) {
-				$newCode = clone $code;
-				$newCode->selector->vendor = $vendor;
-				$newCode->selector->type = $type;
-
-				$code->parent->addChild($newCode, $code->getPositionInParent());
-			}
-		});
+			});
+		}
 
 		//Resolve and simplify the vendors
 		$css->resolveVendors();
 	}
 
+
+	static public function addPropertiesVendorPrefixes ($property, $prefixes) {
+		foreach ($prefixes as $prefix) {
+			$name = "-$prefix-".$property->name;
+
+			if (!$property->parent->hasProperty($name)) {
+				$newProperty = clone $property;
+				$newProperty->name = $name;
+				$newProperty->vendor = $prefix;
+
+				$property->parent->addProperty($newProperty, $property->getPositionInParent());
+			}
+		}
+	}
+
+	static public function addRenamedProperty ($property, $names) {
+		foreach ($names as $vendor => $name) {
+			if ((empty($property->vendor) || $property->vendor === $prefix) && !$property->parent->hasProperty($name)) {
+				$newProperty = clone $property;
+				$newProperty->name = $name;
+				$newProperty->vendor = $vendor;
+
+				$property->parent->addProperty($newProperty, $property->getPositionInParent());
+			}
+		}
+	}
+
+	static public function addRenamedSelector ($selector, $word, $names) {
+		foreach ($names as $vendor => $name) {
+			if (empty($selector->vendor) || $selector->vendor === $vendor) {
+				$newCode = clone $selector->parent;
+				$newCode->selector->set(str_replace($word, $name, $selector->get()));
+				$newCode->selector->vendor = $vendor;
+
+				$selector->parent->parent->addChild($newCode, $selector->parent->getPositionInParent());
+			}
+		}
+	}
+
+	static public function addRenamedType ($selector, $names) {
+		foreach ($names as $vendor => $name) {
+			$newCode = clone $selector->parent;
+			$newCode->selector->type = $name;
+			$newCode->selector->vendor = $vendor;
+
+			$selector->parent->parent->addChild($newCode, $selector->parent->getPositionInParent());
+		}
+	}
+
+	static public function addValuesVendorPrefixes ($property, $value, $prefixes) {
+		foreach ($prefixes as $prefix) {
+			if (empty($property->vendor) || $property->vendor === $prefix) {
+				$newValue = preg_replace('/(^|[^\w-])('.preg_quote($value, '/').')([^\w]|$)/', "\\1-$prefix-$value\\3", $property->value);
+
+				if (!$property->parent->hasProperty($property->name, $newValue)) {
+					$newProperty = clone $property;
+					$newProperty->value = $newValue;
+					$newProperty->vendor = $prefix;
+
+					$property->parent->addProperty($newProperty, $property->getPositionInParent());
+				}
+			}
+		}
+	}
 
 
 	/**
@@ -286,8 +347,82 @@ class VendorPrefixes {
 	 *
 	 * @return array  The linear-gradient code
 	 */
-	static public function webkitLinearGradient ($value) {
-		return Parser::executeFunctions($value, 'linear-gradient', function ($params) {
+	static public function normalizeLinearGradient ($property) {
+		return $property->executeFunction('linear-gradient', function ($params) {
+			switch ($params[0]) {
+				case 'center top':
+				case 'top':
+					$params[0] = 'to bottom';
+					break;
+
+				case 'center bottom':
+				case 'bottom':
+					$params[0] = 'to top';
+					break;
+
+				case 'left top':
+				case 'left':
+					$params[0] = 'to right';
+					break;
+
+				case 'right top':
+				case 'right':
+					$params[0] = 'to left';
+					break;
+
+				default:
+					return null;
+			}
+
+			return 'linear-gradient('.implode(', ', $params).')';
+		});
+	}
+
+
+	static public function oldLinearGradient ($property, $value, $prefixes) {
+		$newProperty = clone $property;
+
+		$newProperty->executeFunction('linear-gradient', function ($params) {
+			switch ($params[0]) {
+				case 'to bottom':
+					$params[0] = 'top';
+					break;
+
+				case 'to top':
+					$params[0] = 'bottom';
+					break;
+
+				case 'to right':
+					$params[0] = 'left';
+					break;
+
+				case 'to left':
+					$params[0] = 'right';
+					break;
+
+				default:
+					return null;
+			}
+
+			return 'linear-gradient('.implode(', ', $params).')';
+		});
+
+		static::addValuesVendorPrefixes($newProperty, $value, $prefixes);
+	}
+
+
+
+	/**
+	 * Generate the old webkit syntax for the linear-gradient
+	 *
+	 * @param Stylecow\Code $code The code where the property is placed
+	 *
+	 * @return array  The linear-gradient code
+	 */
+	static public function webkitLinearGradient (Property $property) {
+		$newProperty = clone $property;
+
+		$newProperty->executeFunction('linear-gradient', function ($params) {
 			$point = 'top';
 
 			if (preg_match('/(top|bottom|left|right|deg)/', $params[0])) {
@@ -295,29 +430,21 @@ class VendorPrefixes {
 			}
 
 			switch ($point) {
-				case 'center top':
-				case 'top':
 				case 'to bottom':
 					$start = 'left top';
 					$end = 'left bottom';
 					break;
 
-				case 'center bottom':
-				case 'bottom':
 				case 'to top':
 					$start = 'left bottom';
 					$end = 'left top';
 					break;
 
-				case 'left top':
-				case 'left':
 				case 'to right':
 					$start = 'left top';
 					$end = 'right top';
 					break;
 
-				case 'right top':
-				case 'right':
 				case 'to left':
 					$start = 'right top';
 					$end = 'left top';
@@ -362,5 +489,10 @@ class VendorPrefixes {
 				return '-webkit-gradient(linear, '.$start.', '.$end.', '.implode(', ', $color_stops).')';
 			}
 		});
+
+		if ($property->value !== $newProperty->value) {
+			$newProperty->vendor = 'webkit';
+			$property->parent->addProperty($newProperty, $property->getPositionInParent());
+		}
 	}
 }

@@ -24,6 +24,14 @@ use Stylecow\Property;
 class VendorPrefixes {
 	const POSITION = 3;
 
+	static $vendorPrefixesFunctions = array(
+		array(
+			'property' => 'animation',
+			'fn' => 'addPropertiesVendorPrefixes',
+			'arg' => array('moz', 'webkit', 'o', 'ms')
+		)
+	);
+
 	static $properties = array(
 		'animation' => array('moz', 'webkit', 'o', 'ms'),
 		'animation-delay' => array('moz', 'webkit', 'o', 'ms'),
@@ -128,17 +136,21 @@ class VendorPrefixes {
 			'box' => array('moz', 'webkit'),
 			'inline-block' => array('moz')
 		),
+		/*
 		'background' => array(
 			'linear-gradient' => array('moz', 'webkit', 'o')
 		),
 		'background-image' => array(
 			'linear-gradient' => array('moz', 'webkit', 'o')
-		)
+		)*/
 	);
 
 	static $non_standard_values = array(
 		'background' => array(
-			'linear-gradient' => array('webkit' => 'webkitLinearGradient')
+			'linear-gradient' => array(
+				'' => 'normalizeLinearGradient',
+				'webkit' => 'webkitLinearGradient'
+			)
 		),
 		'background-image' => array(
 			'linear-gradient' => array('webkit' => 'webkitLinearGradient')
@@ -172,8 +184,18 @@ class VendorPrefixes {
 
 		//Properties names
 		$css->executeRecursive(function ($code) {
+
 			foreach ($code->getProperties() as $property) {
-				if (isset(VendorPrefixes::$properties[$property->name])) {
+				foreach (VendorPrefixes::$vendorPrefixesFunctions as $fn) {
+					if (isset($fn['property']) && $fn['property'] === $property->name) {
+						$func = $fn['fn'];
+						static::$func($code, $property, $fn['arg']);
+					}
+				}
+			}
+			/*
+
+				if (isset(VendorPrefixes::$propertiesFunctions[$property->name])) {
 					foreach (VendorPrefixes::$properties[$property->name] as $vendor) {
 						$name = '-'.$vendor.'-'.$property->name;
 
@@ -199,8 +221,9 @@ class VendorPrefixes {
 					}
 				}
 			}
+			*/
 		});
-
+return;
 		//Properties values
 		$css->executeRecursive(function ($code) {
 			foreach ($code->getProperties() as $property) {
@@ -278,6 +301,60 @@ class VendorPrefixes {
 
 		//Resolve and simplify the vendors
 		$css->resolveVendors();
+	}
+
+
+	static public function addPropertiesVendorPrefixes ($code, $property, $params) {
+		foreach ($params as $vendor) {
+			$name = '-'.$vendor.'-'.$property->name;
+
+			if (!$code->hasProperty($name)) {
+				$newProperty = clone $property;
+				$newProperty->name = $name;
+				$newProperty->vendor = $vendor;
+
+				$code->addProperty($newProperty, $property->getPositionInParent());
+			}
+		}
+	}
+
+
+	/**
+	 * Fix the different syntaxis for the linear-gradient
+	 *
+	 * @param string  $value  The value of the property
+	 *
+	 * @return array  The linear-gradient code
+	 */
+	static public function normalizeLinearGradient ($value) {
+		return Parser::executeFunctions($value, 'linear-gradient', function ($params) {
+			switch ($params[0]) {
+				case 'center top':
+				case 'top':
+					$params[0] = 'to bottom';
+					break;
+
+				case 'center bottom':
+				case 'bottom':
+					$params[0] = 'to top';
+					break;
+
+				case 'left top':
+				case 'left':
+					$params[0] = 'to right';
+					break;
+
+				case 'right top':
+				case 'right':
+					$params[0] = 'to left';
+					break;
+
+				default:
+					return null;
+			}
+
+			return 'linear-gradient('.implode(', ', $params).')';
+		});
 	}
 
 

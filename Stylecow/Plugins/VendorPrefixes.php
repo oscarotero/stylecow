@@ -121,6 +121,9 @@ class VendorPrefixes {
 	);
 
 	static $values = array(
+		'*' => array(
+			'calc' => array('moz', 'webkit'),
+		),
 		'display' => array(
 			'box' => array('moz', 'webkit'),
 			'inline-block' => array('moz')
@@ -201,19 +204,19 @@ class VendorPrefixes {
 		//Properties values
 		$css->executeRecursive(function ($code) {
 			foreach ($code->getProperties() as $property) {
-				if (isset(VendorPrefixes::$values[$property->name])) {
-					foreach (VendorPrefixes::$values[$property->name] as $value => $vendors) {
-						if (strpos($property->value, $value) !== false) {
-							foreach ($vendors as $vendor) {
-								$newValue = preg_replace('/(^|[^\w-])('.preg_quote($value, '/').')([^\w]|$)/', '\\1-'.$vendor.'-'.$value.'\\3', $property->value);
+				$values = isset(VendorPrefixes::$values[$property->name]) ? VendorPrefixes::$values[$property->name] : VendorPrefixes::$values['*'];
 
-								if (!$code->hasProperty($property->name, $newValue)) {
-									$newProperty = clone $property;
-									$newProperty->value = $newValue;
-									$newProperty->vendor = $vendor;
+				foreach ($values as $value => $vendors) {
+					if (strpos($property->value, $value) !== false) {
+						foreach ($vendors as $vendor) {
+							$newValue = preg_replace('/(^|[^\w-])('.preg_quote($value, '/').')([^\w]|$)/', '\\1-'.$vendor.'-'.$value.'\\3', $property->value);
 
-									$code->addProperty($newProperty, $property->getPositionInParent());
-								}
+							if (!$code->hasProperty($property->name, $newValue)) {
+								$newProperty = clone $property;
+								$newProperty->value = $newValue;
+								$newProperty->vendor = $vendor;
+
+								$code->addProperty($newProperty, $property->getPositionInParent());
 							}
 						}
 					}

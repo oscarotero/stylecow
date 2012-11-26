@@ -12,7 +12,7 @@
  *
  * @author Oscar Otero <http://oscarotero.com> <oom@oscarotero.com>
  * @license GNU Affero GPL version 3. http://www.gnu.org/licenses/agpl-3.0.html
- * @version 1.0.0 (2012)
+ * @version 1.1.0 (2012)
  */
 
 namespace Stylecow\Plugins;
@@ -234,9 +234,8 @@ class VendorPrefixes {
 	 * @param Stylecow\Css $css The css object
 	 */
 	static public function apply (Css $css) {
-
-		$css->executeRecursive(function ($code) {
-			foreach (VendorPrefixes::$vendorPrefixesFunctions as $fn) {
+		foreach (VendorPrefixes::$vendorPrefixesFunctions as $fn) {
+			$css->executeRecursive(function ($code) use ($fn) {
 				if (isset($fn['type']) && ($fn['type'] === $code->selector->type)) {
 					foreach ($fn['fn'] as $func => $args) {
 						static::$func($code->selector, $args);
@@ -268,8 +267,8 @@ class VendorPrefixes {
 						}
 					}
 				}
-			}
-		});
+			});
+		}
 
 		//Resolve and simplify the vendors
 		$css->resolveVendors();

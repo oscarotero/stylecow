@@ -42,10 +42,12 @@ class Css extends \ArrayObject {
 	public function __clone () {
 		if (isset($this->selector)) {
 			$this->selector = clone $this->selector;
+			$this->selector->parent = $this;
 		}
 
 		foreach ($this->properties as $k => $property) {
 			$this->properties[$k] = clone $property;
+			$this->properties[$k]->parent = $this;
 		}
 
 		$this->parent = null;
@@ -275,16 +277,6 @@ class Css extends \ArrayObject {
 
 			$child->executeRecursive($callback, $childData);
 		}
-	}
-
-	public function executeRecursiveInverse ($callback, $contextData = null, $key = 0) {
-		foreach ($this->getArrayCopy() as $key => $child) {
-			$childData = $contextData;
-
-			$child->executeRecursiveInverse($callback, $childData, $key);
-		}
-
-		$callback($this, $contextData, $key);
 	}
 
 

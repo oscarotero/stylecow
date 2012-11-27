@@ -124,6 +124,21 @@ class VendorPrefixes {
 			)
 		),
 		array(
+			'properties' => array(
+				'box-align',
+				'box-direction',
+				'box-flex',
+				'box-flex-group',
+				'box-lines',
+				'box-ordinal-group',
+				'box-orient',
+				'box-pack',
+			),
+			'fn' => array(
+				'addPropertiesVendorPrefixes' => array('ms', 'webkit', 'moz')
+			)
+		),
+		array(
 			'properties' => array('hyphens'),
 			'fn' => array(
 				'addPropertiesVendorPrefixes' => array('moz', 'webkit', 'epub', 'ms')

@@ -275,6 +275,12 @@ class VendorPrefixes {
 	}
 
 
+	/**
+	 * Duplicate properties with the same name but adding different vendor prefixes (for example border-radius -> -moz-border-radius)
+	 *
+	 * @param Stylecow\Property $property The property object
+	 * @param array $prefixes List of prefixes (for example array('moz', 'webkit'))
+	 */
 	static public function addPropertiesVendorPrefixes ($property, $prefixes) {
 		foreach ($prefixes as $prefix) {
 			$name = "-$prefix-".$property->name;
@@ -289,6 +295,13 @@ class VendorPrefixes {
 		}
 	}
 
+
+	/**
+	 * Duplicate properties with different names and vendor prefixes (for example border-top-left-radius -> -moz-border-radius-topleft)
+	 *
+	 * @param Stylecow\Property $property The property object
+	 * @param array $names List of prefixes and new names (for example array('moz' => '::-moz-border-radius-topleft'))
+	 */
 	static public function addRenamedProperty ($property, $names) {
 		foreach ($names as $vendor => $name) {
 			if ((empty($property->vendor) || $property->vendor === $prefix) && !$property->parent->hasProperty($name)) {
@@ -301,6 +314,13 @@ class VendorPrefixes {
 		}
 	}
 
+	/**
+	 * Duplicate a code with different selectors and vendor prefixes (for example ::selection -> ::-moz-selection)
+	 *
+	 * @param Stylecow\Selector $selector The selector object
+	 * @param string $word The word to search in the selector (for example "::selection")
+	 * @param array $names List of prefixes and new names (for example array('moz' => '::-moz-selection'))
+	 */
 	static public function addRenamedSelector ($selector, $word, $names) {
 		foreach ($names as $vendor => $name) {
 			if (empty($selector->vendor) || $selector->vendor === $vendor) {
@@ -313,6 +333,12 @@ class VendorPrefixes {
 		}
 	}
 
+	/**
+	 * Duplicate a code with different types and vendor prefixes (for example @document -> @-moz-document)
+	 *
+	 * @param Stylecow\Selector $selector The selector object
+	 * @param array $names List of prefixes and new names (for example array('moz' => '@-moz-document'))
+	 */
 	static public function addRenamedType ($selector, $names) {
 		foreach ($names as $vendor => $name) {
 			$newCode = clone $selector->parent;
@@ -323,6 +349,14 @@ class VendorPrefixes {
 		}
 	}
 
+
+	/**
+	 * Search for a value in a property and generate duplicates values with vendor prefixes
+	 *
+	 * @param Stylecow\Property $property The property object
+	 * @param string $value The value to search. It can be the full value (for example: inline-block) or a word in the value (for example: linear-gradient)
+	 * @param array $prefixes List of prefixes
+	 */
 	static public function addValuesVendorPrefixes ($property, $value, $prefixes) {
 		foreach ($prefixes as $prefix) {
 			if (empty($property->vendor) || $property->vendor === $prefix) {
@@ -341,11 +375,9 @@ class VendorPrefixes {
 
 
 	/**
-	 * Fix the different syntaxis for the linear-gradient
+	 * Converts the old syntax of linear-gradient to newer
 	 *
-	 * @param string  $value  The value of the property
-	 *
-	 * @return array  The linear-gradient code
+	 * @param Stylecow\Property $property The property object with the old syntax
 	 */
 	static public function normalizeLinearGradient ($property) {
 		return $property->executeFunction('linear-gradient', function ($params) {
@@ -415,9 +447,7 @@ class VendorPrefixes {
 	/**
 	 * Generate the old webkit syntax for the linear-gradient
 	 *
-	 * @param Stylecow\Code $code The code where the property is placed
-	 *
-	 * @return array  The linear-gradient code
+	 * @param Stylecow\Property $property The property object with the standard syntax
 	 */
 	static public function webkitLinearGradient (Property $property) {
 		$newProperty = clone $property;

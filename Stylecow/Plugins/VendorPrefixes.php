@@ -403,7 +403,11 @@ class VendorPrefixes {
 					break;
 
 				default:
-					return null;
+					if ((strpos($params[0], 'to ') === 0) || (strpos($params[0], 'deg') !== false)) {
+						return null;
+					}
+
+					array_unshift($params, 'to bottom');
 			}
 
 			return 'linear-gradient('.implode(', ', $params).')';

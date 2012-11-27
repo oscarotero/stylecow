@@ -35,7 +35,9 @@ class IeLinearGradient {
 			if (($property = $code->getLastProperty(array('background', 'background-image')))) {
 
 				$property->executeFunction('linear-gradient', function ($params, $name, $property) {
-					$filter = IeLinearGradient::getLinearGradientFilter($params);
+					if (($filter = IeLinearGradient::getLinearGradientFilter($params)) === null) {
+						return null;
+					}
 
 					if (($filterProperty = $property->parent->getLastProperty('filter'))) {
 						$filterProperty->addValue($filter);
@@ -57,39 +59,38 @@ class IeLinearGradient {
 	 * @param array  $params  The linear gradient parameters
 	 */
 	static public function getLinearGradientFilter ($params) {
-		$point = 'top';
 		$direction = null;
-
-		if (preg_match('/(top|bottom|left|right|deg)/', $params[0])) {
-			$point = array_shift($params);
-		}
+		$point = array_shift($params);
 
 		switch ($point) {
-			case 'top':
+			case 'to bottom':
 			case '90deg':
 				$direction = 'vertical';
 				$reverse = false;
 				break;
 
-			case 'bottom':
+			case 'to top':
 			case '-90deg':
 				$direction = 'vertical';
 				$reverse = true;
 				break;
 
-			case 'left':
+			case 'to right':
 			case '180deg':
 			case '-180deg':
 				$direction = 'horizontal';
 				$reverse = false;
 				break;
 
-			case 'right':
+			case 'to left':
 			case '0deg':
 			case '360deg':
 				$direction = 'vertical';
 				$reverse = true;
 				break;
+
+			default:
+				return null;
 		}
 
 		$colors = $params;

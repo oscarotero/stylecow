@@ -238,13 +238,13 @@ class VendorPrefixes {
 			$css->executeRecursive(function ($code) use ($fn) {
 				if (isset($fn['type']) && ($fn['type'] === $code->selector->type)) {
 					foreach ($fn['fn'] as $func => $args) {
-						static::$func($code->selector, $args);
+						VendorPrefixes::$func($code->selector, $args);
 					}
 				}
 
 				if (isset($fn['selector']) && (strpos((string)$code->selector, $fn['selector']) !== false)) {
 					foreach ($fn['fn'] as $func => $args) {
-						static::$func($code->selector, $fn['selector'], $args);
+						VendorPrefixes::$func($code->selector, $fn['selector'], $args);
 					}
 				}
 
@@ -252,7 +252,7 @@ class VendorPrefixes {
 					foreach ($code->getProperties() as $property) {
 						if (in_array($property->name, $fn['properties'])) {
 							foreach ($fn['fn'] as $func => $args) {
-								static::$func($property, $args);
+								VendorPrefixes::$func($property, $args);
 							}
 						}
 					}
@@ -262,7 +262,7 @@ class VendorPrefixes {
 					foreach ($code->getProperties() as $property) {
 						if (strpos($property->value, $fn['value']) !== false) {
 							foreach ($fn['fn'] as $func => $args) {
-								static::$func($property, $fn['value'], $args);
+								VendorPrefixes::$func($property, $fn['value'], $args);
 							}
 						}
 					}
@@ -407,7 +407,7 @@ class VendorPrefixes {
 			return 'linear-gradient('.implode(', ', $params).')';
 		});
 
-		static::addValuesVendorPrefixes($newProperty, $value, $prefixes);
+		VendorPrefixes::addValuesVendorPrefixes($newProperty, $value, $prefixes);
 	}
 
 

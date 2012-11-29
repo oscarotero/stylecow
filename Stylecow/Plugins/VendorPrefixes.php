@@ -93,6 +93,19 @@ class VendorPrefixes {
 		),
 		array(
 			'properties' => array(
+				'-moz-transition',
+				'-webkit-transition',
+				'-o-transition',
+				'-moz-transition-property',
+				'-webkit-transition-property',
+				'-o-transition-property'
+			),
+			'fn' => array(
+				'transitionPropertyValue' => null
+			)
+		),
+		array(
+			'properties' => array(
 				'border-after',
 				'border-after-color',
 				'border-after-style',
@@ -384,6 +397,22 @@ class VendorPrefixes {
 
 					$property->parent->addProperty($newProperty, $property->getPositionInParent());
 				}
+			}
+		}
+	}
+
+
+	static public function transitionPropertyValue ($property, $value) {
+		$values = explode(' ', $property->value);
+
+		foreach (VendorPrefixes::$vendorPrefixesFunctions as $fn) {
+			if (isset($fn['properties']) && in_array($values[0], $fn['properties'])) {
+				if (isset($fn['fn']['addPropertiesVendorPrefixes']) && in_array($property->vendor, ($fn['fn']['addPropertiesVendorPrefixes']))) {
+					$values[0] = '-'.$property->vendor.'-'.$values[0];
+				}
+
+				$property->value = implode(' ', $values);
+				break;
 			}
 		}
 	}

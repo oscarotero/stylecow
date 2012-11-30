@@ -24,7 +24,7 @@ spl_autoload_register('autoload');
 
 $plugins = array(
 	'Color' => array(
-		'checked' => true,
+		'checked' => false,
 		'options' => array()
 	),
 	'Grid' => array(
@@ -32,35 +32,35 @@ $plugins = array(
 		'options' => array()
 	),
 	'IeBackgroundAlpha' => array(
-		'checked' => true,
+		'checked' => false,
 		'options' => array()
 	),
 	'IeClip' => array(
-		'checked' => true,
+		'checked' => false,
 		'options' => array()
 	),
 	'IeFloat' => array(
-		'checked' => true,
+		'checked' => false,
 		'options' => array()
 	),
 	'IeInlineBlock' => array(
-		'checked' => true,
+		'checked' => false,
 		'options' => array()
 	),
 	'IeLinearGradient' => array(
-		'checked' => true,
+		'checked' => false,
 		'options' => array()
 	),
 	'IeMinHeight' => array(
-		'checked' => true,
+		'checked' => false,
 		'options' => array()
 	),
 	'IeOpacity' => array(
-		'checked' => true,
+		'checked' => false,
 		'options' => array()
 	),
 	'Initial' => array(
-		'checked' => true,
+		'checked' => false,
 		'options' => array()
 	),
 	'Matches' => array(
@@ -68,7 +68,7 @@ $plugins = array(
 		'options' => array()
 	),
 	'Math' => array(
-		'checked' => true,
+		'checked' => false,
 		'options' => array()
 	),
 	'MediaQuery' => array(
@@ -87,7 +87,7 @@ $plugins = array(
 		'options' => array()
 	),
 	'IeTransform' => array(
-		'checked' => true,
+		'checked' => false,
 		'options' => array()
 	),
 	'Variables' => array(
@@ -110,7 +110,7 @@ if (isset($_POST['send'])) {
 	$input_code = $_POST['code'];
 	$css = Parser::parseString($input_code);
 
-	//Load the css file
+	//Load the plugin configuration
 	$applyPlugins = array();
 
 	foreach ($plugins as $plugin => $settings) {
@@ -143,6 +143,7 @@ if (isset($_POST['send'])) {
 		}
 	}
 
+	//Apply the plugins
 	$css->applyPlugins($applyPlugins);
 
 	//Get the code
@@ -188,6 +189,19 @@ if (isset($_POST['send'])) {
 			fieldset {
 				margin-bottom: 20px;
 			}
+			fieldset > div {
+				-webkit-column-count: 2;
+				-moz-column-count: 2;
+				column-count: 2;
+			}
+			fieldset ul {
+				margin: 0 0 10px 0;
+				padding-left: 25px;
+				list-style: none;
+			}
+			fieldset ul input {
+				width: 50px;
+			}
 			legend {
 				font-weight: bold;
 			}
@@ -231,6 +245,8 @@ if (isset($_POST['send'])) {
 			<fieldset>
 				<legend>Plugins to apply</legend>
 
+				<div>
+
 				<?php foreach ($plugins as $plugin => $settings): ?>
 					<label><input type="checkbox" name="plugin[<?php echo $plugin; ?>]" value="1"<?php echo $settings['checked'] ? ' checked' : ''; ?>> <?php echo $plugin; ?></label><br>
 					<?php if ($settings['options']): ?>
@@ -251,6 +267,7 @@ if (isset($_POST['send'])) {
 						</ul>
 					<?php endif; ?>
 				<?php endforeach; ?>
+				</div>
 			</fieldset>
 		</form>
 

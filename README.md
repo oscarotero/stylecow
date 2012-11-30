@@ -103,7 +103,9 @@ div.foo {
 You have to define the base url at the second argument
 
 ```php
-Stylecow\Plugins\BaseUrl:apply($css, '/my/custom/baseurl/');
+$css->applyPlugins(array(
+	'BaseUrl' => '/my/custom/baseurl/'
+));
 ```
 
 IeBackgroundAlpha
@@ -393,9 +395,11 @@ In this example, lets say we want the css code for a browser with a screen of 10
 You have to define the browser capabilities at the second argument
 
 ```php
-Stylecow\Plugins\MediaQuery:apply($css, array(
-	'width' => '1024px',
-	'type' => 'screen'
+$css->applyPlugins(array(
+	'MediaQuery' => array(
+		'width' => '1024px',
+		'type' => 'screen'
+	)
 ));
 ```
 
@@ -504,12 +508,6 @@ html {
 }
 ```
 
-If you want change the default rem value (16px), use the second parameter of apply() function. Take note this value will be overwritten if font-face is found in :root or html selectors.
-
-```php
-Stylecow\Plugins\Rem::apply($css, 14); //The default value of rem is 14px
-```
-
 Variables
 ---------
 
@@ -581,11 +579,14 @@ div.foo h3 {
 You can define some predefined variables on apply the plugin:
 
 ```php
-Stylecow\Plugins\Variables:apply($css, array(
-	'myColor' => '#456',
-	'myFont' => 'Helvetica, Arial, sans-serif'
+$css->applyPlugins(array(
+	'Variables' => array(
+		'myColor' => '#456',
+		'myFont' => 'Helvetica, Arial, sans-serif'
+	)
 ));
 ```
+
 
 
 VendorPrefixes

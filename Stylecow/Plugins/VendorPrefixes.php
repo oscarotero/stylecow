@@ -137,21 +137,6 @@ class VendorPrefixes {
 			)
 		),
 		array(
-			'properties' => array(
-				'box-align',
-				'box-direction',
-				'box-flex',
-				'box-flex-group',
-				'box-lines',
-				'box-ordinal-group',
-				'box-orient',
-				'box-pack',
-			),
-			'fn' => array(
-				'addPropertiesVendorPrefixes' => array('ms', 'webkit', 'moz')
-			)
-		),
-		array(
 			'properties' => array('hyphens'),
 			'fn' => array(
 				'addPropertiesVendorPrefixes' => array('moz', 'webkit', 'epub', 'ms')
@@ -251,9 +236,87 @@ class VendorPrefixes {
 				'webkitLinearGradient' => null,
 				'oldLinearGradient' => array('moz', 'webkit', 'o')
 			)
-		)
-	);
+		),
+		array(
+			'value' => 'flex',
+			'fn' => array(
+				'addValuesVendorPrefixes' => array('webkit')
+			)
+		),
+		array(
+			'value' => 'inline-flex',
+			'fn' => array(
+				'addValuesVendorPrefixes' => array('webkit')
+			)
+		),
+		array(
+			'properties' => array(
+				'flex',
+				'flex-align',
+				'flex-basis',
+				'flex-direction',
+				'flex-flow',
+				'flex-grow',
+				'flex-shrink',
+				'flex-wrap',
+				'align-content',
+				'align-items',
+				'align-self',
+				'justify-content',
+				'order',
+			),
+			'fn' => array(
+				'addPropertiesVendorPrefixes' => array('ms', 'webkit')
+			)
+		),
+		array(
+			'value' => 'flex',
+			'fn' => array(
+				'addValuesVendorPrefixes' => array('webkit')
+			)
+		),
+		array(
+			'value' => 'inline-flex',
+			'fn' => array(
+				'addValuesVendorPrefixes' => array('webkit')
+			)
+		),
 
+		//Old flexbox syntax
+		array(
+			'properties' => array(
+				'box-orient',
+				'box-direction',
+				'box-ordinal-group',
+				'box-align',
+				'box-flex',
+				'box-flex-group',
+				'box-pack',
+				'box-lines'
+			),
+			'fn' => array(
+				'addPropertiesVendorPrefixes' => array('moz', 'webkit')
+			)
+		),
+		array(
+			'value' => 'box',
+			'fn' => array(
+				'addValuesVendorPrefixes' => array('moz', 'webkit')
+			)
+		),
+		array(
+			'value' => 'flex',
+			'fn' => array(
+				'addRenamedValue' => array('ms' => '-ms-flexbox')
+			)
+		),
+		array(
+			'value' => 'inline-box',
+			'fn' => array(
+				'addValuesVendorPrefixes' => array('moz', 'webkit')
+			)
+		),
+	);
 
 
 	/**
@@ -386,17 +449,31 @@ class VendorPrefixes {
 	 * @param array $prefixes List of prefixes
 	 */
 	static public function addValuesVendorPrefixes ($property, $value, $prefixes) {
+		$names = array();
+
 		foreach ($prefixes as $prefix) {
-			if (empty($property->vendor) || $property->vendor === $prefix) {
-				$newValue = preg_replace('/(^|[^\w-])('.preg_quote($value, '/').')([^\w]|$)/', "\\1-$prefix-$value\\3", $property->value);
+			$names[$prefix] =  "-$prefix-$value";
+		}
 
-				if (!$property->parent->hasProperty($property->name, $newValue)) {
-					$newProperty = clone $property;
-					$newProperty->value = $newValue;
-					$newProperty->vendor = $prefix;
+		VendorPrefixes::addRenamedValue($property, $value, $names);
+	}
 
-					$property->parent->addProperty($newProperty, $property->getPositionInParent());
-				}
+	/**
+	 * Duplicate a property with different values
+	 *
+	 * @param Stylecow\Property $property The property object
+	 * @param array $names List of prefixes and new names (for example array('moz' => '@-moz-document'))
+	 */
+	static public function addRenamedValue ($property, $value, $names) {
+		foreach ($names as $vendor => $name) {
+			$newValue = preg_replace('/(^|[^\w-])('.preg_quote($value, '/').')([^\w]|$)/', "\\1$name\\3", $property->value);
+
+			if (!$property->parent->hasProperty($property->name, $newValue)) {
+				$newProperty = clone $property;
+				$newProperty->value = $newValue;
+				$newProperty->vendor = $vendor;
+
+				$property->parent->addProperty($newProperty, $property->getPositionInParent());
 			}
 		}
 	}

@@ -8,7 +8,7 @@
  *
  * @author Oscar Otero <http://oscarotero.com> <oom@oscarotero.com>
  * @license GNU Affero GPL version 3. http://www.gnu.org/licenses/agpl-3.0.html
- * @version 1.0.0 (2012)
+ * @version 1.0.1 (2013)
  */
 
 namespace Stylecow;
@@ -25,19 +25,19 @@ class Parser {
 	 *
 	 * @param string $file The path to file to load
 	 *
-	 * @return Stylecow\Css The css object with the code parsed
+	 * @return Stylecow\Css The css object with the code parsed or false if file doesn't exist
 	 */
 	static public function parseFile ($file) {
+		self::$basePath = self::$baseUrl = null;
+
+		if (!is_file($file)) {
+			return false;
+		}
+
 		self::$basePath = (strpos($file, '/') === false) ? '' : dirname($file);
 		self::$baseUrl = '';
 
-		if (is_file($file)) {
-			$css = self::parseString(file_get_contents($file));
-		}
-
-		self::$basePath = self::$baseUrl = null;
-
-		return $css;
+		return self::parseString(file_get_contents($file));
 	}
 
 
@@ -184,7 +184,12 @@ class Parser {
 
 				$Child = $Css->addChild(new Css(Selector::createFromString($selector)));
 
-				$string_piece = ($n === 0) ? '' : trim(substr($string_code, 0, $n-1));
+				$string_piece = ($n === 0) ? '' : trim(substr($string_code, 0, $n));
+
+				if (substr($string_piece, -1) === ';') {
+					$string_piece = substr($string_piece, 0, -1);
+				}
+
 				$string_code = trim(substr($string_code, $n+1));
 				$pos = strpos($string_piece, '{');
 

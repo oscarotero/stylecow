@@ -340,7 +340,7 @@ class Css extends \ArrayObject {
 			}
 		}
 
-		if (empty($properties) && empty($this->selector->type)) {
+		if (empty($properties) && (empty($this->selector->type) || $this->selector->type !== '@import')) {
 			return '';
 		}
 

@@ -184,7 +184,7 @@ class Color {
 		$css->executeRecursive(function ($code) {
 			foreach ($code->getProperties() as $property) {
 				$property->executeFunction('color', function ($parameters) {
-					$rgba = Color::toRGBA(array_shift($parameters));
+					$rgba = Color::resolveColor(array_shift($parameters));
 
 					foreach ($parameters as $operation) {
 						if (strpos($operation, ':') === false) {
@@ -226,6 +226,42 @@ class Color {
 				});
 			}
 		});
+	}
+
+
+	/**
+	 * Converts a color declaration in rgba format.
+	 *
+	 * @param string $colors The css color declaration
+	 * 
+	 * @return array The rgba color values
+	 */
+	static public function resolveColor ($colors) {
+		$colors = Parser::explodeTrim(' ', $colors);
+
+		if (count($colors) === 1) {
+			return Color::toRGBA($colors[0]);
+		}
+
+		$sumColors = array(0, 0, 0, 0);
+
+		foreach ($colors as $k => $color) {
+			$color = Color::toRGBA($color);
+
+			$sumColors[0] += $color[0];
+			$sumColors[1] += $color[1];
+			$sumColors[2] += $color[2];
+			$sumColors[3] += $color[3];
+		}
+
+		$total = count($colors);
+
+		$sumColors[0] = round($sumColors[0]/$total);
+		$sumColors[1] = round($sumColors[1]/$total);
+		$sumColors[2] = round($sumColors[2]/$total);
+		$sumColors[3] = round($sumColors[3]/$total);
+
+		return $sumColors;
 	}
 
 

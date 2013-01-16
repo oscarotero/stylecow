@@ -193,6 +193,7 @@ class VendorPrefixes {
 			'fn' => array(
 				'addRenamedSelector' => array(
 					'moz' => ':-moz-placeholder',
+					'moz' => '::-moz-placeholder',
 					'webkit' => '::-webkit-input-placeholder',
 					'ms' => '::-ms-input-placeholder'
 				)

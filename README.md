@@ -659,7 +659,8 @@ This function may change in a future due to the possible implementation a color(
 div.foo {
 	background: color(#369, light:50, alpha: 0.5);
 	color: color(#369, blue:-30);
-	border: solid 1px color(black, 20); /* Shortcut for color(black, tint:20) */
+	border: solid 1px color(black, 20); /* Integer: Shortcut for color(black, tint:20) */
+	box-shadow: 0 0 4px color(black, 0.2); /* Float: Shortcut for color(black, alpha:0.2) */
 }
 ```
 
@@ -670,6 +671,7 @@ div.foo {
 	background: rgba(64, 128, 191, 0.5);
 	color: #33667b;
 	border: solid 1px #CCCCCC;
+	box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
 }
 ```
 

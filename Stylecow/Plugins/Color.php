@@ -188,8 +188,11 @@ class Color {
 
 					foreach ($parameters as $operation) {
 						if (strpos($operation, ':') === false) {
-							if (preg_match('/^[0-9]+$/', $operation)) {
+							if (preg_match('/^[\+\-]?[0-9]+$/', $operation)) {
 								$function = 'tint';
+								$value = $operation;
+							} else if (preg_match('/^[\+\-]?[0-9\.]+$/', $operation)) {
+								$function = 'alpha';
 								$value = $operation;
 							} else {
 								continue;

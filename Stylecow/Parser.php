@@ -254,23 +254,32 @@ class Parser {
 	 * @param string $delimiter The delimiter used.
 	 * @param string $string The string to explode
 	 * @param int $limit The limit of the explode
-	 * @param string $str_in The character to start to ignore the delimiter. By default "("
-	 * @param string $str_out The character to end to ignore the delimiter. By default ")"
+	 * @param array $str_in The characters to start to ignore the delimiter. By default "("
+	 * @param array $str_out The characters to end to ignore the delimiter. By default ")"
 	 *
 	 * @return array The exploded array.
 	 */
-	static public function explode ($delimiter, $string, $limit = null, $str_in = '(', $str_out = ')') {
-		if (strpos($string, $str_in) === false) {
+	static public function explode ($delimiter, $string, $limit = null, array $strs_in = array('(', '"', "'"), array $strs_out = array(')', '"', "'")) {
+		$exists = false;
+
+		foreach ($strs_in as $str_in) {
+			if (strpos($string, $str_in) !== false) {
+				$exists = true;
+				break;
+			}
+		}
+
+		if (!$exists) {
 			return is_null($limit) ? explode($delimiter, $string) : explode($delimiter, $string, $limit);
 		}
 
 		$array = array();
 		$delimiter_length = strlen($delimiter);
+		$str_out = array();
 
 		while ($string) {
 			if (isset($limit) && count($array) === ($limit - 1)) {
 				$array[] = $string;
-
 				break;
 			}
 
@@ -282,21 +291,23 @@ class Parser {
 			for ($n = 0, $in = 0, $length = strlen($string); $n <= $length; $n++) {
 				$l = isset($string[$n]) ? $string[$n] : '';
 
-				if ($l === $str_in) {
-					$in++;
-					continue;
-				}
-
-				if ($l === $str_out && $in) {
+				if (isset($str_out[0]) && ($l === $str_out[0]) && $in) {
+					array_shift($str_out);
 					$in--;
 					continue;
 				}
 
-				if (($l === $delimiter || $l === $str_out || $n === $length || ($delimiter_length > 1 && strpos(substr($string, $n), $delimiter) === 0)) && !$in) {
+				if (($k = array_search($l, $strs_in, true)) !== false) {
+					array_unshift($str_out, $strs_out[$k]);
+					$in++;
+					continue;
+				}
+
+				if (($in === 0) && ($l === $delimiter || $n === $length || (isset($str_out[0]) && $l === $str_out[0]) || ($delimiter_length > 1 && strpos(substr($string, $n), $delimiter) === 0))) {
 					$array[] = trim(substr($string, 0, $n));
 					$string = trim(substr($string, $n + $delimiter_length));
 
-					if ($l === $str_out) {
+					if (isset($str_out[0]) && ($l === $str_out[0])) {
 						break;
 					}
 
@@ -318,15 +329,15 @@ class Parser {
 	 * @param string $delimiter The delimiter used.
 	 * @param string $text The string to explode
 	 * @param int $limit The limit of th explode
-	 * @param string $str_in The character to start to ignore the delimiter. By default "("
-	 * @param string $str_out The character to end to ignore the delimiter. By default ")"
+	 * @param array $str_in The characters to start to ignore the delimiter. By default "("
+	 * @param array $str_out The characters to end to ignore the delimiter. By default ")"
 	 *
 	 * @return array  The exploded array
 	 */
-	static public function explodeTrim ($delimiter, $text, $limit = null, $str_in = '(', $str_out = ')') {
+	static public function explodeTrim ($delimiter, $text) {
 		$return = array();
 
-		foreach (self::explode($delimiter, $text, $limit, $str_in, $str_out) as $text_value) {
+		foreach (call_user_func_array(array('Stylecow\\Parser', 'explode'), func_get_args()) as $text_value) {
 			$text_value = trim($text_value);
 
 			if ($text_value !== '') {

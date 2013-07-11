@@ -8,17 +8,13 @@
  *
  * @author Oscar Otero <http://oscarotero.com> <oom@oscarotero.com>
  * @license GNU Affero GPL version 3. http://www.gnu.org/licenses/agpl-3.0.html
- * @version 1.0.1 (2013)
+ * @version 2.0.0 (2013)
  */
 
 namespace Stylecow;
 
 
 class Parser {
-	static private $basePath;
-	static private $baseUrl;
-
-
 
 	/**
 	 * Loads a css file gets its content and parse it
@@ -27,17 +23,16 @@ class Parser {
 	 *
 	 * @return Stylecow\Css The css object with the code parsed or false if file doesn't exist
 	 */
-	static public function parseFile ($file) {
-		self::$basePath = self::$baseUrl = null;
+	static public function parseFile ($file, $contextFile = '') {
+		$file = stream_resolve_include_path($file);
 
 		if (!is_file($file)) {
 			return false;
 		}
 
-		self::$basePath = (strpos($file, '/') === false) ? '' : dirname($file);
-		self::$baseUrl = '';
+		$code = file_get_contents($file);
 
-		return self::parseString(file_get_contents($file));
+		return self::parse($code, $file, $contextFile);
 	}
 
 
@@ -48,202 +43,211 @@ class Parser {
 	 *
 	 * @return Stylecow\Css The css object
 	 */
-	static public function parseString ($string) {
-		$string = self::resolve($string);
-
-		//Remove comments
-		$string = preg_replace('|/\*.*\*/|Us', '', $string);
-
-		return self::parse($string);
+	static public function parseString ($code, $contextFile = '') {
+		return self::parse($code, '', $contextFile);
 	}
 
 
-
 	/**
-	 * Resolves all url() and @import requests and removes the comments
+	 * Resolves all relative url() requests
 	 *
 	 * @param string $code The css code to resolve
 	 *
 	 * @return string The resolved code
 	 */
-	static private function resolve ($code) {
-		//Resolve imported images
-		if (strpos($code, 'url(') !== false) {
-			$code = preg_replace_callback('#url\(["\']?([^\)\'"]*)["\']?\)#', __NAMESPACE__.'\\Parser::urlCallback', $code);
+	static private function parseImport ($code, $filename, $contextFile) {
+		if (!preg_match('/\@import([^;]*)/', $code, $matches)) {
+			return $code;
 		}
 
-		//Resolve importes styles
-		if (!empty(self::$basePath) && (strpos($code, '@import') !== false)) {
-			$code = preg_replace_callback('/\@import([^;]*);/', __NAMESPACE__.'\\Parser::importCallback', $code);
-		}
-
-		return $code;
-	}
-
-
-
-	/**
-	 * The callback used in the function resolve() to fix the urls in the url() functions.
-	 *
-	 * @param string $matches The matches of the preg_replace_callback
-	 *
-	 * @return string The new code
-	 */
-	static private function urlCallback ($matches) {
-		$url = $matches[1];
-
-		if (empty(self::$baseUrl) || parse_url($url, PHP_URL_SCHEME) || $url[0] === '/') {
-			return 'url(\''.$url.'\')';
-		}
-
-		return 'url(\''.self::fixPath(self::$baseUrl.'/'.$url).'\')';
-	}
-
-
-
-	/**
-	 * The callback used in the function resolve() to replace the @import for the imported file code.
-	 * If the url file is absolute (start by http:// or by "/") doesn't replace anything
-	 *
-	 * @param string $matches The matches of the preg_replace_callback
-	 *
-	 * @return string The new code
-	 */
-	static private function importCallback ($matches) {
 		$file = trim(str_replace(array('\'', '"', 'url(', ')'), '', $matches[1]));
 
 		if (($file[0] === '/') || parse_url($file, PHP_URL_SCHEME)) {
 			return $matches[0];
 		}
 
-		$filePath = self::$basePath ? self::$basePath.'/'.$file : $file;
-		$fileUrl = self::$baseUrl ? self::$baseUrl.'/'.$file : $file;
+		$baseDir = $filename ? dirname($filename) : '';
 
-		if (is_file($filePath)) {
-			$basePath = self::$basePath;
-			$baseUrl = self::$baseUrl;
-
-			self::$basePath = (strpos($filePath, '/') === false) ? '' : dirname($filePath);
-			self::$baseUrl = (strpos($fileUrl, '/') === false) ? '' : dirname($fileUrl);
-
-			$code = self::resolve(file_get_contents($filePath));
-
-			self::$basePath = $basePath;
-			self::$baseUrl = $baseUrl;
-
-			return $code;
+		if ($contextFile) {
+			$relativePath = substr($baseDir, strlen(dirname($contextFile)));
+			$baseDir .= '/'.$relativePath;
 		}
 
-		return $matches[0];
-	}
+		$filename = $baseDir ? "$baseDir/$file" : $file;
 
+		$Css = self::parseFile($filename, $contextFile);
 
-	
-
-	/**
-	 * Parses the css code converting to a Css object with all selectors, properties and values.
-	 *
-	 * @param string $string_code The css code to parse
-	 *
-	 * @return Stylecow\Css The parsed css code
-	 */
-	static private function parse ($string_code) {
-		$Css = new Css();
-
-		while ($string_code) {
-			$pos = strpos($string_code, '{');
-			$pos2 = strpos($string_code, ';');
-
-			if (($pos2 !== false) && $pos2 < $pos) {
-				$Css->addChild(new Css(Selector::createFromString(substr($string_code, 0, $pos2))));
-
-				$string_code = trim(substr($string_code, $pos2+1));
-				continue;
-			}
-
-			if ($pos === false) {
-				break;
-			}
-
-			$selector = substr($string_code, 0, $pos);
-			$string_code = trim(substr($string_code, $pos + 1));
-			$length = strlen($string_code);
-			$in = 1;
-
-			for ($n = 0; $n <= $length; $n++) {
-				$letter = $string_code[$n];
-
-				if ($letter === '{') {
-					$in++;
-					continue;
-				}
-
-				if (($letter !== '}') || (--$in)) {
-					continue;
-				}
-
-				$Child = $Css->addChild(new Css(Selector::createFromString($selector)));
-
-				$string_piece = ($n === 0) ? '' : trim(substr($string_code, 0, $n));
-
-				if (substr($string_piece, -1) === ';') {
-					$string_piece = substr($string_piece, 0, -1);
-				}
-
-				$string_code = trim(substr($string_code, $n+1));
-				$pos = strpos($string_piece, '{');
-
-				if ($pos === false) {
-					$properties_string = $string_piece;
-					$content_string = '';
-				} else {
-					$pos = strrpos(substr($string_piece, 0, $pos), ';');
-
-					if ($pos !== false) {
-						$properties_string = trim(substr($string_piece, 0, $pos + 1));
-						$content_string = trim(substr($string_piece, $pos + 1));
-					} else {
-						$properties_string = '';
-						$content_string = $string_piece;
-					}
-				}
-
-				if ($properties_string) {
-					foreach (self::explodeTrim(';', $properties_string) as $property) {
-						$Child->addProperty(Property::createFromString($property));
-					}
-				}
-
-				if ($content_string) {
-					foreach (self::parse($content_string)->getChildren() as $child) {
-						$Child->addChild($child);
-					}
-				}
-
-				break;
-			}
+		if (isset($relativePath)) {
+			$Css->applyPlugins(array('baseUrl' => $relativePath));
 		}
 
 		return $Css;
 	}
 
 
-
 	/**
-	 * Resolve '//' or '/./' or '/foo/../' in a path
+	 * Parses the css code converting to a Css object with all selectors, properties and values.
 	 *
-	 * @param string $path The path to fix
+	 * @param string $string_code The css code to parse
+	 * @param string $filename The original filename (used to import relative files)
 	 *
-	 * @return string The fixed path
+	 * @return Stylecow\Css The parsed css code
 	 */
-	static private function fixPath ($path) {
-		$replace = array('#(/\.?/)#', '#/(?!\.\.)[^/]+/\.\./#');
+	static private function parse ($string_code, $filename = null, $contextFile = null) {
+		if ($filename) {
+			$relativePath = ', ./'.($contextFile ? substr($filename, strlen($contextFile)) : pathinfo($filename, PATHINFO_BASENAME));
+		} else {
+			$relativePath = '';
+		}
 
-		do {
-			$path = preg_replace($replace, '/', $path, -1, $n);
-		} while ($n > 0);
+		$Css = $Child = new Css();
 
-		return $path;
+		$status = array('selector');
+		$buffer = '';
+
+		$code = explode("\n", str_replace(array("\n\r", "\r"), "\n", $string_code));
+		array_unshift($code, '');
+
+		foreach ($code as $line => $string_line) {
+			if (empty($string_line)) {
+				continue;
+			}
+
+			$col = 0;
+			$length = strlen($string_line);
+			$char = $previousChar = null;
+			$nextChar = $string_line[$col];
+
+			while ($col < $length) {
+				$previousChar = $char;
+				$char = $nextChar;
+				$col ++;
+				$nextChar = ($col === $length) ? null : $string_line[$col];
+
+				switch ($char) {
+					case '"':
+						switch ($status[0]) {
+							case 'doubleQuote':
+								$buffer .= $char;
+
+								if ($previousChar !== '\\') {
+									array_shift($status);
+								}
+								break;
+
+							case 'simpleQuote':
+								$buffer .= $char;
+								break;
+
+							case 'selector':
+							case 'properties':
+								$buffer .= $char;
+								array_unshift($status, 'doubleQuote');
+						}
+						break;
+
+					case "'":
+						switch ($status[0]) {
+							case 'simpleQuote':
+								$buffer .= $char;
+
+								if ($previousChar !== '\\') {
+									array_shift($status);
+								}
+								break;
+
+							case 'doubleQuote':
+								$buffer .= $char;
+								break;
+
+							case 'selector':
+							case 'properties':
+								$buffer .= $char;
+								array_unshift($status, 'simpleQuote');
+						}
+						break;
+
+					case '{':
+						switch ($status[0]) {
+							case 'selector':
+							case 'properties':
+								$Child = $Child->addChild(new Css(Selector::createFromString($buffer)));
+								$Child->addComment(" line $line, col $col$relativePath ");
+								array_unshift($status, 'properties');
+								$buffer = '';
+								break;
+						}
+						break;
+
+					case '}':
+						switch ($status[0]) {
+							case 'properties':
+								if (trim($buffer)) {
+									$Child->addProperty(Property::createFromString($buffer));
+								}
+
+								$buffer = '';
+								array_shift($status);
+								$Child = $Child->parent;
+
+								break;
+						}
+						break;
+
+					case ';':
+						switch ($status[0]) {
+							case 'selector':
+								if ((strpos($buffer, '@import') === false) || !is_object($Children = self::parseImport($buffer, $filename, $contextFile))) {
+									$Child->addChild(new Css(Selector::createFromString($buffer)))->addComment(" line $line, col $col$relativePath ");
+								} else {
+									foreach ($Children->getChildren() as $Each) {
+										$Child->addChild($Each);
+									}
+								}
+
+								$buffer = '';
+								break;
+
+							case 'properties':
+								$Child->addProperty(Property::createFromString($buffer));
+								$buffer = '';
+								break;
+						}
+						break;
+
+					case '/':
+						if ($status[0] !== 'comment') {
+							if ($nextChar === '*') {
+								array_unshift($status, 'comment');
+								$col++;
+							} else {
+								$buffer .= $char;
+							}
+						}
+						break;
+
+					case '*':
+						if ($status[0] !== 'comment') {
+							$buffer .= $char;
+						} else if ($nextChar === '/') {
+							array_shift($status);
+							$col++;
+						}
+						break;
+
+					default:
+						if (!isset($status[0])) {
+							$status = array('selector');
+						}
+						
+						if ($status[0] !== 'comment') {
+							$buffer .= $char;
+						}
+				}
+			}
+		}
+
+		return $Css;
 	}
 
 
@@ -327,14 +331,14 @@ class Parser {
 	 * Explode a string into an array and trim its value. All empty values will be ignored
 	 *
 	 * @param string $delimiter The delimiter used.
-	 * @param string $text The string to explode
+	 * @param string $string The string to explode
 	 * @param int $limit The limit of th explode
 	 * @param array $str_in The characters to start to ignore the delimiter. By default "("
 	 * @param array $str_out The characters to end to ignore the delimiter. By default ")"
 	 *
 	 * @return array  The exploded array
 	 */
-	static public function explodeTrim ($delimiter, $text) {
+	static public function explodeTrim ($delimiter, $string) {
 		$return = array();
 
 		foreach (call_user_func_array(array('Stylecow\\Parser', 'explode'), func_get_args()) as $text_value) {
@@ -423,4 +427,3 @@ class Parser {
 		return $string;
 	}
 }
-?>

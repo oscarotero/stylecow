@@ -8,7 +8,7 @@
  *
  * @author Oscar Otero <http://oscarotero.com> <oom@oscarotero.com>
  * @license GNU Affero GPL version 3. http://www.gnu.org/licenses/agpl-3.0.html
- * @version 1.0.0 (2012)
+ * @version 1.1.0 (2013)
  */
 
 namespace Stylecow;
@@ -21,6 +21,7 @@ class Property {
 	public $name;
 	public $value;
 	public $vendor;
+	public $comments = array();
 
 
 	/**
@@ -55,7 +56,9 @@ class Property {
 	 * Magic function co convert this property in css code
 	 */
 	public function __toString () {
-		return $this->name.': '.$this->value;
+		$comments = empty($this->comments) ? '' : ' /*'.implode(', ', $this->comments).'*/';
+
+		return $this->name.': '.$this->value.$comments;
 	}
 
 
@@ -66,6 +69,16 @@ class Property {
 	 */
 	public function setParent (Css $parent) {
 		$this->parent = $parent;
+	}
+
+
+	/**
+	 * Add a new comment to the css code
+	 *
+	 * @param string $comment The comment to add
+	 */
+	public function addComment ($comment) {
+		$this->comments[] = $comment;
 	}
 
 

@@ -8,7 +8,7 @@
  *
  * @author Oscar Otero <http://oscarotero.com> <oom@oscarotero.com>
  * @license GNU Affero GPL version 3. http://www.gnu.org/licenses/agpl-3.0.html
- * @version 1.0.0 (2012)
+ * @version 1.1.0 (2013)
  */
 
 namespace Stylecow;
@@ -322,7 +322,7 @@ class Css extends \ArrayObject {
 
 		$selector = (string)$this->selector;
 		$properties = '';
-		$comments = empty($this->comments) ? '' : ' /*'.implode(', ', $this->comments).'*/';
+		$comments = empty($this->comments) ? '' : $indentation.'/*'.implode(', ', $this->comments).'*/'."\n";
 
 		if (isset($this->properties)) {
 			$indProp = $selector ? $indentation."\t" : $indentation;
@@ -345,7 +345,7 @@ class Css extends \ArrayObject {
 		}
 
 		if ($properties && $selector) {
-			return $indentation.$selector.' {'.$comments."\n".$properties.$indentation."}\n";
+			return $comments.$indentation.$selector.' {'."\n".$properties.$indentation."}\n";
 		}
 
 		if ($properties) {
@@ -353,7 +353,7 @@ class Css extends \ArrayObject {
 		}
 
 		if ($selector) {
-			return $indentation.$selector.';'.$comments."\n";
+			return $comments.$indentation.$selector.';'."\n";
 		}
 	}
 

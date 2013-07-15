@@ -18,7 +18,7 @@ Features:
 Why another CSS preprocessor?
 ------------------------------
 
-The main purpose of Stylecow is to bring more CSS support to all browsers. You write CSS and you get CSS. You don't have to learn another different language such LESS, SASS, etc. Stylecow converts your code to be more compatible with all browsers throught plugins without writing any non-standard code. There is a plugin to add automatically the vendor prefixes to all selectors, properties and values in need. There is another plugin that allows using rem values with fallback for IE<=8. There is another plugin to use css variables with the same syntax of the w3c standard (http://dev.w3.org/csswg/css-variables/). And other plugins emulate some CSS effects (rotate, opacity, etc) in IE using the property "filter". So you can use Stylecow just to fix your CSS code and make it compatible with more browsers. And if you stop using Stylecow, your CSS code will remain CSS code.
+The main purpose of Stylecow is to bring more CSS support to all browsers. You write CSS and you get CSS. You don't have to learn another different language such LESS, SASS, etc. Stylecow converts your code to be more compatible with all browsers throught plugins without writing any non-standard code. There is a plugin to add automatically the vendor prefixes to all selectors, properties and values in need. There is another plugin that allows using rem values with fallback for IE<=8. There is a plugin to use css variables with the same syntax of the w3c standard (http://dev.w3.org/csswg/css-variables/). And other plugins emulate some CSS effects (rotate, opacity, etc) in IE using the property "filter". So you can use Stylecow just to fix your modern CSS code and make it compatible with old browsers. And if you stop using Stylecow, your CSS code will remain CSS code.
 
 But if you don't mind to write "non pure CSS code", there are more plugins that can help you to write styles faster. For example, Color allows manipulate colors changing some of the values (saturation, light, etc), Math can execute math operations, Grid makes easier to work with fixed columns, etc.
 
@@ -33,6 +33,9 @@ How to use
 ----------
 
 ```php
+//Include the library (if no psr-0 compatible loader is available)
+include('Stylecow/autoloader.php');
+
 //Load and parse the code
 $css = Stylecow\Parser::parseFile('my-styles.css');
 
@@ -56,19 +59,19 @@ Stylecow provides some basic plugins (but you can make your owns):
 Plugins to bring CSS support:
 
 * [BaseUrl](#baseurl) Changes the base url in url() functions
-* [IeBackgroundAlpha](#iebackgroundalpha) IE support for rgba/hsla colors as background
-* [IeClip](#ieclip) Fixes clip css syntax for IE 6-7
-* [IeFloat](#iefloat) Fixes double margin bug in floated elements in IE 6
-* [IeInlineBlock](#ieinlineblock) Emulate the display: inline-block property in IE 6-7
-* [IeLinearGradient](#ielineargradient) Add ie filters to emulate linear-gradients in IE 6-9
-* [IeMinHeight](#ieminheight) Emulate the min-height property in IE 6
-* [IeOpacity](#ieopacity) Emulate the opacity property in IE 6-8
-* [IeTransform](#ietransform) Adds ie filters to emulate some css 2d transform (rotate, reflections, etc)
+* [IeBackgroundAlpha](#iebackgroundalpha) IE support for rgba/hsla colors as background (IE <= 8 | http://caniuse.com/#search=rgba)
+* [IeClip](#ieclip) Fixes clip css syntax (IE <= 7)
+* [IeFloat](#iefloat) Fixes double margin bug in floated elements in (IE 6)
+* [IeInlineBlock](#ieinlineblock) Emulate the display: inline-block property (IE <= 7 | http://caniuse.com/#search=inline-block)
+* [IeLinearGradient](#ielineargradient) Add ie filters to emulate linear-gradients (IE <= 9 | http://caniuse.com/#search=gradients)
+* [IeMinHeight](#ieminheight) Emulate the min-height property (IE <= 6 | http://caniuse.com/#search=min-height)
+* [IeOpacity](#ieopacity) Emulate the opacity property (IE <= 8 | http://caniuse.com/#search=opacity)
+* [IeTransform](#ietransform) Adds ie filters to emulate some css 2d transform (rotate, reflections, etc) (IE <= 8 | http://caniuse.com/#search=transforms)
 * [Initial](#initial) Adds support for "initial" value
-* [Matches](#matches) Support for the CSS4 selector :matches()
+* [Matches](#matches) Support for the CSS4 selector :matches() (http://caniuse.com/#search=matches)
 * [MediaQuery](#mediaquery) Filters the css code for a specific mediaquery
 * [NestedRules](#nestedrules) Brings nested rules support. There is a draft spec of CSS Hierarchies Module Level 3 (http://dev.w3.org/csswg/css3-hierarchies/) but have some differences (in w3c standard you must use the & character in all cases)
-* [Rem](#rem) IE<=8 support for rem values
+* [Rem](#rem) Add support for rem values (IE <= 8 | http://caniuse.com/#search=rem)
 * [Variables](#variables) Support for variables (W3C syntax http://dev.w3.org/csswg/css-variables/)
 * [VendorPrefixes](#vendorprefixes) Adds automatically the vendor prefixes to all properties in need
 

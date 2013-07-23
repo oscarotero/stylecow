@@ -22,6 +22,7 @@ class Property {
 	public $value;
 	public $vendor;
 	public $comments = array();
+	public $sourceMap = array();
 
 
 	/**
@@ -69,6 +70,16 @@ class Property {
 	 */
 	public function setParent (Css $parent) {
 		$this->parent = $parent;
+	}
+
+
+	/**
+	 * Set the line, column and file of the original source
+	 */
+	public function setSourceMap ($line, $column, $file) {
+		$this->sourceMap = array($line, $column, $file);
+
+		return $this;
 	}
 
 

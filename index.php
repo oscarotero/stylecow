@@ -128,7 +128,7 @@ if (isset($_POST['send'])) {
 	$css->applyPlugins($applyPlugins);
 
 	//Get the code
-	$output_code = $css->toString();
+	$output_code = $css->toString(array('sourceMap' => true));
 }
 ?>
 

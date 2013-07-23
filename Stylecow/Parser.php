@@ -95,7 +95,7 @@ class Parser {
 	 */
 	static private function parse ($string_code, $filename = null, $contextFile = null) {
 		if ($filename) {
-			$relativePath = ', ./'.($contextFile ? substr($filename, strlen($contextFile)) : pathinfo($filename, PATHINFO_BASENAME));
+			$relativePath = ($contextFile ? substr($filename, strlen($contextFile)) : pathinfo($filename, PATHINFO_BASENAME));
 		} else {
 			$relativePath = '';
 		}
@@ -105,7 +105,7 @@ class Parser {
 		$status = array('selector');
 		$buffer = '';
 
-		$code = explode("\n", str_replace(array("\n\r", "\r"), "\n", $string_code));
+		$code = explode("\n", str_replace("\n\r", "\n", $string_code));
 		array_unshift($code, '');
 
 		foreach ($code as $line => $string_line) {
@@ -171,8 +171,7 @@ class Parser {
 						switch ($status[0]) {
 							case 'selector':
 							case 'properties':
-								$Child = $Child->addChild(new Css(Selector::createFromString($buffer)));
-								$Child->addComment(" line $line, col $col$relativePath ");
+								$Child = $Child->addChild(new Css(Selector::createFromString($buffer)))->setSourceMap($line, $col, $relativePath);
 								array_unshift($status, 'properties');
 								$buffer = '';
 								break;
@@ -183,7 +182,7 @@ class Parser {
 						switch ($status[0]) {
 							case 'properties':
 								if (trim($buffer)) {
-									$Child->addProperty(Property::createFromString($buffer));
+									$Child->addProperty(Property::createFromString($buffer))->setSourceMap($line, $col, $relativePath);
 								}
 
 								$buffer = '';
@@ -198,7 +197,7 @@ class Parser {
 						switch ($status[0]) {
 							case 'selector':
 								if ((strpos($buffer, '@import') === false) || !is_object($Children = self::parseImport($buffer, $filename, $contextFile))) {
-									$Child->addChild(new Css(Selector::createFromString($buffer)))->addComment(" line $line, col $col$relativePath ");
+									$Child->addChild(new Css(Selector::createFromString($buffer)))->setSourceMap($line, $col, $relativePath);
 								} else {
 									foreach ($Children->getChildren() as $Each) {
 										$Child->addChild($Each);
@@ -209,7 +208,7 @@ class Parser {
 								break;
 
 							case 'properties':
-								$Child->addProperty(Property::createFromString($buffer));
+								$Child->addProperty(Property::createFromString($buffer))->setSourceMap($line, $col, $relativePath);
 								$buffer = '';
 								break;
 						}

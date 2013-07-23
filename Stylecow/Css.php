@@ -18,6 +18,7 @@ class Css extends \ArrayObject {
 	public $selector;
 	public $properties = array();
 	public $comments = array();
+	public $sourceMap = array();
 
 
 	/**
@@ -110,6 +111,16 @@ class Css extends \ArrayObject {
 		}
 
 		return false;
+	}
+
+
+	/**
+	 * Set the line, column and file of the original source
+	 */
+	public function setSourceMap ($line, $column, $file) {
+		$this->sourceMap = array($line, $column, $file);
+
+		return $this;
 	}
 
 
@@ -317,12 +328,27 @@ class Css extends \ArrayObject {
 	 *
 	 * @return string The css code
 	 */
-	public function toString ($indent = 0) {
-		$indentation = str_repeat("\t", $indent);
+	public function toString (array $options = array()) {
+		$options['indent'] = isset($options['indent']) ? intval($options['indent']) : 0;
+		$indentation = str_repeat("\t", $options['indent']);
 
 		$selector = (string)$this->selector;
-		$properties = '';
-		$comments = empty($this->comments) ? '' : $indentation.'/*'.implode(', ', $this->comments).'*/'."\n";
+		$properties = $comments = '';
+		
+		if (!empty($options['comments'])) {
+			$comments = empty($this->comments) ? '' : $indentation.'/*'.implode(', ', $this->comments).'*/'."\n";
+		}
+
+		if (!empty($options['sourceMap'])) {
+			$comments .= empty($this->sourceMap) ? '' : $indentation.'/* line: '.$this->sourceMap[0];
+			
+			if (!empty($this->sourceMap[2])) {
+				$comments .= ', '.$this->sourceMap[2];
+			}
+
+			$comments .= ' */'."\n";
+		}
+		
 
 		if (isset($this->properties)) {
 			$indProp = $selector ? $indentation."\t" : $indentation;
@@ -333,10 +359,10 @@ class Css extends \ArrayObject {
 		}
 
 		if (count($this)) {
-			$indent += $selector ? 1 : 0;
+			$options['indent'] += $selector ? 1 : 0;
 
 			foreach ($this as $child) {
-				$properties .= "\n".$child->toString($indent);
+				$properties .= "\n".$child->toString($options, $options['indent']);
 			}
 		}
 

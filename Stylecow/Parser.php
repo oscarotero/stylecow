@@ -222,13 +222,7 @@ class Parser {
 							} else {
 								$buffer .= $char;
 							}
-						}
-						break;
-
-					case '*':
-						if ($status[0] !== 'comment') {
-							$buffer .= $char;
-						} else if ($nextChar === '/') {
+						} else if ($previousChar === '*') {
 							array_shift($status);
 							$col++;
 						}

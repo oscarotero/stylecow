@@ -114,6 +114,7 @@ class VendorPrefixes {
 				'border-before-color',
 				'border-before-style',
 				'border-before-width',
+				'perspective',
 			),
 			'fn' => array(
 				'addPropertiesVendorPrefixes' => array('webkit')

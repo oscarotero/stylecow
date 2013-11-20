@@ -8,7 +8,7 @@
  *
  * @author Oscar Otero <http://oscarotero.com> <oom@oscarotero.com>
  * @license GNU Affero GPL version 3. http://www.gnu.org/licenses/agpl-3.0.html
- * @version 2.0.0 (2013)
+ * @version 2.0.1 (2013)
  */
 
 namespace Stylecow;
@@ -66,19 +66,16 @@ class Parser {
 			return $matches[0];
 		}
 
-		$baseDir = $filename ? dirname($filename) : '';
+		$importedFilename = ($filename ? dirname($filename) : '').'/'.$file;
 
-		if ($contextFile) {
-			$relativePath = substr($baseDir, strlen(dirname($contextFile)));
-			$baseDir .= '/'.$relativePath;
+		if (($relFile = dirname($file)) !== '.') {
+			$contextFile .= $relFile.'/';
 		}
 
-		$filename = $baseDir ? "$baseDir/$file" : $file;
+		$Css = self::parseFile($importedFilename, $contextFile);
 
-		$Css = self::parseFile($filename, $contextFile);
-
-		if (isset($relativePath)) {
-			$Css->applyPlugins(array('baseUrl' => $relativePath));
+		if (!empty($contextFile)) {
+			$Css->applyPlugins(array('baseUrl' => $contextFile));
 		}
 
 		return $Css;

@@ -362,7 +362,7 @@ class Css extends \ArrayObject {
 			$options['indent'] += $selector ? 1 : 0;
 
 			foreach ($this as $child) {
-				$properties .= "\n".$child->toString($options, $options['indent']);
+				$properties .= "\n".$child->toString($options);
 			}
 		}
 

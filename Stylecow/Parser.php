@@ -221,7 +221,6 @@ class Parser {
 							}
 						} else if ($previousChar === '*') {
 							array_shift($status);
-							$col++;
 						}
 						break;
 

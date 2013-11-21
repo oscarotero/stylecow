@@ -75,7 +75,7 @@ class Parser {
 		$Css = self::parseFile($importedFilename, $contextFile);
 
 		if (!empty($contextFile)) {
-			$Css->applyPlugins(array('baseUrl' => $contextFile));
+			$Css->applyPlugins(array('BaseUrl' => $contextFile));
 		}
 
 		return $Css;

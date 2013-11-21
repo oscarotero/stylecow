@@ -216,6 +216,11 @@ class Parser {
 							if ($nextChar === '*') {
 								array_unshift($status, 'comment');
 								$col++;
+                                
+                                $nextNextChar = ($col === $length) ? null : $string_line[$col];
+                                if ($nextNextChar === '/') {
+                                    $col++;
+                                }
 							} else {
 								$buffer .= $char;
 							}

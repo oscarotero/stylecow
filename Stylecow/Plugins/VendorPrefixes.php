@@ -12,7 +12,7 @@
  *
  * @author Oscar Otero <http://oscarotero.com> <oom@oscarotero.com>
  * @license GNU Affero GPL version 3. http://www.gnu.org/licenses/agpl-3.0.html
- * @version 1.1.0 (2012)
+ * @version 1.1.1 (2013)
  */
 
 namespace Stylecow\Plugins;
@@ -59,8 +59,7 @@ class VendorPrefixes {
 				'column-span',
 				'column-width',
 				'columns',
-				'opacity',
-				'user-select'
+				'opacity'
 			),
 			'fn' => array(
 				'addPropertiesVendorPrefixes' => array('moz', 'webkit')
@@ -150,7 +149,10 @@ class VendorPrefixes {
 			)
 		),
 		array(
-			'properties' => array('text-size-adjust'),
+			'properties' => array(
+				'text-size-adjust',
+				'user-select'
+			),
 			'fn' => array(
 				'addPropertiesVendorPrefixes' => array('moz', 'webkit', 'ms')
 			)

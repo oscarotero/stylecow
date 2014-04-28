@@ -205,7 +205,9 @@ class Parser {
 								break;
 
 							case 'properties':
-								$Child->addProperty(Property::createFromString($buffer))->setSourceMap($line, $col, $relativePath);
+								if (!empty($buffer)) {
+									$Child->addProperty(Property::createFromString($buffer))->setSourceMap($line, $col, $relativePath);
+								}
 								$buffer = '';
 								break;
 						}

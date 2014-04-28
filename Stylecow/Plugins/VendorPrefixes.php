@@ -455,8 +455,10 @@ class VendorPrefixes {
 	static public function addValuesVendorPrefixes ($property, $value, $prefixes) {
 		$names = array();
 
-		foreach ($prefixes as $prefix) {
-			$names[$prefix] =  "-$prefix-$value";
+		if (strpos($property, 'url(') === false && !preg_match('/([\'"]).*[^\\\\]\1/', $property)) {
+			foreach ($prefixes as $prefix) {
+				$names[$prefix] =  "-$prefix-$value";
+			}
 		}
 
 		VendorPrefixes::addRenamedValue($property, $value, $names);

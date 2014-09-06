@@ -39,7 +39,7 @@ class BaseUrl {
 						$url = substr($url, 1, -1);
 					}
 
-					if (parse_url($url, PHP_URL_SCHEME) || $url[0] === '/') {
+					if (parse_url($url, PHP_URL_SCHEME) || ($url[0] === '/' && $url[1] !== '/')) {
 						return;
 					}
 

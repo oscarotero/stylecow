@@ -1,3 +1,5 @@
+# This package is deprecated. Use http://stylecow.github.io/ instead
+
 Stylecow
 ========
 
